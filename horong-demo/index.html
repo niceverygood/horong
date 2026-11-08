@@ -3349,6 +3349,9 @@ function drawText(s, x, y, font, col, align, base, stroke, scale) {
   if (scale === 1) ctx.drawImage(t.c, Math.round((x - ax) * DPR) / DPR, Math.round((y - t.oy) * DPR) / DPR, w, h);
   else ctx.drawImage(t.c, x - ax * scale, y - t.oy * scale, w * scale, h * scale);
 }
+// One number formatter made while loading: toLocaleString('ko-KR') built a new one every frame, and the first one
+// (locale data setup) stalled the first frame of play.
+const KILLFMT = (() => { try { return new Intl.NumberFormat('ko-KR'); } catch (e) { return null; } })();
 function drawHUD() {
   const st = SAFE.t, sl = SAFE.l, sr = SAFE.r, sb = SAFE.b, narrow = W < 900;
   ctx.imageSmoothingEnabled = true;
@@ -3393,7 +3396,7 @@ function drawHUD() {
   const rx = W - sr - 12;
   if (SPR.coin && ART.ok) dI(SPR.coin, rx - 78, st + 58, 15, 15);
   txt(`엽전 ${P.coins}`, rx, st + 70, 13, '#d9ad45', 'right', FD, 700);
-  txt(`처치 ${P.kills.toLocaleString('ko-KR')}`, rx, st + 87, 11.5, '#a39a86', 'right');
+  txt(`처치 ${KILLFMT ? KILLFMT.format(P.kills) : P.kills}`, rx, st + 87, 11.5, '#a39a86', 'right');
   // slots
   const sy = H - sb - 14 - 30 - 6 - 40;
   P.weapons.forEach((w, i) => { const D = WEAPONS[w.id]; slot(lx0 + i * 44, sy, 40, ICON[w.id], D.glyph, w.evo ? '#f2a93b' : EL_COLOR[D.el], w.evo ? '진' : `${w.lv}`, w.evo); });
@@ -3849,13 +3852,24 @@ function tick(now) {
   }
   render();
 }
+// First-use costs paid on the title screen instead of in the first frame of play: creating the audio context
+// (about 30ms; the sound files then decode in the background) and the fonts' first use on the canvas (about 45ms of
+// glyph setup for the HUD), plus fetching the web-font slices that hold the Korean letters the HUD and banners use.
+const WARM_TEXT = ' 가간감갓걀거걷경곁고공과구국귀그기까깨꺼꽃꽹꾸끌나날남났낭노놀놋눌는니다단달닭당대도돌되두둑뒤든들등떨뚫뜨러레력렬령로롱른름리립막많망맞매머먹면명모몸무묵물미반밟밥방백버번벼병보복부분불붉붓비빛사산삼상새서선설세소솟쇠수슨슬시신쌀쓴쓸씨아안않야어억없에여연엽예오온옵요욕우운울원위육으은을음의이인임입자작잡장재적전정졌조종주줄중지진짐집짚째쪽처철첫체초추치켜키타탐터톳통판포푸풍프하한항행향험호혹홍화황회힙 0123456789 Lv:/+×·%';
+function warmUp() {
+  try { audioOn(); } catch (e) {}
+  const fonts = [`700 24px ${FD}`, `700 13px ${FD}`, `400 11.5px ${FB}`, `700 13px ${FB}`, `700 10px ${FB}`];
+  const shape = () => { try { const g = document.createElement('canvas').getContext('2d'); for (const f of fonts) { g.font = f; g.measureText(WARM_TEXT); g.fillText(WARM_TEXT, 0, 20); } } catch (e) {} };
+  shape();
+  try { if (document.fonts && document.fonts.load) Promise.all(fonts.map(f => document.fonts.load(f, WARM_TEXT))).then(shape, () => {}); } catch (e) {}
+}
 function start(data) {
   loadMeta();
   resize(); buildSprites(); buildGround(); buildInk(); packAtlas();
   titleScene(); renderChars(); showOnly('title');
   const sb = $('#btn-start'); sb.disabled = true; sb.textContent = '등잔에 불 붙이는 중…';
   let readyDone = false;
-  const ready = () => { if (readyDone) return; readyDone = true; sb.disabled = false; sb.textContent = '밤길 나서기'; renderChars(); if (/playground|놀이터/.test(decodeURIComponent(location.hash)) || document.querySelector('meta[name="horong-mode"][content="playground"]')) enterPlayground(selChar); };   // #playground or the 놀이터-only page
+  const ready = () => { if (readyDone) return; readyDone = true; warmUp(); sb.disabled = false; sb.textContent = '밤길 나서기'; renderChars(); if (/playground|놀이터/.test(decodeURIComponent(location.hash)) || document.querySelector('meta[name="horong-mode"][content="playground"]')) enterPlayground(selChar); };   // #playground or the 놀이터-only page
   loadArt().then(ready, err => { console.warn('art fallback', err); ready(); });
   setTimeout(ready, 8000);
   try { window.claude?.hot?.snapshot?.(() => ({ meta })); } catch (e) {}

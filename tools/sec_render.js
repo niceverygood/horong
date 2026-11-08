@@ -999,6 +999,9 @@ function drawText(s, x, y, font, col, align, base, stroke, scale) {
   if (scale === 1) ctx.drawImage(t.c, Math.round((x - ax) * DPR) / DPR, Math.round((y - t.oy) * DPR) / DPR, w, h);
   else ctx.drawImage(t.c, x - ax * scale, y - t.oy * scale, w * scale, h * scale);
 }
+// One number formatter made while loading: toLocaleString('ko-KR') built a new one every frame, and the first one
+// (locale data setup) stalled the first frame of play.
+const KILLFMT = (() => { try { return new Intl.NumberFormat('ko-KR'); } catch (e) { return null; } })();
 function drawHUD() {
   const st = SAFE.t, sl = SAFE.l, sr = SAFE.r, sb = SAFE.b, narrow = W < 900;
   ctx.imageSmoothingEnabled = true;
@@ -1043,7 +1046,7 @@ function drawHUD() {
   const rx = W - sr - 12;
   if (SPR.coin && ART.ok) dI(SPR.coin, rx - 78, st + 58, 15, 15);
   txt(`엽전 ${P.coins}`, rx, st + 70, 13, '#d9ad45', 'right', FD, 700);
-  txt(`처치 ${P.kills.toLocaleString('ko-KR')}`, rx, st + 87, 11.5, '#a39a86', 'right');
+  txt(`처치 ${KILLFMT ? KILLFMT.format(P.kills) : P.kills}`, rx, st + 87, 11.5, '#a39a86', 'right');
   // slots
   const sy = H - sb - 14 - 30 - 6 - 40;
   P.weapons.forEach((w, i) => { const D = WEAPONS[w.id]; slot(lx0 + i * 44, sy, 40, ICON[w.id], D.glyph, w.evo ? '#f2a93b' : EL_COLOR[D.el], w.evo ? '진' : `${w.lv}`, w.evo); });
