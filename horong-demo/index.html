@@ -262,9 +262,11 @@ const SAFE = { t: 0, r: 0, b: 0, l: 0 };
 // (the CSS size stays and the browser scales it up). 'auto' steps down only while play runs slowly and keeps a step
 // only if it helps (see adaptRes); 'sharp' / 'light' pin the top / bottom step. Chosen on the pause screen.
 const RES = { lv: 0, mode: 'auto' };
+let redraw = true;   // the canvas needs a fresh picture even if the world is frozen behind a menu (see tick)
 try { const m = localStorage.getItem('horong-quality'); if (m === 'sharp' || m === 'light') RES.mode = m; } catch (e) {}
 function resSteps() { const b = Math.min(window.devicePixelRatio || 1, 2); return [b, b * 0.75, b * 0.5].filter((d, i) => !i || d >= 0.74); }
 function resize() {
+  redraw = true;   // resizing clears the canvas
   const st = resSteps();
   if (RES.mode === 'sharp') RES.lv = 0; else if (RES.mode === 'light') RES.lv = st.length - 1;
   DPR = st[Math.min(RES.lv, st.length - 1)];
@@ -3857,8 +3859,15 @@ function tick(now) {
       if (G.endT > 2.6) endRun(true);
     }
   }
+  // Behind a menu (pause, level-up, peddler, guide, game over) the world is frozen and so is its picture: draw it once,
+  // then leave the canvas alone until something changes, so the menu stays smooth on slow devices (and the battery rests).
+  const st = G ? G.state : '';
+  if (!redraw && FROZEN.has(st) && st === drawnState) return;
+  redraw = false; drawnState = st;
   render();
 }
+const FROZEN = new Set(['paused', 'levelup', 'peddler', 'guide', 'over']); let drawnState = '';
+for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { redraw = true; }, true);   // a click in a menu can change the HUD behind it (coins at the peddler)
 // First-use costs paid on the title screen instead of in the first frame of play: creating the audio context
 // (about 30ms; the sound files then decode in the background) and the fonts' first use on the canvas (about 45ms of
 // glyph setup for the HUD), plus fetching the web-font slices that hold the Korean letters the HUD and banners use.
