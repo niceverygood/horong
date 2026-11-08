@@ -476,9 +476,11 @@ S['seg'] = resize(trim(clean(cell(imu, 2, 1, 1, 0))), w=94)
 
 # boss action poses (Meshy gpt-image-2, image-to-image from the sprites above). One scale per sheet, set so
 # the reference pose matches the base sprite, keeps the poses' relative size (a lunge is longer than a stand).
-def pose_sheet(name, cols, rows, ref_cell, key, size, out):
+def pose_sheet(name, cols, rows, ref_cell, key, size, out, fix=False):
     im = load(name)
     cells = [trim(clean(cell(im, cols, rows, i % cols, i // cols))) for i in range(cols * rows)]
+    if fix:
+        cells = [despeckle(c) for c in cells]
     ref = cells[ref_cell]; k = size / (ref.height if key == 'h' else ref.width)
     for i, c in enumerate(cells):
         if out[i]:
@@ -514,6 +516,68 @@ for f, (hx, hy) in zip(_frames, _hc):
     _reg.append(g_)
 for i, c in enumerate(union_crop(_reg)):
     S[f'gumiho_r{i}'] = c
+
+def despeckle(im, keep=0.03):
+    """Drop alpha islands smaller than `keep` × the largest one (background-removal leftovers)."""
+    w, h = im.size
+    a = im.split()[3].load()
+    seen = bytearray(w * h)
+    comps = []
+    for y0 in range(h):
+        for x0 in range(w):
+            i0 = y0 * w + x0
+            if seen[i0] or a[x0, y0] <= 40:
+                continue
+            seen[i0] = 1
+            stack, pix = [(x0, y0)], []
+            while stack:
+                x, y = stack.pop()
+                pix.append((x, y))
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        nx, ny = x + dx, y + dy
+                        if 0 <= nx < w and 0 <= ny < h:
+                            j = ny * w + nx
+                            if not seen[j] and a[nx, ny] > 40:
+                                seen[j] = 1
+                                stack.append((nx, ny))
+            comps.append(pix)
+    if not comps:
+        return im
+    big = max(len(c) for c in comps)
+    out = im.copy()
+    px = out.load()
+    for c in comps:
+        if len(c) < big * keep:
+            for x, y in c:
+                px[x, y] = (0, 0, 0, 0)
+    return trim(out)
+
+
+# --- stage 2 · 안개 산길 (Meshy gpt-image-2, image-to-image from the stage 1 sheets) ---------------
+sheet2 = load('enemies2')
+spec = [('sonkaksi', 0, 0, 82, None), ('grim', 1, 0, 86, 200), ('yagwang', 2, 0, 60, 205),
+        ('crow', 0, 1, 70, 230), ('mangtae', 1, 1, 94, 235), ('totem', 2, 1, 84, 230)]
+for name, c, r, h, lum in spec:
+    img = resize(despeckle(trim(clean(cell(sheet2, 3, 2, c, r)))), h=h)
+    S[name] = img
+    if lum:
+        S[name + '_e'] = emissive(img, lum=lum)
+# bosses: cell 0 of each pose sheet is the base (walking) drawing
+pose_sheet('jangsan_p', 2, 2, 0, 'w', 300, ['jangsan', 'jangsan_p1', 'jangsan_p2', 'jangsan_p3'], fix=True)   # prowl, howl, pounce, claw
+pose_sheet('dueok_p', 2, 2, 0, 'h', 215, ['dueok', 'dueok_p1', 'dueok_p2', 'dueok_p3'], fix=True)             # stand, fists up, smash, charge
+pose_sheet('bulga_p', 2, 2, 0, 'w', 320, ['bulga', 'bulga_p1', 'bulga_p2', 'bulga_p3'], fix=True)             # stand, roar, charge, curled ball
+S['jangsan_e'] = emissive(S['jangsan'], lum=238)
+S['dueok_e'] = emissive(S['dueok'], lum=225)
+S['bulga_e'] = emissive(S['bulga'], lum=200)
+# landmarks and decor
+props3 = load('props3')
+spec3 = [('sansin', 'h', 170), ('spring', 'h', 130), ('stonelamp', 'h', 130), ('pagoda', 'h', 150),
+         ('offering', 'w', 120), ('herbs', 'h', 140), ('lotus', 'h', 70), ('tbell', 'h', 160)]
+for i, (name, k, v) in enumerate(spec3):
+    img = despeckle(trim(clean(cell(props3, 4, 2, i % 4, i // 4))))
+    S[name] = resize(img, h=v) if k == 'h' else resize(img, w=v)
+META['stonelampLamp'] = bright_point(S['stonelamp'], lambda r, g, b: r > 200 and g > 140 and b < 120)
 
 # --- items --------------------------------------------------------------------
 items = load('items')
@@ -608,6 +672,12 @@ tile = Image.composite(g, rolled, mask)
 tile = ImageEnhance.Brightness(tile).enhance(0.72)
 tile = ImageEnhance.Color(tile).enhance(0.85)
 tile.save(os.path.join(OUT, 'ground.jpg'), quality=86)
+# stage 2: the mountain path, same seam treatment
+g = Image.open(os.path.join(RAW, 'ground2.png')).convert('RGB')
+W, H = g.size
+tile = Image.composite(g, ImageChops.offset(g, W // 2, H // 2), mask.resize((W, H), Image.BILINEAR))
+tile = ImageEnhance.Brightness(tile).enhance(0.98)
+tile.save(os.path.join(OUT, 'ground2.jpg'), quality=86)
 
 # --- title key art ---------------------------------------------------------------
 key = Image.open(os.path.join(ROOT, 'concept-art', 'horong-keyart.png')).convert('RGB')

@@ -5,8 +5,30 @@ function dI(img, x, y, w, h) {
   else if (w === undefined) ctx.drawImage(img, x, y); else ctx.drawImage(img, x, y, w, h);
 }
 const camX = () => P.x + (G.cox || 0), camY = () => P.y + (G.coy || 0);
-function toScreen(x, y) { return [W / 2 + (x - camX()) * ZOOM + G.shx, H / 2 + (y - camY()) * ZOOM + G.shy]; }
-function inView(x, y, m) { return Math.abs(x - (P.x + (G.cox || 0))) < VW + m && Math.abs(y - (P.y + (G.coy || 0))) < VH + m; }   // camX()/camY() inlined: called thousands of times a frame, and each call returned a boxed number
+// 2.5D camera: the world is drawn flat (top-down) into FLAT, then laid onto the screen as a tilted plane: rows far up the
+// screen shrink toward a vanishing point (×0.85 at the top edge, ×1.15 at the bottom). Gameplay stays in world space.
+const FLAT = document.createElement('canvas'), FCTX = FLAT.getContext('2d');
+FLAT.id = 'world'; FLAT.setAttribute('aria-hidden', 'true'); cvs.before(FLAT);   // the world has its own canvas under the HUD canvas
+const PERSP = { on: true, b: 0, mx: 0, my: 0, flat: false };
+const persp = v => 1 / (1 - PERSP.b * v);   // scale of a flat row v (CSS px from the screen centre, + = down)
+function screenT() { const d = PERSP.flat ? RS : DPR; ctx.setTransform(d, 0, 0, d, PERSP.flat ? d * PERSP.mx : 0, PERSP.flat ? d * PERSP.my : 0); }
+function project(sx, sy) { if (!PERSP.on || PERSP.flat) return [sx, sy]; const v = sy - H / 2, k = persp(v); return [W / 2 + (sx - W / 2) * k, H / 2 + v * k]; }
+function toScreen(x, y) { return project(W / 2 + (x - camX()) * ZOOM + G.shx, H / 2 + (y - camY()) * ZOOM + G.shy); }
+function inView(x, y, m) { const dy = y - (P.y + (G.coy || 0)); return Math.abs(x - (P.x + (G.cox || 0))) < VW * 1.22 + m && dy > -VH * 1.25 - m && dy < VH + m; }   // camX()/camY() inlined: called thousands of times a frame
+// upright things (people, ghosts, props) stand on the tilted floor: undo the warp's extra vertical squash so they only shrink
+const upK = y => PERSP.on && PERSP.flat ? 1 - PERSP.b * (y - camY()) * ZOOM : 1;
+// The GPU lays the flat world canvas onto the screen as a tilted plane (CSS matrix3d, w = 1 − b·y about the screen
+// centre): the same map as project(), with no per-frame copy. The canvas is sized in render-scale pixels (RS).
+function placeWorld(mx, my) {
+  const fw = Math.round((W + 2 * mx) * RS), fh = Math.round((H + my) * RS);
+  if (FLAT.width !== fw || FLAT.height !== fh) { FLAT.width = fw; FLAT.height = fh; }
+  const key = W + '|' + H + '|' + mx + '|' + my + '|' + PERSP.on;
+  if (FLAT._key === key) return;
+  FLAT._key = key; const st = FLAT.style;
+  st.left = -mx + 'px'; st.top = -my + 'px'; st.width = (W + 2 * mx) + 'px'; st.height = (H + my) + 'px';
+  st.transformOrigin = (W / 2 + mx) + 'px ' + (H / 2 + my) + 'px';
+  st.transform = PERSP.on ? 'matrix3d(1,0,0,0,0,1,0,' + (-PERSP.b) + ',0,0,1,0,0,0,0,1)' : 'none';
+}
 const easeOut3 = k => 1 - Math.pow(1 - k, 3);
 // out: a scratch object to fill instead of a new one (the hot draw loops call this for every enemy, every frame)
 function enemyPose(e, pose, out) {
@@ -21,7 +43,7 @@ function enemyPose(e, pose, out) {
     const A = e.act;
     if (A && A.k === 'lunge' && A.t >= 0.6 && !A.land) { sx *= 1.22; sy *= 0.86; rot = 0; }        // stretched along the throw
     else if (A && A.k === 'lunge' && A.t < 0.6) { const q = A.t / 0.6; sy *= 1 - 0.1 * q; sx *= 1 + 0.06 * q; }   // coils before it
-  } else if (e.type === 'gumiho' || e.type === 'clone') {   // gallop: leap, pitch, squash on landing; breathe when still
+  } else if (e.type === 'gumiho' || e.type === 'clone' || e.type === 'jangsan' || e.type === 'jclone' || e.type === 'bulga') {   // gallop: leap, pitch, squash on landing; breathe when still
     const drawn = e.pose && e.pose[0] === 'r', run = e.act ? 0 : clamp((sp - 25) / 70, 0, 1), face = sx;
     if (drawn) {   // registered gallop frames: the body rises on the stretch (frames 6→1), sinks gathered (3→4), pitches with it
       const u = (((e.wk || 0) / 72) % 1 + 1) % 1, lift = 0.5 + 0.5 * Math.cos(TAU * (u - 0.04));
@@ -51,16 +73,17 @@ function enemyPose(e, pose, out) {
     if (e.sk.k === 'roll' && e.sk.t > 0.25) { rot = e.sk.rot || 0; oy = -h / 2; y -= h / 2 * sy; sx = Math.abs(sx); }   // roll about the middle of the egg, not its feet
     else if (e.sk.k === 'burst') { const q = Math.min(1, e.sk.t / 0.5); sx *= 1 + 0.35 * q + Math.sin(G.t * 40) * 0.06 * q; sy *= 1 + 0.35 * q; }
   }
-  if (e.stun > 0) rot = Math.sin(G.t * 30) * 0.12;
+  if (e.type === 'bulga' && e.act && e.act.k === 'roll' && e.pose === 'p3' && pose === undefined) { rot = e.act.spin || 0; oy = -h / 2; y -= h / 2 * sy; sx = Math.abs(sx); }   // the spiked ball rolls about its centre
+  if (e.stun > 0) rot = Math.sin(G.t * 30) * (e.boss ? 0.05 : 0.12);
   if (out) { out.base = base; out.w = w; out.h = h; out.x = x; out.y = y; out.sx = sx; out.sy = sy; out.rot = rot; out.oy = oy; return out; }
   return { base, w, h, x, y, sx, sy, rot, oy };
 }
 // Bosses are drawn in strips so the drawing itself moves: 그슨대's robe ripples in rows (strongest at the hem, trailing
 // against the drift); 구미호's tails ripple in columns from the root out to the tips. Pose changes cross-fade.
 function drawDeform(e, img, p) {
-  if (!img || !img.at) { drawPose(img, p); return; }
-  const s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
-  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
+  if (!img || !img.at || e.type === 'dueok' || e.type === 'bulga') { drawPose(img, p); return; }
+  const s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot), syk = p.sy * upK(p.y);
+  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * syk, s * c * syk, s * p.x + WM[1], s * p.y + WM[2]);
   const at = img.at, ax = img.sx, ay = img.sy, Ws = img.width, Hs = img.height, kx = p.w / Ws, ky = p.h / Hs, t = G.t, b = e.bob || 0;
   const sp = Math.hypot(e.mvx || 0, e.mvy || 0);
   if (e.type === 'gseun') {
@@ -156,7 +179,7 @@ function drawPlayer() {
   const lean = clamp((P.vx || 0) / 150, -1.2, 1.2) * 0.05 + gb.rot, tk = 1 - 0.035 * (P.turnK || 0), sx = (2 - tk) * gb.sx, sy = breathe * tk * gb.sy;
   const ox = P.x + q.sway + gb.dx, oy = P.y + 12 - q.bob + gb.dy;
   if (gb.list.length) drawGear(gb.list, ox, oy, lean, true);
-  ctx.save(); ctx.translate(ox, oy); ctx.rotate(lean); ctx.scale(v.flip * sx, sy);
+  ctx.save(); ctx.translate(ox, oy); ctx.rotate(lean); ctx.scale(v.flip * sx, sy * upK(oy));
   if (q.R && A.at) drawRig(A, q, pw, ph, x0, v.flip);
   else dI(A, x0, -ph, pw, ph);
   ctx.restore();
@@ -208,8 +231,8 @@ function drawRig(img, q, pw, ph, x0, flip) {
    hand when they fire. A pose is screen-space relative to the feet: grip point (x, y), axis angle a, foreshortening f,
    and whether it sits behind the body. Swings are authored as ground-plane angles and projected (y × 0.5). */
 const GEAR = {   // icon px: grip and tip; len as a share of body height
-  club: { g: [19.5, 55.5], t: [43.6, 2.3], len: 0.76, col: '160,255,200' },
-  yukmo: { g: [25.5, 55], t: [55.7, 2.4], len: 0.74, col: '255,214,120' },
+  club: { g: [19.5, 55.5], t: [43.6, 2.3], len: 0.4, col: '160,255,200' },
+  yukmo: { g: [25.5, 55], t: [55.7, 2.4], len: 0.42, col: '255,214,120' },
   bell: { g: [43.5, 1], t: [19, 62.4], len: 0.36, col: '255,226,150' },
   ink: { g: [46, 6], t: [21.5, 61.2], len: 0.5, col: '140,160,255' },
   talisman: { g: [26.1, 59.2], t: [43.4, 3.1], len: 0.3, col: '255,190,90' },
@@ -239,7 +262,7 @@ function gearPoses(q, ph, arm) {
     const L = S.len * ph, wind = w.wuAt > (w.at ?? -9) && G.t - w.wuAt < GEAR_WU[w.id] + 0.35, wk = wind ? clamp((G.t - w.wuAt) / GEAR_WU[w.id], 0, 1) : 0, h = w.at === undefined ? 9 : G.t - w.at;   // a wind-up with nothing to throw at lowers again
     let pose, rest, alpha = 1, smear = null, hold = 0, armDir = null, pri = 0;
     if (w.id === 'club') {   // worn at the hip; the hand comes down, draws it, cocks it and swings in the screen plane
-      rest = { x: -s * 9, y: -0.42 * ph, a: Math.PI / 2 + s * 0.75 + swing * 0.18, f: 0.82, back: false };   // tucked in the sash, slanting back
+      rest = { x: -s * 6, y: -0.44 * ph, a: Math.PI / 2 + s * 0.55 + swing * 0.15, f: 1, back: !north };   // tucked in the sash at the back
       const d = w.dir || 1, fa = wind ? fa0 : (w.fa ?? fa0), endA = Math.atan2(Math.sin(fa) * 0.62, Math.cos(fa)), start = endA - d * 2.4, fol = endA + d * 0.7;
       const sp2 = a => ({ x: 0, y: -0.45 * ph, a, f: 1, back: Math.cos(a) * Math.cos(endA) + Math.sin(a) * Math.sin(endA) < -0.25 });   // behind the head while cocked
       if (wind) {
@@ -252,7 +275,7 @@ function gearPoses(q, ph, arm) {
       else pose = rest;
       if (!wind && h < 0.3) { const e = h < 0.06 ? h / 0.06 : 1 - (h - 0.06) / 0.24; out.dx += Math.cos(fa) * 3 * e; out.dy += Math.sin(fa) * 1.5 * e; out.rot += Math.cos(fa) * 0.08 * e; out.sy *= 1 + 0.03 * e; }
     } else if (w.id === 'yukmo') {   // slung on the back; pulled over the shoulder, held point-down and driven straight into the ground
-      rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
+      rest = { x: -s * 3, y: -0.5 * ph, a: -Math.PI / 2 - s * 0.4, f: 1, back: !north };   // slung on the back, behind the far shoulder
       const held = { x: 0, y: -0.6 * ph, a: Math.PI / 2, f: 1, back: false };   // point down, like a stake
       const upDir = -Math.PI / 2 + s * 0.3, downDir = Math.PI / 2 - s * 0.35, reachDir = -Math.PI / 2 - s * 0.5;   // held straight up, so the stake clears the body
       if (wind) {
@@ -303,7 +326,7 @@ function gearPoses(q, ph, arm) {
     if (drv.smear && drv.smear.screen) Object.assign(drv.smear, { cx: arm.sx, cy: arm.sy, r0: drv.smear.thin ? arm.L + drv.L * 0.55 : arm.L * 0.6, r1: arm.L + drv.L * 1.02 });   // a thin band near the tip for the baton
     if (drv.lantern) drv.pose.back = false;
     out.arm = { d: ad - arm.a0, back: arm.borrow || (drv.hold > 0.5 && drv.pose.back) };
-    for (const it of out.list) if (it !== drv && it.hold > 0.01 && it.lantern) it.pose = it.rest;   // the lantern waits at the hip while the hand is busy
+    for (const it of out.list) if (it !== drv && it.hold > 0.01) { it.pose = it.rest; it.smear = null; }   // one free hand: whatever it isn't holding stays where it is worn
   }
   return out;
 }
@@ -335,22 +358,23 @@ function drawGear(list, ox, oy, lean, back) {
 }
 function drawProp(p) {
   worldT();
-  const sp = SPR[p.t], w = SW(sp), h = SH(sp), age = G.t - (p.hitAt ?? -9);
+  const sp = SPR[p.spr || p.t], w = SW(sp), h = SH(sp), age = G.t - (p.hitAt ?? -9);
   let al = 1, ox = 0;
   if (P._k < p._k && Math.abs(P.x - p.x) < w / 2 + 8 && P.y + 12 > p.y - h && P.y - 30 < p.y) al = 0.42;   // keep the player visible behind tall props
   if (age < 0.2) ox = Math.sin(age * 90) * 2.4 * (1 - age / 0.2);
   if (p.poi && (p.used || (p.t === 'well' && G.t < p.readyAt))) al *= 0.72;   // spent landmarks look spent
+  const uk = upK(p.y); ctx.save(); ctx.translate(p.x, p.y); ctx.scale(1, uk); ctx.translate(-p.x, -p.y);   // stands up on the tilted floor
   ctx.globalAlpha = al; dI(sp, p.x - w / 2 + ox, p.y - h, w, h);
   if (p.t === 'bonfire' && FX.fire && FX.fire.length) {   // a live flame over the drawn one
-    const fr = FX.fire, i = Math.floor((G.t * 14 + p.x) % fr.length), img = fr[i], fw = 78 + Math.sin(G.t * 9 + p.y) * 4, fh = fw * SH(img) / SW(img);
+    const fr = FX.fire, i = ((Math.floor(G.t * 14 + p.x) % fr.length) + fr.length) % fr.length, img = fr[i], fw = 78 + Math.sin(G.t * 9 + p.y) * 4, fh = fw * SH(img) / SW(img);   // index kept ≥ 0: left of x = 0 it read frame −1 and threw, cutting the rest of the frame (darkness, HUD) short
     ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.85; dI(img, p.x - fw / 2, p.y - h * 0.42 - fh * 0.7, fw, fh); ctx.globalCompositeOperation = 'source-over';
   }
   if (age < 0.12) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5 * (1 - age / 0.12); dI(sp, p.x - w / 2 + ox, p.y - h, w, h); ctx.globalCompositeOperation = 'source-over'; }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 1; ctx.restore();
 }
 const POSE = { base: null, w: 0, h: 0, x: 0, y: 0, sx: 1, sy: 1, rot: 0, oy: undefined };
 function drawEnemy(e) {
-  if (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone') { drawBoss(e); return; }
+  if (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone' || e.type === 'jangsan' || e.type === 'jclone' || e.type === 'dueok' || e.type === 'bulga') { drawBoss(e); return; }
   const p = enemyPose(e, undefined, POSE);
   ctx.globalAlpha = e.alpha || 1; drawPose(p.base, p);
   const fl = SPRF[e.pose ? e.spr + '_' + e.pose : e.spr] || SPRF[e.spr];
@@ -360,13 +384,13 @@ function drawEnemy(e) {
 const WM = [1, 0, 0];   // world transform: scale, offsetX, offsetY (device px)
 function worldT() { ctx.setTransform(WM[0], 0, 0, WM[0], WM[1], WM[2]); }
 function drawPose(img, p) {
-  const s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
-  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
+  const s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot), sy = p.sy * upK(p.y);
+  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * sy, s * c * sy, s * p.x + WM[1], s * p.y + WM[2]);
   dI(img, -p.w / 2, p.oy ?? -p.h, p.w, p.h);
 }
 function drawEmis(em, p) {
-  const k = p.w / SW(p.base), s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
-  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
+  const k = p.w / SW(p.base), s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot), sy = p.sy * upK(p.y);
+  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * sy, s * c * sy, s * p.x + WM[1], s * p.y + WM[2]);
   dI(em, -p.w / 2 + (em._ox || 0) * k, (p.oy ?? -p.h) + (em._oy || 0) * k, SW(em) * k, SH(em) * k);
 }
 function drawImugi(e, emissive) {
@@ -384,57 +408,67 @@ function drawImugi(e, emissive) {
   else dI(img, -w / 2, -h / 2, w, h);
   ctx.restore();
 }
-// The floor tile resampled once to the on-screen pixel scale (2.5D tilt included), then laid as a few whole-pixel
-// copies. The scaled repeating pattern it replaces was filtered for every pixel of the screen, every frame, and was
+// The floor tile resampled once to the world canvas's pixel scale (2.5D tilt included), then laid as a few whole-pixel
+// copies. The scaled repeating pattern it replaces was filtered for every pixel of the view, every frame, and was
 // the most expensive thing drawn (a repeat pattern is also a slower shader than a plain image copy on the GPU).
 let groundDev = null;
-function groundAt(s) {
-  if (!groundImg) return null;
-  if (groundDev && groundDev.s === s) return groundDev.c;
-  const tw = Math.round(groundImg.width * 0.5 * s), th = Math.round(groundImg.height * 0.5 * 0.62 * s);
-  groundDev = { s, c: null };
+function groundAt(s, img) {
+  if (!img) return null;
+  if (groundDev && groundDev.s === s && groundDev.img === img) return groundDev.c;
+  const tw = Math.round(img.width * 0.5 * s), th = Math.round(img.height * 0.5 * 0.62 * s);
+  groundDev = { s, img, c: null };
   if (tw < 64 || th < 64 || tw > 2048 || th > 2048) return null;
   const c = document.createElement('canvas'); c.width = tw; c.height = th;
-  const g = c.getContext('2d'), src = g.createPattern(groundImg, 'repeat');   // resample through a pattern so the tile edges wrap (no seam)
-  src.setTransform(new DOMMatrix([tw / groundImg.width, 0, 0, th / groundImg.height, 0, 0]));
+  const g = c.getContext('2d'), src = g.createPattern(img, 'repeat');   // resample through a pattern so the tile edges wrap (no seam)
+  src.setTransform(new DOMMatrix([tw / img.width, 0, 0, th / img.height, 0, 0]));
   g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.fillStyle = src; g.fillRect(0, 0, tw, th);
   return (groundDev.c = c);
 }
-function drawGround(tile) {   // the opaque floor covers the whole canvas, so it also clears it
-  const tw = tile.width, th = tile.height, cw = cvs.width, ch = cvs.height;
+function drawGround(tile) {   // the opaque floor covers the whole world canvas, so it also clears it
+  const tw = tile.width, th = tile.height, cw = ctx.canvas.width, ch = ctx.canvas.height;
   const x0 = (Math.round(WM[1]) % tw + tw) % tw, y0 = (Math.round(WM[2]) % th + th) % th;   // tile origin = world origin, on a whole pixel
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   for (let y = y0 > 0 ? y0 - th : 0; y < ch; y += th) for (let x = x0 > 0 ? x0 - tw : 0; x < cw; x += tw) ctx.drawImage(tile, x, y);
+  worldT();
 }
+const PFT = { on: false, t: 0, acc: {}, n: 0 };
+function PF(k) { if (!PFT.on) return; const n = performance.now(); PFT.acc[k] = (PFT.acc[k] || 0) + n - PFT.t; PFT.t = n; }
 function render() {
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
-  if (!P) { ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, cvs.width, cvs.height); return; }
+  if (PFT.on) { PFT.t = performance.now(); PFT.n++; }
+  ctx = MCTX; PERSP.flat = false;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cvs.width, cvs.height);   // HUD canvas: transparent over the world canvas
+  if (!P) return;
   { const sh = G.shake > 0 && !REDUCED ? G.shake : 0, tt = performance.now() / 1000;   // 9~15Hz layered sines instead of white noise
     G.shx = sh * (Math.sin(tt * 57) * 0.65 + Math.sin(tt * 91 + 1.7) * 0.35); G.shy = sh * (Math.sin(tt * 63 + 0.6) * 0.65 + Math.sin(tt * 83 + 2.9) * 0.35); }
-  const s = DPR * ZOOM;
-  WM[0] = s; WM[1] = DPR * (W / 2 + G.shx) - camX() * s; WM[2] = DPR * (H / 2 + G.shy) - camY() * s;
-  const gp = ART.ok && performance.now() - RES.at > 250 ? groundAt(s) : null;   // mid-resize: the scaled pattern, not a new tile per frame
-  if (gp) drawGround(gp);
-  else { ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, cvs.width, cvs.height); }
+  const mx = PERSP.on ? Math.ceil(W * 0.1) : 0, my = PERSP.on ? Math.ceil(H * 0.1) : 0;   // the flat view reaches a little past the screen: the far rows shrink in
+  PERSP.b = 0.3 / H; PERSP.mx = mx; PERSP.my = my; PERSP.flat = true;
+  placeWorld(mx, my); ctx = FCTX;   // no clear: the ground below covers the whole world canvas
+  const s = RS * ZOOM;
+  WM[0] = s; WM[1] = RS * (W / 2 + G.shx + mx) - camX() * s; WM[2] = RS * (H / 2 + G.shy + my) - camY() * s;
   worldT();
   ctx.imageSmoothingEnabled = ART.ok; ctx.imageSmoothingQuality = 'low';
   const LRd = lightR() * 1.12 + 30;
-  if (!gp) { ctx.fillStyle = groundPat; ctx.fillRect(camX() - VW - 4, camY() - VH - 4, VW * 2 + 8, VH * 2 + 8); }
+  const gimg = stg() === 2 ? groundImg2 : groundImg, gp = ART.ok && performance.now() - RES.at > 250 ? groundAt(s, gimg) : null;   // mid-resize: the scaled pattern, not a new tile every frame
+  if (gp) drawGround(gp);
+  else { ctx.fillStyle = (stg() === 2 && groundPat2) || groundPat; ctx.fillRect(camX() - VW * 1.3 - 40, camY() - VH * 1.35 - 40, VW * 2.6 + 80, VH * 2.35 + 80); }
+  PF('ground');
   // props: collect visible ones (drawn y-sorted below), remember lamps for the glow pass
   G.lamps = []; const DL = G.dl || (G.dl = []); DL.length = 0;
-  for (let cx = Math.floor((P.x - VW - 140) / CH); cx <= Math.floor((P.x + VW + 140) / CH); cx++)
-    for (let cy = Math.floor((P.y - VH - 60) / CH); cy <= Math.floor((P.y + VH + 240) / CH); cy++)
+  for (let cx = Math.floor((P.x - VW * 1.25 - 140) / CH); cx <= Math.floor((P.x + VW * 1.25 + 140) / CH); cx++)
+    for (let cy = Math.floor((P.y - VH * 1.3 - 60) / CH); cy <= Math.floor((P.y + VH + 240) / CH); cy++)
       for (const p of chunkProps(cx, cy)) {
-        if (p.broken) continue; const sp = SPR[p.t]; if (!sp) continue;
+        if (p.broken) continue; const sp = SPR[p.spr || p.t]; if (!sp) continue;
         const w = SW(sp), h = SH(sp);
         if (!inView(p.x, p.y - h / 2, w / 2 + h / 2 + 20)) continue;
-        DL.push(p); if (p.t === 'jars' || p.t === 'post') G.lamps.push(p);
+        DL.push(p); if (p.t === 'jars' || p.t === 'post' || p.t === 'stonelamp') G.lamps.push(p);
       }
+  PF('propsCollect');
   // ink puddles: the splash plays once, then its last frame is the puddle
   for (const p of puddles) {
     const a = Math.min(1, p.life / p.max * 2), fr = FX.ink;
     if (fr && fr.length) {
-      const img = fr[Math.min(fr.length - 1, Math.floor((p.max - p.life) / 0.05))], w = p.r * 2.9, h = w * SH(img) / SW(img);
+      const img = fr[clamp(Math.floor((p.max - p.life) / 0.05) || 0, 0, fr.length - 1)]; if (!img) continue; const w = p.r * 2.9, h = w * SH(img) / SW(img);
       ctx.globalAlpha = 0.95 * a; dI(img, p.x - w / 2, p.y - h * 0.6, w, h); ctx.globalAlpha = 1;
     } else if (INK) { ctx.globalAlpha = 0.9 * a; dI(INK, p.x - p.r * 1.25, p.y - p.r * 0.85, p.r * 2.5, p.r * 1.7); ctx.globalAlpha = 1; }
     else { ctx.fillStyle = `rgba(8,10,26,${0.75 * a})`; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r, p.r * 0.62, 0, 0, TAU); ctx.fill(); }
@@ -447,8 +481,9 @@ function render() {
   }
   for (const h of hazards) {   // 물귀신 water pools: slow you while you stand in them
     const a = Math.min(1, h.t / 0.3, (h.life - h.t) / 0.6), w = Math.sin(G.t * 3 + h.x) * 2;
-    ctx.globalAlpha = 0.42 * a; ctx.fillStyle = '#2a5a7a'; ctx.beginPath(); ctx.ellipse(h.x, h.y, h.r + w, (h.r + w) * 0.62, 0, 0, TAU); ctx.fill();
-    ctx.globalAlpha = 0.5 * a; ctx.strokeStyle = '#8fd0f0'; ctx.lineWidth = 1.5; ctx.stroke();
+    const mk = h.k === 'murk';
+    ctx.globalAlpha = (mk ? 0.62 : 0.42) * a; ctx.fillStyle = mk ? '#120a22' : '#2a5a7a'; ctx.beginPath(); ctx.ellipse(h.x, h.y, h.r + w, (h.r + w) * 0.62, 0, 0, TAU); ctx.fill();
+    ctx.globalAlpha = 0.5 * a; ctx.strokeStyle = mk ? '#7a5ab0' : '#8fd0f0'; ctx.lineWidth = 1.5; ctx.stroke();
   }
   for (const f of effects) {
     if (f.k !== 'crack') continue;
@@ -458,6 +493,7 @@ function render() {
     ctx.lineCap = 'butt';
   }
   ctx.globalAlpha = 1;
+  PF('floorFx');
   // oil jars and drops
   for (const j of jars) { const sp = SPR.jar, w = SW(sp), h = SH(sp); dI(sp, j.x - w / 2, j.y - h + 8, w, h); }
   for (const d of drops) {
@@ -470,17 +506,20 @@ function render() {
     if (d.vac > 0 && d.vac < 0.1) bob -= (0.1 - d.vac) * 60;   // lifts as the shockwave reaches it
     dI(sp, d.x - w / 2, d.y - h / 2 + bob, w, h);
   }
+  PF('drops');
   // enemies: shadows (lit ones only), then bodies; deep-dark small enemies are left to the glow pass (eyes only)
   ctx.globalAlpha = 0.45;
   for (const e of enemies) {
     if (e.dead || (!e.inLight && !e.big) || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 90)) continue;
     const r = e.r * e.scale, ex = e.rx ?? e.x, ey = e.ry ?? e.y;
-    if (e.type === 'gumiho' || e.type === 'clone') { const sw = 150 * e.scale, sh = 28 * e.scale; ctx.globalAlpha = 0.55 * (e.alpha || 1); dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.6, sw, sh); ctx.globalAlpha = 0.45; continue; }   // a long shadow under the whole body grounds the fox
+    if (e.type === 'dueok' || e.type === 'bulga') { const sw = (e.type === 'bulga' ? 175 : 115) * e.scale, sh = (e.type === 'bulga' ? 34 : 26) * e.scale; ctx.globalAlpha = 0.6; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.55, sw, sh); ctx.globalAlpha = 0.45; continue; }
+    if (e.type === 'gumiho' || e.type === 'clone' || e.type === 'jangsan' || e.type === 'jclone') { const sw = 150 * e.scale, sh = 28 * e.scale; ctx.globalAlpha = 0.55 * (e.alpha || 1); dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.6, sw, sh); ctx.globalAlpha = 0.45; continue; }   // a long shadow under the whole body grounds the fox
     if (e.type === 'gseun') { const sw = 90 * e.scale, sh = 22 * e.scale; ctx.globalAlpha = 0.5; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.5, sw, sh); ctx.globalAlpha = 0.45; continue; }
     dI(GL.shadow, ex - r * 1.3, ey + r * 0.45, r * 2.6, r * 0.9);
   }
   ctx.globalAlpha = 0.55; { const bob = P._pose ? P._pose.bob : 0, shw = 30 - bob * 1.5; dI(GL.shadow, P.x - shw / 2, P.y + 7, shw, 10); }
   ctx.globalAlpha = 1;
+  PF('shadows');
   // y-sorted: props, enemies and the player overlap by where their feet are
   for (const e of enemies) {
     if (e.dead || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 120)) continue;
@@ -489,13 +528,17 @@ function render() {
   }
   P._k = P.y + 12; DL.push(P);
   DL.sort((a, b) => a._k - b._k);
+  PF('sort');
   drawUnder();
+  PF('drawUnder');
   for (const o of DL) { if (o === P) drawPlayer(); else if (o.prop) drawProp(o); else drawEnemy(o); }
+  PF('entities');
   for (const e of enemies) {
     if (e.dead || !inView(e.x, e.y, 160)) continue;
     if (e.type === 'dark') { worldT(); drawDark(e); } else if (e.type === 'imugi') { worldT(); drawImugi(e, false); }
   }
   worldT();
+  PF('darkImugi');
   // slam dust (alpha-blended) and debris chips
   for (const p of parts) {
     if (p.k === 'dust') { const a = p.life / p.max, z = p.size * (1.7 - a * 0.7); ctx.globalAlpha = a * 0.4; dI(GL.dust, p.x - z / 2, p.y - z / 2, z, z); }
@@ -509,8 +552,9 @@ function render() {
     for (const p of projs) { if (p.frag || p.wave) continue; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI / 2); dI(SPR.talisman, -tw / 2, -th / 2, tw, th); ctx.restore(); }
   }
 
+  PF('parts');
   // darkness
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  screenT();
   const cx = W / 2 + G.shx - (G.cox || 0) * ZOOM, cy = H / 2 + G.shy - (G.coy || 0) * ZOOM, R = lightR() * ZOOM;
   const flick = 1 + Math.sin(G.t * 9) * 0.012 + Math.sin(G.t * 23) * 0.008;
   drawNight(cx, cy, R * 1.02 * flick);   // sight ends where the light ends
@@ -521,9 +565,11 @@ function render() {
   const [ldx, ldy] = lanternOff();
   const lx = cx + ldx * ZOOM, ly = cy + ldy * ZOOM, gsz = (40 + Math.sin(G.t * 11) * 3) * ZOOM;
   ctx.globalAlpha = 0.95; dI(GL.amber, lx - gsz / 2, ly - gsz / 2, gsz, gsz); ctx.globalAlpha = 1;
+  PF('darkness');
   if (G.state !== 'title') drawGlows();
+  PF('glows');
   ctx.globalCompositeOperation = 'source-over';
-  if (G.state === 'title') { drawVignette(); return; }
+  if (G.state === 'title') { ctx = MCTX; PERSP.flat = false; screenT(); drawVignette(); return; }
   { // bosses stay readable outside the lantern light: their wind-ups and strikes are the thing you dodge
     worldT(); let any = false;
     for (const e of enemies) {
@@ -532,27 +578,38 @@ function render() {
       if (e.type === 'imugi') { ctx.globalAlpha = 0.85; drawImugi(e, false); ctx.globalAlpha = 1; continue; }
       const a = e.alpha; e.alpha = (a || 1) * 0.85; drawEnemy(e); e.alpha = a;
     }
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); void any;
+    screenT(); void any;
   }
   { worldT(); let any2 = false;   // thrown rocks and boomerang clubs must read in the dark
     for (const p of eprojs) {
-      if (p.k === 'rock') { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); ctx.fillStyle = '#6a6056'; ctx.strokeStyle = '#1a1612'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-6, -3); ctx.lineTo(-1, -6); ctx.lineTo(6, -2); ctx.lineTo(5, 4); ctx.lineTo(-3, 6); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+      if (p.k === 'rock') {
+        any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.strokeStyle = '#1a1612'; ctx.lineWidth = 1.5;
+        if (p.skin === 'feather') { ctx.rotate(Math.atan2(p.vy, p.vx)); ctx.fillStyle = '#2a2433'; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.quadraticCurveTo(0, -5, 9, 0); ctx.quadraticCurveTo(0, 4, -9, 0); ctx.fill(); ctx.stroke(); ctx.strokeStyle = '#7a6a9a'; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(8, 0); ctx.stroke(); }
+        else if (p.skin === 'shoe') { ctx.rotate(p.rot || 0); ctx.fillStyle = '#b08a52'; ctx.beginPath(); ctx.ellipse(0, 0, 8, 4.5, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.strokeStyle = '#6a4e2a'; ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(5, 0); ctx.stroke(); }
+        else { ctx.rotate(p.rot || 0); const k = p.big ? 2.6 : 1; ctx.scale(k, k); ctx.fillStyle = '#6a6056'; ctx.lineWidth = 1.5 / k; ctx.beginPath(); ctx.moveTo(-6, -3); ctx.lineTo(-1, -6); ctx.lineTo(6, -2); ctx.lineTo(5, 4); ctx.lineTo(-3, 6); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+        ctx.restore();
+      }
       else if (p.k === 'club' && ICON.club) { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); dI(ICON.club, -15, -15, 30, 30); ctx.restore(); }
     }
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); void any2; }   // always back to screen space: the haze, text and HUD below are drawn in it
+    if (any2) screenT(); }
   if (G.sky && G.sky.length && SPR.skylantern) {   // 풍등 float above the dark: they are lights
-    worldT(); const sp = SPR.skylantern, w = SW(sp), h = SH(sp);
+    worldT(); const sp = (stg() === 2 && SPR.lotus) || SPR.skylantern, w = SW(sp), h = SH(sp);
     for (const l of G.sky) { if (!inView(l.x, l.y, 60)) continue; const a = Math.min(1, l.t / 1.5, (l.life - l.t) / 2); ctx.globalAlpha = 0.95 * a; dI(sp, l.x - w / 2 + Math.sin(G.t * 0.9 + l.ph) * 3, l.y - 40 - h / 2 + Math.sin(G.t * 1.5 + l.ph) * 4, w, h); }
-    ctx.globalAlpha = 1; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalAlpha = 1; screenT();
   }
-  if (PG.on) { pgDrawWorld(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+  PF('lateWorld');
+  if (PG.on) { pgDrawWorld(); screenT(); }
+  PF('pg');
   { // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear
+    screenT();
     if (!hazeStrip) {   // the vertical gradient drawn once into a 1px-wide strip; stretching it is far cheaper than a gradient fill
       const c = document.createElement('canvas'); c.width = 1; c.height = 128; const g = c.getContext('2d'), hz = g.createLinearGradient(0, 0, 0, 128);
       hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)'); g.fillStyle = hz; g.fillRect(0, 0, 1, 128); hazeStrip = c;
     }
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(hazeStrip, 0, 0, W, H * 0.55);
+    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.drawImage(hazeStrip, -mx, -my, W + 2 * mx, my + H * 0.55); ctx.imageSmoothingEnabled = sm;
   }
+  ctx = MCTX; PERSP.flat = false; screenT();   // world done (the GPU tilts it); screen tints and the HUD go on the top canvas
+  PF('warp');
   if (P.light <= GREED) {
     const pulse = 0.5 + Math.sin(G.t * 3) * 0.15;
     const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.hypot(W, H) / 2);
@@ -576,6 +633,7 @@ function render() {
     const k = G.flash.t / G.flash.dur; ctx.globalCompositeOperation = 'lighter';
     ctx.fillStyle = `rgba(${G.flash.col},${G.flash.a * (1 - k) * (1 - k)})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
   }
+  PF('overlays');
   // damage text
   for (const t of texts) {
     const [sx, sy] = toScreen(t.x, t.y); ctx.globalAlpha = 1 - Math.max(0, t.t - 0.35) / 0.35;
@@ -584,12 +642,17 @@ function render() {
     drawText(t.v, sx, sy, `700 ${size}px ${FB}`, t.col, 'center', 'middle', DMG_STROKE, pop);
   }
   ctx.globalAlpha = 1;
+  { const fd = G.state === 'clear' ? clamp((G.endT - 2.4) / 1.1, 0, 1) : (G.fadeIn || 0);
+    if (fd > 0) { ctx.globalAlpha = 1; ctx.fillStyle = `rgba(4,5,10,${fd.toFixed(3)})`; ctx.fillRect(0, 0, W, H); } }
+  PF('texts');
   drawHUD();
+  PF('hud');
 }
 // Night outside the lantern: a light hole drawn once (clear inside 55% of the radius, 0.95 dark at the rim), placed on
-// whole device pixels, with plain dark rectangles around it. Same picture as one radial gradient over the whole
-// screen, at a fraction of the cost: only the lit square is sampled, the rest is a flat fill.
+// whole device pixels of the world canvas, with plain dark rectangles around it. Same picture as one radial gradient
+// over the whole view, at a fraction of the cost: only the lit square is sampled, the rest is a flat fill.
 let nightHole = null, hazeStrip = null;
+const SPK = new Map();   // spark colour → three fade batches, reused every frame
 function drawNight(cx, cy, r) {
   if (!nightHole) {
     const S = 512, h = S / 2, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
@@ -597,7 +660,8 @@ function drawNight(cx, cy, r) {
     gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.62, 'rgba(6,7,14,0.38)'); gr.addColorStop(1, 'rgba(4,5,10,0.95)');
     g.fillStyle = gr; g.fillRect(0, 0, S, S); nightHole = c;
   }
-  const cw = cvs.width, ch = cvs.height, x0 = Math.round((cx - r) * DPR), y0 = Math.round((cy - r) * DPR), x1 = Math.round((cx + r) * DPR), y1 = Math.round((cy + r) * DPR);
+  const k = PERSP.flat ? RS : DPR, ox = PERSP.flat ? PERSP.mx : 0, oy = PERSP.flat ? PERSP.my : 0;   // screen CSS px → this canvas's device px
+  const cw = ctx.canvas.width, ch = ctx.canvas.height, x0 = Math.round((cx - r + ox) * k), y0 = Math.round((cy - r + oy) * k), x1 = Math.round((cx + r + ox) * k), y1 = Math.round((cy + r + oy) * k);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (x1 > x0 && y1 > y0) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.drawImage(nightHole, x0, y0, x1 - x0, y1 - y0); ctx.imageSmoothingEnabled = sm; }
   const t = clamp(y0, 0, ch), b = clamp(y1, 0, ch), l = clamp(x0, 0, cw), rr = clamp(x1, 0, cw);
@@ -605,9 +669,8 @@ function drawNight(cx, cy, r) {
   if (t > 0) ctx.fillRect(0, 0, cw, t);
   if (b < ch) ctx.fillRect(0, b, cw, ch - b);
   if (b > t) { if (l > 0) ctx.fillRect(0, t, l, b - t); if (rr < cw) ctx.fillRect(rr, t, cw - rr, b - t); }
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  screenT();
 }
-const SPK = new Map();   // spark colour → three fade batches, reused every frame
 function drawDark(e) {
   const a = e.fade;
   const g = ctx.createRadialGradient(e.x, e.y - e.r * 0.3, e.r * 0.15, e.x, e.y - e.r * 0.3, e.r * 1.25);
@@ -652,7 +715,7 @@ function drawGlows() {
   ctx.globalAlpha = 1;
   // market lanterns
   for (const p of G.lamps || []) {
-    const m = ART.meta[p.t === 'jars' ? 'jarsLamp' : 'postLamp']; if (!m) continue;
+    const m = ART.meta[p.t + 'Lamp']; if (!m) continue;
     const x = p.x + m[0], y = p.y + m[1], f = 0.5 + Math.sin(G.t * 7 + p.x) * 0.08;
     ctx.globalAlpha = f; dI(GL.amber, x - 22, y - 22, 44, 44);
     ctx.globalAlpha = 0.16; dI(GL.amber, x - 70, p.y - 34, 140, 60);
@@ -757,6 +820,12 @@ function drawGlows() {
       if (FIRE) { const f = FIRE[Math.floor(G.t * 18) % 4], fw = SW(f) * 0.7, fh = SH(f) * 0.7; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(-p.vx, p.vy)); dI(f, -fw / 2, -fh * 0.25, fw, fh); ctx.restore(); }
       dI(GL.white, p.x - 6, p.y - 6, 12, 12); continue;
     }
+    if (p.k === 'voice') {   // 장산범's call: rings of pale sound
+      const r0 = 9 + Math.sin(G.t * 14 + p.x * 0.05) * 2;
+      ctx.globalAlpha = 0.75; dI(GL.blue, p.x - 22, p.y - 22, 44, 44); ctx.globalAlpha = 0.9; ctx.strokeStyle = '#eef3ff'; ctx.lineWidth = 2;
+      for (const k of [1, 1.7, 2.4]) { ctx.globalAlpha = 0.9 / k; ctx.beginPath(); ctx.ellipse(p.x, p.y, r0 * k, r0 * k * 0.7, 0, 0, TAU); ctx.stroke(); }
+      ctx.globalAlpha = 1; dI(GL.white, p.x - 6, p.y - 6, 12, 12); continue;
+    }
     if (p.k === 'fox') {
       ctx.globalAlpha = 0.9; dI(GL.pink, p.x - 22, p.y - 22, 44, 44); ctx.globalAlpha = 1;
       if (FOX && FOX[0]) { const f = FOX[Math.floor(G.t * 18) % 4], fw = SW(f) * 0.75, fh = SH(f) * 0.75; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(-p.vx, p.vy)); dI(f, -fw / 2, -fh * 0.25, fw, fh); ctx.restore(); }
@@ -802,7 +871,7 @@ function drawGlows() {
   }
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  screenT();
 }
 function drawZones() {   // attack warnings on the floor, under every character, at foot level
   ctx.save(); ctx.translate(0, FEET);
@@ -848,7 +917,8 @@ function drawFxList() {   // every effect sits on the floor, under the character
     if (f.delay > 0) continue; const k = f.t / f.dur;
     if (f.k === 'fb') {   // flipbook: frame by normalised time, full brightness from frame 1, the sheet itself carries the decay
       const fr = FX[f.a]; if (!fr || !fr.length) continue;
-      const img = fr[Math.min(fr.length - 1, Math.floor(k * fr.length))], iw = SW(img), ih = SH(img), sc = f.s / Math.max(iw, ih), w = iw * sc, h = ih * sc;
+      const img = fr[clamp(Math.floor(k * fr.length) || 0, 0, fr.length - 1)]; if (!img || !(f.s > 0)) continue;   // a bad frame index must never abort the whole frame
+      const iw = SW(img), ih = SH(img), sc = f.s / Math.max(iw, ih), w = iw * sc, h = ih * sc;
       const x = f.follow ? P.x + (f.ox || 0) : f.x, y = f.follow ? P.y + (f.oy || 0) : f.y, oy = f.anchor === 'b' ? -h : -h / 2;
       ctx.globalAlpha = f.al ?? 1;
       if (f.rot || f.fy) { ctx.save(); ctx.translate(x, y); ctx.rotate(f.rot || 0); if (f.fy) ctx.scale(1, -1); dI(img, -w / 2, oy, w, h); ctx.restore(); }
@@ -942,8 +1012,8 @@ function drawWindTells() {   // wind-up glows sit behind the bodies they light
   // wind-up tells: a glow gathers on the body before a boss or a 도깨비 commits
   for (const e of enemies) {
     if (e.dead || !inView(e.x, e.y, 120)) continue;
-    if (e.pose === 'p1' && (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone')) {
-      const q = Math.min(1, (e.poseT || 0) / 0.5), gl = e.type === 'gseun' ? GL.violet : GL.pink, sz = (70 + 60 * q) * (e.scale || 1);
+    if (e.pose === 'p1' && (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone' || e.type === 'jangsan' || e.type === 'jclone' || e.type === 'dueok' || e.type === 'bulga')) {
+      const q = Math.min(1, (e.poseT || 0) / 0.5), gl = e.type === 'gseun' ? GL.violet : e.type === 'jangsan' || e.type === 'jclone' ? GL.blue : e.type === 'dueok' ? GL.amber : e.type === 'bulga' ? GL.fire : GL.pink, sz = (70 + 60 * q) * (e.scale || 1);
       ctx.globalAlpha = 0.35 + 0.35 * q; dI(gl, e.x - sz / 2, e.y - sz * 0.75, sz, sz);
     } else if (e.type === 'imugi' && e.pose === 'p2') {
       const mx = e.x + Math.cos(e.ang) * 34, my = e.y + Math.sin(e.ang) * 34, sz = 60 + Math.sin(G.t * 30) * 8;
@@ -1023,8 +1093,9 @@ function drawHUD() {
   bar(x0, st + 6, xw, 5, P.xp / P.xpNext, '#58b39c');
   // timer
   if (PG.on) { txt('놀이터', W / 2, st + 40, 22, '#f2a93b', 'center', FD, 700); txt(PG.scale === 1 ? 'WASD · 방향키로 걷기 · 0 정지 · . 한 프레임' : PG.scale ? `시간 ${PG.scale}×` : '시간 정지', W / 2, st + 57, 11.5, '#a39a86', 'center'); }
-  else { txt(mmss(Math.min(G.t, RUN_LEN)), W / 2, st + 40, 24, '#efe6d2', 'center', FD, 700);
-    txt(`첫닭까지 ${mmss(RUN_LEN - G.t)}`, W / 2, st + 57, 11.5, '#a39a86', 'center'); }
+  else { const SG = STAGES[stg()], bn = ED[SG.boss].name;
+    txt(mmss(G.t), W / 2, st + 40, 24, '#efe6d2', 'center', FD, 700);
+    txt(G.t < SG.at ? `${stg()}탄 ${SG.name} · ${bn}까지 ${mmss(SG.at - G.t)}` : `${stg()}탄 ${SG.name} · ${bn}를 쓰러뜨리세요`, W / 2, st + 57, 11.5, G.t < SG.at ? '#a39a86' : '#ffb27a', 'center'); }
   // boss
   let by = st + 72;
   for (const b of G.bosses.slice(0, 1)) {
@@ -1070,7 +1141,7 @@ function drawHUD() {
   for (const d of drops) if (d.k === 'magnet' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#9fd0ff', '지남철'); break; }
   for (const d of drops) if (d.k === 'ginseng' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#7fe0a0', '산삼'); break; }
   for (const b of G.bosses) edgeArrow(b.x, b.y, '#c8463a', ED[b.type].name);
-  { const LM = [['shrine', '#ffd27a', '서낭당', p => !p.used], ['well', '#9fe0ff', '우물', p => G.t >= p.readyAt], ['peddler', '#f2a93b', '보부상', () => true], ['mat', '#ffd27a', '노름판', p => !p.used]];
+  { const N = POIN(), LM = [['shrine', '#ffd27a', N.shrine, p => !p.used], ['well', '#9fe0ff', N.well, p => G.t >= p.readyAt], ['peddler', '#f2a93b', N.peddler, () => true], ['mat', '#ffd27a', N.mat, p => !p.used]];
     for (const [t, col, name, ok] of LM) { let best = null, bd = 900; for (const p of poiList) if (p.t === t && ok(p)) { const d = Math.hypot(p.x - P.x, p.y - P.y); if (d < bd) { bd = d; best = p; } } if (best) edgeArrow(best.x, best.y - 30, col, name); } }
   // joystick
   if (joy) {
