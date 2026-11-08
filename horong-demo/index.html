@@ -3836,11 +3836,13 @@ function pgBuild() {
 // frames get clearly faster; if not, the limit is elsewhere (a 30Hz power-saving display, a busy CPU), so the sharp
 // picture comes back and the next try waits longer.
 const AR = { iv: [], settle: 1, trial: null, fails: 0, retryAt: 0 };
-function setResLv(lv) { RES.lv = lv; resize(); AR.settle = 0.6; AR.iv.length = 0; }
+function setResLv(lv) { RES.lv = lv; resize(); AR.settle = 0.6; AR.iv.length = 0; AR.sum = 0; }
 function adaptRes(raw) {
-  if (RES.mode !== 'auto' || !G || G.state !== 'play' || PG.on || document.hidden || raw > 250) { AR.iv.length = 0; AR.settle = Math.max(AR.settle, 0.5); return; }
+  if (RES.mode !== 'auto' || !G || G.state !== 'play' || PG.on || document.hidden || raw > 250) { AR.iv.length = 0; AR.sum = 0; AR.settle = Math.max(AR.settle, 0.5); return; }
   if (AR.settle > 0) { AR.settle -= raw / 1000; return; }   // let a menu, a pause or a resolution change settle first
-  AR.iv.push(raw); if (AR.iv.length < 100) return;
+  AR.iv.push(raw); AR.sum = (AR.sum || 0) + raw;
+  if (AR.iv.length < 100 && !(AR.iv.length >= 40 && AR.sum >= 1500)) return;   // 100 frames, or 1.5s when slow: at 20fps waiting for 100 frames meant 5s of stutter first
+  AR.sum = 0;
   const s = AR.iv.sort((a, b) => a - b), n = Math.floor(s.length * 0.9); let sum = 0; for (let i = 0; i < n; i++) sum += s[i];
   const ms = sum / n, now = performance.now(); AR.iv.length = 0;   // typical frame time, the worst tenth (hitches) left out
   if (AR.trial) {
