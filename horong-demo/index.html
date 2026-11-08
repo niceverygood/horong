@@ -2893,12 +2893,11 @@ function render() {
     ctx.fillStyle = `rgba(${G.flash.col},${G.flash.a * (1 - k) * (1 - k)})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
   }
   // damage text
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const t of texts) {
     const [sx, sy] = toScreen(t.x, t.y); ctx.globalAlpha = 1 - Math.max(0, t.t - 0.35) / 0.35;
     const big = t.v.length > 2 || t.col !== '#efe6d2', pop = t.t < 0.09 ? 1.5 - t.t / 0.09 * 0.5 : 1;   // pop in, then settle
-    ctx.font = `700 ${Math.round((big ? 13 : 11.5) * Math.max(0.85, ZOOM) * pop)}px ${FB}`; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(6,7,12,0.85)';
-    ctx.strokeText(t.v, sx, sy); ctx.fillStyle = t.col; ctx.fillText(t.v, sx, sy);
+    const size = Math.round((big ? 13 : 11.5) * Math.max(0.85, ZOOM));
+    drawText(t.v, sx, sy, `700 ${size}px ${FB}`, t.col, 'center', 'middle', DMG_STROKE, pop);
   }
   ctx.globalAlpha = 1;
   drawHUD();
@@ -3295,7 +3294,37 @@ function bar(x, y, w, h, frac, col, bg = 'rgba(239,230,210,0.12)') {
   ctx.fillStyle = bg; ctx.fillRect(x, y, w, h); ctx.fillStyle = col; ctx.fillRect(x, y, w * clamp(frac, 0, 1), h);
 }
 function txt(s, x, y, size, col, align = 'left', font = FB, weight = 400) {
-  ctx.font = `${weight} ${size}px ${font}`; ctx.textAlign = align; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = col; ctx.fillText(s, x, y);
+  drawText(s, x, y, `${weight} ${size}px ${font}`, col, align, 'alphabetic', null, 1);
+}
+// Text is drawn once into a small canvas at device resolution and copied after that. fillText shapes and rasterises
+// the glyphs on every call (strokeText even strokes their outlines); the HUD and the damage numbers repeat the same
+// few strings frame after frame. Copies land on whole device pixels, so they stay as crisp as direct text.
+const TXC = new Map(), DMG_STROKE = ['rgba(6,7,12,0.85)', 3];
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => TXC.clear());   // web fonts arrived: redraw
+function textSprite(s, font, col, base, stroke) {
+  const key = s + '\u0001' + font + '\u0001' + col + '\u0001' + base + '\u0001' + (stroke ? stroke[0] : '') + '\u0001' + DPR;
+  let t = TXC.get(key);
+  if (t) return t;
+  if (TXC.size >= 600) { let n = 0; for (const k of TXC.keys()) { TXC.delete(k); if (++n >= 200) break; } }   // drop the oldest third
+  const c = document.createElement('canvas'), g = c.getContext('2d');
+  g.font = font; g.textBaseline = base; g.textAlign = 'left';
+  const m = g.measureText(s), size = parseFloat(font.replace(/^\d+\s+/, '')) || 12, pad = (stroke ? stroke[1] / 2 : 0) + 2;
+  const asc = Math.max(m.fontBoundingBoxAscent || 0, m.actualBoundingBoxAscent || 0) || size, desc = Math.max(m.fontBoundingBoxDescent || 0, m.actualBoundingBoxDescent || 0, 0);
+  const left = Math.max(0, m.actualBoundingBoxLeft || 0), right = Math.max(m.width, m.actualBoundingBoxRight || 0);
+  const ox = Math.ceil(pad + left), oy = Math.ceil(pad + asc);   // the text origin inside the sprite, CSS px
+  c.width = Math.max(1, Math.ceil((ox + right + pad) * DPR)); c.height = Math.max(1, Math.ceil((oy + desc + pad) * DPR));
+  g.scale(DPR, DPR); g.font = font; g.textBaseline = base; g.textAlign = 'left';
+  if (stroke) { g.lineJoin = 'round'; g.lineWidth = stroke[1]; g.strokeStyle = stroke[0]; g.strokeText(s, ox, oy); }
+  g.fillStyle = col; g.fillText(s, ox, oy);
+  t = { c, ox, oy, adv: m.width }; TXC.set(key, t);
+  return t;
+}
+function drawText(s, x, y, font, col, align, base, stroke, scale) {
+  if (s === '' || s === undefined || s === null) return;
+  const t = textSprite(String(s), font, col, base, stroke), w = t.c.width / DPR, h = t.c.height / DPR;
+  const ax = t.ox + (align === 'center' ? t.adv / 2 : align === 'right' ? t.adv : 0);
+  if (scale === 1) ctx.drawImage(t.c, Math.round((x - ax) * DPR) / DPR, Math.round((y - t.oy) * DPR) / DPR, w, h);
+  else ctx.drawImage(t.c, x - ax * scale, y - t.oy * scale, w * scale, h * scale);
 }
 function drawHUD() {
   const st = SAFE.t, sl = SAFE.l, sr = SAFE.r, sb = SAFE.b, narrow = W < 900;
