@@ -6,9 +6,10 @@ function dI(img, x, y, w, h) {
 }
 const camX = () => P.x + (G.cox || 0), camY = () => P.y + (G.coy || 0);
 function toScreen(x, y) { return [W / 2 + (x - camX()) * ZOOM + G.shx, H / 2 + (y - camY()) * ZOOM + G.shy]; }
-function inView(x, y, m) { return Math.abs(x - camX()) < VW + m && Math.abs(y - camY()) < VH + m; }
+function inView(x, y, m) { return Math.abs(x - (P.x + (G.cox || 0))) < VW + m && Math.abs(y - (P.y + (G.coy || 0))) < VH + m; }   // camX()/camY() inlined: called thousands of times a frame, and each call returned a boxed number
 const easeOut3 = k => 1 - Math.pow(1 - k, 3);
-function enemyPose(e, pose) {
+// out: a scratch object to fill instead of a new one (the hot draw loops call this for every enemy, every frame)
+function enemyPose(e, pose, out) {
   const pz = pose === undefined ? e.pose : pose, ps = pz ? SPR[e.spr + '_' + pz] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
   const w = SW(base) * e.scale * k, h = SH(base) * e.scale * k;
   let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
@@ -51,6 +52,7 @@ function enemyPose(e, pose) {
     else if (e.sk.k === 'burst') { const q = Math.min(1, e.sk.t / 0.5); sx *= 1 + 0.35 * q + Math.sin(G.t * 40) * 0.06 * q; sy *= 1 + 0.35 * q; }
   }
   if (e.stun > 0) rot = Math.sin(G.t * 30) * 0.12;
+  if (out) { out.base = base; out.w = w; out.h = h; out.x = x; out.y = y; out.sx = sx; out.sy = sy; out.rot = rot; out.oy = oy; return out; }
   return { base, w, h, x, y, sx, sy, rot, oy };
 }
 // Bosses are drawn in strips so the drawing itself moves: 그슨대's robe ripples in rows (strongest at the hem, trailing
@@ -338,9 +340,10 @@ function drawProp(p) {
   if (age < 0.12) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5 * (1 - age / 0.12); dI(sp, p.x - w / 2 + ox, p.y - h, w, h); ctx.globalCompositeOperation = 'source-over'; }
   ctx.globalAlpha = 1;
 }
+const POSE = { base: null, w: 0, h: 0, x: 0, y: 0, sx: 1, sy: 1, rot: 0, oy: undefined };
 function drawEnemy(e) {
   if (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone') { drawBoss(e); return; }
-  const p = enemyPose(e);
+  const p = enemyPose(e, undefined, POSE);
   ctx.globalAlpha = e.alpha || 1; drawPose(p.base, p);
   const fl = SPRF[e.pose ? e.spr + '_' + e.pose : e.spr] || SPRF[e.spr];
   if (e.flash > 0 && fl) { ctx.globalAlpha = 0.6 * (e.alpha || 1); drawPose(fl, p); }
@@ -596,6 +599,7 @@ function drawNight(cx, cy, r) {
   if (b > t) { if (l > 0) ctx.fillRect(0, t, l, b - t); if (rr < cw) ctx.fillRect(rr, t, cw - rr, b - t); }
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
+const SPK = new Map();   // spark colour → three fade batches, reused every frame
 function drawDark(e) {
   const a = e.fade;
   const g = ctx.createRadialGradient(e.x, e.y - e.r * 0.3, e.r * 0.15, e.x, e.y - e.r * 0.3, e.r * 1.25);
@@ -677,11 +681,11 @@ function drawGlows() {
     if (e.dead || e.inLight || e.parent || e.type === 'dark' || !inView(e.x, e.y, 60)) continue;
     if (e.type === 'imugi') { if (EMIS.imugi) { worldT(); drawImugi(e, true); } continue; }
     if (ART.ok) {
-      if (ED[e.type].ghost) { ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], enemyPose(e)); ctx.globalAlpha = 1; continue; }
-      if (e.pose) { ctx.globalAlpha = 0.22; const q = enemyPose(e); drawPose(q.base, q); ctx.globalAlpha = 1; continue; }   // action pose: faint silhouette, no baked eye glow
+      if (ED[e.type].ghost) { ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], enemyPose(e, undefined, POSE)); ctx.globalAlpha = 1; continue; }
+      if (e.pose) { ctx.globalAlpha = 0.22; const q = enemyPose(e, undefined, POSE); drawPose(q.base, q); ctx.globalAlpha = 1; continue; }   // action pose: faint silhouette, no baked eye glow
       const em = EMIS[e.spr]; if (!em) continue;
       if (Math.sin(G.t * 0.7 + e.bob * 3) > 0.97) continue;
-      ctx.globalAlpha = 0.95; drawEmis(em, enemyPose(e)); ctx.globalAlpha = 1;
+      ctx.globalAlpha = 0.95; drawEmis(em, enemyPose(e, undefined, POSE)); ctx.globalAlpha = 1;
     } else {
       dI(GL.eyeW, e.x - 11, e.y - 13, 12, 12); dI(GL.eyeW, e.x - 1, e.y - 13, 12, 12);
     }
@@ -766,10 +770,10 @@ function drawGlows() {
   for (const e of enemies) if (e.rageT > G.t && !e.dead && inView(e.x, e.y, 20)) { ctx.globalAlpha = 0.7; dI(GL.red, e.x - 10, e.y - 22, 20, 20); }
   ctx.globalAlpha = 1;
   // particles: sparks as velocity streaks batched by colour and fade bucket, embers/souls as glow sprites
-  const SB = {};
+  for (const b of SPK.values()) b[0].length = b[1].length = b[2].length = 0;
   for (const p of parts) {
     const a = Math.max(0, p.life / p.max);
-    if (p.k === 'spark') { const key = p.col + (a > 0.66 ? '|0' : a > 0.33 ? '|1' : '|2'); (SB[key] = SB[key] || []).push(p); continue; }
+    if (p.k === 'spark') { let b = SPK.get(p.col); if (!b) SPK.set(p.col, b = [[], [], []]); b[a > 0.66 ? 0 : a > 0.33 ? 1 : 2].push(p); continue; }
     if (p.k === 'dust' || p.k === 'chip' || p.k === 'shade') continue;
     if (p.k === 'ember' || p.k === 'soul') {
       const img = GL[p.gl] || GL.amber, soulK = p.k === 'soul';
@@ -781,12 +785,12 @@ function drawGlows() {
     }
     ctx.globalAlpha = a * 0.85; ctx.fillStyle = p.col; const z = p.size || 3; ctx.fillRect(p.x - z / 2, p.y - z / 2, z, z);
   }
-  for (const key in SB) {
-    const [col, b] = key.split('|'), list = SB[key], al = b === '0' ? 1 : b === '1' ? 0.62 : 0.3;
-    ctx.globalAlpha = al; ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
+  for (const [col, bs] of SPK) for (let b = 0; b < 3; b++) {   // additive, so the order of the batches doesn't matter
+    const list = bs[b]; if (!list.length) continue;
+    ctx.globalAlpha = b === 0 ? 1 : b === 1 ? 0.62 : 0.3; ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
     for (const p of list) { ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.035, p.y - p.vy * 0.035); }
     ctx.stroke();
-    if (b === '0') { ctx.strokeStyle = '#fffbea'; ctx.lineWidth = 0.9; ctx.stroke(); }
+    if (b === 0) { ctx.strokeStyle = '#fffbea'; ctx.lineWidth = 0.9; ctx.stroke(); }
   }
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
