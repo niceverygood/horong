@@ -20,12 +20,26 @@ for (const [k, rgb, r0] of [['greed', '40,70,190', 32], ['red', '200,40,30', 30]
   cvs.before(d); TINT[k] = { el: d, a: '0' };
 }
 function tint(k, a) { const t = TINT[k], v = a > 0.001 ? a.toFixed(3) : '0'; if (t.a !== v) { t.a = v; t.el.style.opacity = v; } }
-function tintsOff() { tint('greed', 0); tint('red', 0); tint('warn', 0); haze(false); }
+function tintsOff() { tint('greed', 0); tint('red', 0); tint('warn', 0); haze(false); seal(null); }
 // The night haze over the far part of the floor is a CSS gradient on the world plane (placed and tilted with the
 // world canvas in placeWorld): no longer a stretched draw over half the world canvas every frame.
 const HAZE = document.createElement('div'); HAZE.className = 'haze'; HAZE.setAttribute('aria-hidden', 'true'); FLAT.after(HAZE);
 let hazeOn = false;
 function haze(on) { if (hazeOn !== on) { hazeOn = on; HAZE.style.display = on ? 'block' : 'none'; } }
+// The 포위진 seal is a CSS layer on the world plane too, blended additively by the compositor: on a software canvas
+// a slowly turning image larger than the screen, upscaled and added every frame of a siege, was the most expensive
+// thing drawn (~6ms at DPR 1, ~13ms at DPR 2). Placed between the world canvas and the haze, as it was drawn.
+const SEAL = document.createElement('div'), SEALC = document.createElement('canvas');
+SEAL.className = 'seal'; SEAL.setAttribute('aria-hidden', 'true'); SEAL.appendChild(SEALC); FLAT.after(SEAL);
+let sealOn = false, sealSrc = null;
+function seal(src, x, y, z, a, al) {   // src: the seal picture (null hides it); x, y, z: world centre and size; a: angle
+  if (!src) { if (sealOn) { sealOn = false; SEAL.style.display = 'none'; } return; }
+  if (sealSrc !== src) { sealSrc = src; SEALC.width = src.width; SEALC.height = src.height; SEALC.getContext('2d').drawImage(src, 0, 0); }
+  if (!sealOn) { sealOn = true; SEAL.style.display = 'block'; }
+  const Z = z * ZOOM, X = (x - camX()) * ZOOM + W / 2 + G.shx + PERSP.mx, Y = (y - camY()) * ZOOM + H / 2 + G.shy + PERSP.my;
+  SEALC.style.transform = `translate(${X.toFixed(2)}px,${Y.toFixed(2)}px) rotate(${a.toFixed(4)}rad) scale(${(Z / src.width).toFixed(4)},${(Z / src.height).toFixed(4)}) translate(${-src.width / 2}px,${-src.height / 2}px)`;
+  SEALC.style.opacity = al.toFixed(3);
+}
 const PERSP = { on: true, b: 0, mx: 0, my: 0, flat: false };
 const persp = v => 1 / (1 - PERSP.b * v);   // scale of a flat row v (CSS px from the screen centre, + = down)
 function screenT() { const d = PERSP.flat ? RS : DPR; ctx.setTransform(d, 0, 0, d, PERSP.flat ? d * PERSP.mx : 0, PERSP.flat ? d * PERSP.my : 0); }
@@ -42,7 +56,7 @@ function placeWorld(mx, my) {
   const key = W + '|' + H + '|' + mx + '|' + my + '|' + PERSP.on;
   if (FLAT._key === key) return;
   FLAT._key = key;
-  for (const st of [FLAT.style, HAZE.style]) {
+  for (const st of [FLAT.style, HAZE.style, SEAL.style]) {
     st.left = -mx + 'px'; st.top = -my + 'px'; st.width = (W + 2 * mx) + 'px'; st.height = (H + my) + 'px';
     st.transformOrigin = (W / 2 + mx) + 'px ' + (H / 2 + my) + 'px';
     st.transform = PERSP.on ? 'matrix3d(1,0,0,0,0,1,0,' + (-PERSP.b) + ',0,0,1,0,0,0,0,1)' : 'none';
@@ -776,13 +790,14 @@ function drawGlows() {
     ctx.globalAlpha = 1;
   }
   // 포위진: the closing wall is drawn as a violet seal on the ground
+  let sealPic = null;
   if (G.ringFx) {
     let sr = 0, n = 0, R = G.ringFx;
     for (const e of enemies) if (e.ai === 'ring' && !e.dead) { sr += Math.hypot(e.x - R.cx, e.y - R.cy); if (++n >= 24) break; }
     if (!n) G.ringFx = null;
     else {
       const rr = sr / n, pulse = 0.5 + Math.sin(G.t * 6) * 0.2, spin = REDUCED ? 0 : G.t * 0.5, sig = FX.circle_v && FX.circle_v[0];
-      if (sig) { const z = (rr + 50) * 2; ctx.globalAlpha = 0.34 + pulse * 0.2; ctx.save(); ctx.translate(R.cx, R.cy); ctx.rotate(spin * 0.6); dI(sig, -z / 2, -z / 2, z, z); ctx.restore(); ctx.globalAlpha = 1; }
+      if (sig) { sealPic = sig.src || sig; seal(sealPic, R.cx, R.cy, (rr + 50) * 2, spin * 0.6, 0.34 + pulse * 0.2); }
       else {
       ctx.strokeStyle = `rgba(170,110,255,${0.32 * pulse + 0.12})`; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(R.cx, R.cy, Math.max(1, rr - 22), 0, TAU); ctx.stroke();
@@ -792,6 +807,7 @@ function drawGlows() {
       ctx.stroke(); }
     }
   }
+  if (!sealPic) seal(null);
   for (const e of enemies) if (e.type === 'wisp' && e.shotCd < 0.5 && !e.dead && inView(e.x, e.y, 30)) {
     const c = 1 - e.shotCd / 0.5, z = 14 + c * 30; ctx.globalAlpha = 0.45 + c * 0.5; dI(GL.fire, e.x - z / 2, e.y - 10 - z / 2, z, z);
   }
@@ -926,7 +942,9 @@ function drawFxList() {   // every effect sits on the floor, under the character
       const iw = SW(img), ih = SH(img), sc = f.s / Math.max(iw, ih), w = iw * sc, h = ih * sc;
       const x = f.follow ? P.x + (f.ox || 0) : f.x, y = f.follow ? P.y + (f.oy || 0) : f.y, oy = f.anchor === 'b' ? -h : -h / 2;
       ctx.globalAlpha = f.al ?? 1;
-      if (f.rot || f.fy) { ctx.save(); ctx.translate(x, y); ctx.rotate(f.rot || 0); if (f.fy) ctx.scale(1, -1); dI(img, -w / 2, oy, w, h); ctx.restore(); }
+      let rot = f.rot || 0, fy = f.fy;
+      if (rot && f.a.startsWith('hit')) { const o = Math.floor(rot / TAU * 8) & 7; rot = (o & 3) * (Math.PI / 2); fy = !fy !== !(o & 4); }   // hit sparks: their random angle picks one of 8 right-angle orientations (a free-angle draw costs ~3x on a software canvas; a 0.2s spark shows no difference)
+      if (rot || fy) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); if (fy) ctx.scale(1, -1); dI(img, -w / 2, oy, w, h); ctx.restore(); }
       else dI(img, x - w / 2, y + oy, w, h);
       ctx.globalAlpha = 1; continue;
     }
