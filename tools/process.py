@@ -427,6 +427,13 @@ spec = [('stall', 'w', 250), ('jars', 'w', 200), ('post', 'h', 150), ('cart', 'w
 for i, (name, k, v) in enumerate(spec):
     img = trim(clean(cell(props, 3, 2, i % 3, i // 3)))
     S[name] = resize(img, h=v) if k == 'h' else resize(img, w=v)
+# map points of interest (Meshy gpt-image-2, styled on the props sheet): 4 x 2
+props2 = load('props2')
+spec2 = [('shrine', 'h', 200), ('well', 'h', 140), ('bonfire', 'w', 120), ('cairn', 'h', 130),
+         ('mat', 'w', 150), ('peddler', 'h', 140), ('skylantern', 'h', 64), ('sotdae', 'h', 170)]
+for i, (name, k, v) in enumerate(spec2):
+    img = trim(clean(cell(props2, 4, 2, i % 4, i // 4)))
+    S[name] = resize(img, h=v) if k == 'h' else resize(img, w=v)
 META['jarsLamp'] = bright_point(S['jars'], lambda r, g, b: r > 220 and g > 150 and b < 120)
 META['postLamp'] = bright_point(S['post'], lambda r, g, b: r > 200 and g > 140 and b < 120)
 

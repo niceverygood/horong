@@ -1,5 +1,6 @@
 // Test-only bot for balance simulation. Not published.
 const H = window.HORONG;
+const P0 = () => H.P;
 const press = (k, d) => window.dispatchEvent(new KeyboardEvent(d ? 'keydown' : 'keyup', { key: k }));
 let held = [];
 function setVec(x, y) {
@@ -29,6 +30,8 @@ window.__run = (seconds, opt = {}) => {
       });
       const o = H.G.opts[best]; m.picks[o.id || o.kind] = (m.picks[o.id || o.kind] || 0) + 1; cards[best].click();
     }
+    if (H.G.state === 'peddler') { const b2 = [...document.querySelectorAll('#ped-list button')].find(x => !x.disabled && /주먹밥|들기름/.test(x.textContent)); if (b2 && P0().hp < P0().maxHp * 0.6) b2.click(); document.querySelector('#btn-ped-close').click(); }
+    if (H.G.state === 'guide') document.querySelector('#btn-oh-close').click();
     if (H.G.state !== 'play') break;
     const P = H.P, t = H.G.t;
     let tx = null, ty = null;
@@ -59,7 +62,7 @@ window.__run = (seconds, opt = {}) => {
         else { const ux = Math.cos(z.a), uy = Math.sin(z.a), px = P.x - z.x, py = P.y - z.y, al = px * ux + py * uy, side = px * uy - py * ux; if (al > -20 && al < z.len + 20 && Math.abs(side) < z.w / 2 + 26) { const sg = Math.sign(side) || 1; vx += uy * sg * 2.6; vy += -ux * sg * 2.6; } }
       }
       if (opt.dodgeFire !== false) for (const f of (H.eprojs || [])) {   // sidestep incoming fireballs like a player watching them
-        if (f.k !== 'fire' && f.k !== 'fox' && f.k !== 'tal') continue; const px = P.x - f.x, py = P.y - f.y, d = Math.hypot(px, py); if (d > 150) continue;
+        if (f.k !== 'fire' && f.k !== 'fox' && f.k !== 'tal' && f.k !== 'rock' && f.k !== 'water' && f.k !== 'club') continue; const px = P.x - f.x, py = P.y - f.y, d = Math.hypot(px, py); if (d > 150) continue;
         const sp = Math.hypot(f.vx, f.vy) || 1, ux = f.vx / sp, uy = f.vy / sp; if (px * ux + py * uy < 0) continue;
         const side = px * uy - py * ux; vx += uy * Math.sign(side || 1) * 2.2; vy += -ux * Math.sign(side || 1) * 2.2;
       }

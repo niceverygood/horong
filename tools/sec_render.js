@@ -8,27 +8,81 @@ const camX = () => P.x + (G.cox || 0), camY = () => P.y + (G.coy || 0);
 function toScreen(x, y) { return [W / 2 + (x - camX()) * ZOOM + G.shx, H / 2 + (y - camY()) * ZOOM + G.shy]; }
 function inView(x, y, m) { return Math.abs(x - camX()) < VW + m && Math.abs(y - camY()) < VH + m; }
 const easeOut3 = k => 1 - Math.pow(1 - k, 3);
-function enemyPose(e) {
-  const ps = e.pose ? SPR[e.spr + '_' + e.pose] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
+function enemyPose(e, pose) {
+  const pz = pose === undefined ? e.pose : pose, ps = pz ? SPR[e.spr + '_' + pz] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
   const w = SW(base) * e.scale * k, h = SH(base) * e.scale * k;
   let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0;
-  if (FLOAT.has(e.type)) { y += Math.sin(G.t * 3 + e.bob) * 3 - 3; rot = Math.sin(G.t * 1.7 + e.bob) * 0.05; }
+  const vx = e.mvx || 0, sp = Math.hypot(vx, e.mvy || 0);
+  if (e.type === 'gseun') {   // a slow hover that breathes and leans into the drift
+    y += Math.sin(G.t * 1.6 + e.bob) * 4 - 4;
+    rot = clamp(vx / 140, -1, 1) * 0.1 + Math.sin(G.t * 1.1 + e.bob) * 0.025;
+    const br = Math.sin(G.t * 2.2 + e.bob); sy *= 1 + br * 0.025; sx *= 1 - br * 0.015;
+    const A = e.act;
+    if (A && A.k === 'lunge' && A.t >= 0.6 && !A.land) { sx *= 1.22; sy *= 0.86; rot = 0; }        // stretched along the throw
+    else if (A && A.k === 'lunge' && A.t < 0.6) { const q = A.t / 0.6; sy *= 1 - 0.1 * q; sx *= 1 + 0.06 * q; }   // coils before it
+  } else if (e.type === 'gumiho' || e.type === 'clone') {   // gallop: leap, pitch, squash on landing; breathe when still
+    const run = e.act ? 0 : clamp((sp - 30) / 80, 0, 1), ph = (e.wk || 0) * 0.11 + e.bob, s1 = Math.sin(ph), face = sx;   // ≈2 strides/s at orbit speed
+    y -= Math.max(0, s1) * 10 * run;
+    rot = -Math.cos(ph) * 0.07 * run * face;
+    const land = Math.max(0, -s1); sy *= 1 - 0.11 * land * run + Math.max(0, s1) * 0.04 * run; sx *= 1 + 0.09 * land * run + Math.max(0, s1) * 0.06 * run;
+    const br = Math.sin(G.t * 2 + e.bob) * (1 - run); sy *= 1 + br * 0.02;
+  } else if (FLOAT.has(e.type)) { y += Math.sin(G.t * 3 + e.bob) * 3 - 3; rot = Math.sin(G.t * 1.7 + e.bob) * 0.05; }
   else {
     const ph = (e.wk || 0) * (e.big ? 0.11 : 0.19) + e.bob, amp = e.big ? 0.45 : 1, c2 = Math.cos(2 * ph);
     y -= Math.abs(Math.sin(ph)) * 2.4 * amp;                     // two hops per stride
     sy = 1 - c2 * 0.05 * amp; sx *= 1 + c2 * 0.035 * amp;        // squash on contact, stretch at apex
-    rot = Math.sin(ph) * 0.06 * amp + clamp((e.mvx || 0) / 90, -1, 1) * 0.05;   // waddle + lean into the move
+    rot = Math.sin(ph) * 0.06 * amp + clamp(vx / 90, -1, 1) * 0.05;   // waddle + lean into the move
   }
   if (e.turnT > 0) { const q = e.turnT / 0.13; y -= Math.sin(q * Math.PI) * 3; sx *= 1 - 0.08 * q; sy *= 1 + 0.07 * q; }   // hop-turn
   if (e.type === 'egg' && e.st === 'wind') x += rnd(-1.5, 1.5);
-  if (e.pose !== undefined && e.pose !== null) {
+  if (pz !== undefined && pz !== null && pose === undefined) {
     const pu = Math.max(0, 1 - (e.poseT || 0) / 0.14); sx *= 1 + 0.1 * pu; sy *= 1 - 0.1 * pu;   // each new pose lands with a squash
-    if (e.pose === 'p1' && !REDUCED) x += Math.sin(G.t * 55) * 1.3;                          // wind-up shiver
+    if (pz === 'p1' && !REDUCED) x += Math.sin(G.t * 55) * 1.3;                          // wind-up shiver
   }
   if (e.atk === 'wind') { const q = 1 - e.atkT / 0.4; sy *= 1 - 0.14 * q; sx *= 1 + 0.1 * q; x += Math.sin(G.t * 60) * 1.2; }   // crouch, club up
   else if (e.atk === 'lunge') { sx *= 1.14; sy *= 0.9; y -= 6; rot = (e.lvx < 0 ? -1 : 1) * 0.18; }
+  if (e.sk) {
+    if (e.sk.k === 'roll' && e.sk.t > 0.25) { rot = e.sk.t * 16 * (e.fx < 0 ? -1 : 1); y -= 4; }
+    else if (e.sk.k === 'burst') { const q = Math.min(1, e.sk.t / 0.5); sx *= 1 + 0.35 * q + Math.sin(G.t * 40) * 0.06 * q; sy *= 1 + 0.35 * q; }
+  }
   if (e.stun > 0) rot = Math.sin(G.t * 30) * 0.12;
   return { base, w, h, x, y, sx, sy, rot };
+}
+// Bosses are drawn in strips so the drawing itself moves: 그슨대's robe ripples in rows (strongest at the hem, trailing
+// against the drift); 구미호's tails ripple in columns from the root out to the tips. Pose changes cross-fade.
+function drawDeform(e, img, p) {
+  if (!img || !img.at) { drawPose(img, p); return; }
+  const s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
+  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
+  const at = img.at, ax = img.sx, ay = img.sy, Ws = img.width, Hs = img.height, kx = p.w / Ws, ky = p.h / Hs, t = G.t, b = e.bob || 0;
+  const sp = Math.hypot(e.mvx || 0, e.mvy || 0);
+  if (e.type === 'gseun') {
+    const drag = -clamp((e.mvx || 0) / 90, -1, 1) * 8 * e.scale, A1 = 3.4 * e.scale, A2 = 1.5 * e.scale, N = 26;
+    for (let j = 0; j < N; j++) {
+      const y0 = Math.floor(Hs * j / N), y1 = Math.floor(Hs * (j + 1) / N), v = (y0 + y1) / 2 / Hs, wv = Math.pow(clamp((v - 0.28) / 0.72, 0, 1), 1.25);
+      const dx = wv * (A1 * Math.sin(t * 2.6 - v * 6 + b) + A2 * Math.sin(t * 4.3 + v * 10 + b * 2) + drag);
+      ctx.drawImage(at, ax, ay + y0, Ws, y1 - y0 + 1, -p.w / 2 + dx / p.sx, -p.h + y0 * ky, p.w, (y1 - y0 + 1) * ky);
+    }
+    return;
+  }
+  // 구미호: tails are on the image's left (the fox faces right); the 'howl' pose fans them on both sides
+  const run = clamp((sp - 30) / 80, 0, 1), both = e.pose === 'p3', N = 30, A = (2.2 + 2.6 * run) * (e.type === 'clone' ? 0.9 : 1), f = 3.2 + 5.5 * run;
+  for (let j = 0; j < N; j++) {
+    const x0 = Math.floor(Ws * j / N), x1 = Math.floor(Ws * (j + 1) / N), u = (x0 + x1) / 2 / Ws;
+    const root = both ? Math.abs(u - 0.5) * 2 : 1 - u, wv = Math.pow(clamp((root - 0.42) / 0.58, 0, 1), 1.4);
+    const dy = wv * (A * Math.sin(t * f - root * 5.5 + b) + A * 0.4 * Math.sin(t * f * 1.7 + root * 9 + b));
+    ctx.drawImage(at, ax + x0, ay, x1 - x0 + 1, Hs, -p.w / 2 + x0 * kx, -p.h + dy / p.sy, (x1 - x0 + 1) * kx, p.h);
+  }
+}
+function drawBoss(e) {
+  const a0 = e.alpha || 1, k = e.prevPose !== undefined && (e.poseT ?? 9) < 0.12 ? (e.poseT || 0) / 0.12 : 1;
+  if (k < 1) {   // the outgoing pose fades as the new one comes in
+    const pp = enemyPose(e, e.prevPose); ctx.globalAlpha = a0 * (1 - k); drawDeform(e, pp.base, pp);
+  }
+  const p = enemyPose(e); ctx.globalAlpha = a0 * (0.35 + 0.65 * k); drawDeform(e, p.base, p);
+  const fl = SPRF[e.pose ? e.spr + '_' + e.pose : e.spr] || SPRF[e.spr];
+  if (e.flash > 0 && fl) { ctx.globalAlpha = 0.6 * a0; drawDeform(e, fl.at ? fl : fl, { ...p, base: fl }); }
+  ctx.globalAlpha = 1;
 }
 // 8 views: E, SE, S, SW, W, NW, N, NE. West-side views mirror the east ones; S and N keep the side she last faced.
 const OCT = [['', 1], ['_se', 1], ['_s', 0], ['_se', -1], ['', -1], ['_ne', -1], ['_n', 0], ['_ne', 1]];
@@ -234,11 +288,17 @@ function drawProp(p) {
   let al = 1, ox = 0;
   if (P._k < p._k && Math.abs(P.x - p.x) < w / 2 + 8 && P.y + 12 > p.y - h && P.y - 30 < p.y) al = 0.42;   // keep the player visible behind tall props
   if (age < 0.2) ox = Math.sin(age * 90) * 2.4 * (1 - age / 0.2);
+  if (p.poi && (p.used || (p.t === 'well' && G.t < p.readyAt))) al *= 0.72;   // spent landmarks look spent
   ctx.globalAlpha = al; dI(sp, p.x - w / 2 + ox, p.y - h, w, h);
+  if (p.t === 'bonfire' && FX.fire && FX.fire.length) {   // a live flame over the drawn one
+    const fr = FX.fire, i = Math.floor((G.t * 14 + p.x) % fr.length), img = fr[i], fw = 78 + Math.sin(G.t * 9 + p.y) * 4, fh = fw * SH(img) / SW(img);
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.85; dI(img, p.x - fw / 2, p.y - h * 0.42 - fh * 0.7, fw, fh); ctx.globalCompositeOperation = 'source-over';
+  }
   if (age < 0.12) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5 * (1 - age / 0.12); dI(sp, p.x - w / 2 + ox, p.y - h, w, h); ctx.globalCompositeOperation = 'source-over'; }
   ctx.globalAlpha = 1;
 }
 function drawEnemy(e) {
+  if (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone') { drawBoss(e); return; }
   const p = enemyPose(e);
   ctx.globalAlpha = e.alpha || 1; drawPose(p.base, p);
   const fl = SPRF[e.pose ? e.spr + '_' + e.pose : e.spr] || SPRF[e.spr];
@@ -303,6 +363,25 @@ function render() {
     } else if (INK) { ctx.globalAlpha = 0.9 * a; dI(INK, p.x - p.r * 1.25, p.y - p.r * 0.85, p.r * 2.5, p.r * 1.7); ctx.globalAlpha = 1; }
     else { ctx.fillStyle = `rgba(8,10,26,${0.75 * a})`; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r, p.r * 0.62, 0, 0, TAU); ctx.fill(); }
   }
+  // 그슨대: shadow pools spread under the coming hands; cracks stay on the ground after they strike
+  for (const z of zones) {
+    if (!z.pool) continue;
+    const q = clamp(z.t / z.warn, 0, 1), fade = z.fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : 1, R = z.r * (0.35 + 0.8 * easeOut3(q));
+    ctx.globalAlpha = 0.7 * q * fade; dI(GL.shadow, z.x - R, z.y - R * 0.55, R * 2, R * 1.1);
+  }
+  for (const h of hazards) {   // 물귀신 water pools: slow you while you stand in them
+    const a = Math.min(1, h.t / 0.3, (h.life - h.t) / 0.6), w = Math.sin(G.t * 3 + h.x) * 2;
+    ctx.globalAlpha = 0.42 * a; ctx.fillStyle = '#2a5a7a'; ctx.beginPath(); ctx.ellipse(h.x, h.y, h.r + w, (h.r + w) * 0.62, 0, 0, TAU); ctx.fill();
+    ctx.globalAlpha = 0.5 * a; ctx.strokeStyle = '#8fd0f0'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  for (const f of effects) {
+    if (f.k !== 'crack') continue;
+    const a = 1 - Math.max(0, f.t - f.dur * 0.55) / (f.dur * 0.45);
+    ctx.strokeStyle = `rgba(16,8,28,${0.85 * a})`; ctx.lineCap = 'round';
+    for (const L of f.lines) { ctx.lineWidth = 3.2; ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]); for (let i = 1; i < L.length; i++) { ctx.lineWidth = 3.2 - i * 0.6; ctx.lineTo(L[i][0], L[i][1]); } ctx.stroke(); }
+    ctx.lineCap = 'butt';
+  }
+  ctx.globalAlpha = 1;
   // oil jars and drops
   for (const j of jars) { const sp = SPR.jar, w = SW(sp), h = SH(sp); dI(sp, j.x - w / 2, j.y - h + 8, w, h); }
   for (const d of drops) {
@@ -340,13 +419,14 @@ function render() {
   // slam dust (alpha-blended) and debris chips
   for (const p of parts) {
     if (p.k === 'dust') { const a = p.life / p.max, z = p.size * (1.7 - a * 0.7); ctx.globalAlpha = a * 0.4; dI(GL.dust, p.x - z / 2, p.y - z / 2, z, z); }
+    else if (p.k === 'shade') { const a = p.life / p.max, z = p.size * (1.9 - a * 0.9); ctx.globalAlpha = a * 0.32; dI(GL.shadow, p.x - z / 2, p.y - z * 0.45, z, z * 0.9); }
     else if (p.k === 'chip') { ctx.globalAlpha = Math.min(1, p.life / p.max * 2.5); ctx.fillStyle = p.col; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillRect(-p.size / 2, -p.size * 0.35, p.size, p.size * 0.7); ctx.restore(); }
   }
   ctx.globalAlpha = 1;
   // talisman bodies
   if (SPR.talisman) {
     const tw = SW(SPR.talisman), th = SH(SPR.talisman);
-    for (const p of projs) { if (p.frag) continue; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI / 2); dI(SPR.talisman, -tw / 2, -th / 2, tw, th); ctx.restore(); }
+    for (const p of projs) { if (p.frag || p.wave) continue; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI / 2); dI(SPR.talisman, -tw / 2, -th / 2, tw, th); ctx.restore(); }
   }
 
   // darkness
@@ -375,6 +455,17 @@ function render() {
       const a = e.alpha; e.alpha = (a || 1) * 0.85; drawEnemy(e); e.alpha = a;
     }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0); void any;
+  }
+  { worldT(); let any2 = false;   // thrown rocks and boomerang clubs must read in the dark
+    for (const p of eprojs) {
+      if (p.k === 'rock') { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); ctx.fillStyle = '#6a6056'; ctx.strokeStyle = '#1a1612'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-6, -3); ctx.lineTo(-1, -6); ctx.lineTo(6, -2); ctx.lineTo(5, 4); ctx.lineTo(-3, 6); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+      else if (p.k === 'club' && ICON.club) { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); dI(ICON.club, -15, -15, 30, 30); ctx.restore(); }
+    }
+    if (any2) ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+  if (G.sky && G.sky.length && SPR.skylantern) {   // 풍등 float above the dark: they are lights
+    worldT(); const sp = SPR.skylantern, w = SW(sp), h = SH(sp);
+    for (const l of G.sky) { if (!inView(l.x, l.y, 60)) continue; const a = Math.min(1, l.t / 1.5, (l.life - l.t) / 2); ctx.globalAlpha = 0.95 * a; dI(sp, l.x - w / 2 + Math.sin(G.t * 0.9 + l.ph) * 3, l.y - 40 - h / 2 + Math.sin(G.t * 1.5 + l.ph) * 4, w, h); }
+    ctx.globalAlpha = 1; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   if (PG.on) { pgDrawWorld(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
   if (P.light <= GREED) {
@@ -443,7 +534,11 @@ function drawGlows() {
   }
   ctx.globalAlpha = 1;
   // dash afterimages
-  for (const g of G.ghosts || []) { ctx.globalAlpha = 0.42 * (1 - g.t / 0.3); drawPose(g.p.base, g.p); worldT(); }
+  for (const g of G.ghosts || []) {   // afterimages; 그슨대 is too dark to read additively, so it leaves a violet-lit silhouette
+    const a = 1 - g.t / 0.3;
+    if (g.fl) { ctx.globalAlpha = 0.24 * a; drawPose(g.fl, g.p); worldT(); const z = g.p.h * 0.95; ctx.globalAlpha = 0.4 * a; dI(GL.violet, g.p.x - z / 2, g.p.y - g.p.h * 0.55 - z / 2, z, z); }
+    else { ctx.globalAlpha = 0.42 * a; drawPose(g.p.base, g.p); worldT(); }
+  }
   ctx.globalAlpha = 1;
   // wind-up tells: a glow gathers on the body before a boss or a 도깨비 commits
   for (const e of enemies) {
@@ -456,6 +551,32 @@ function drawGlows() {
       ctx.globalAlpha = 0.9; dI(GL.blue, mx - sz / 2, my - sz / 2, sz, sz); dI(GL.white, mx - 10, my - 10, 20, 20);
     } else if (e.atk === 'wind') { ctx.globalAlpha = 0.8; dI(e.type === 'saja' ? GL.sun : GL.red, e.x - 14, e.y - 44, 28, 28); }
   }
+  ctx.globalAlpha = 1;
+  // landmarks: bonfire light pool + its safe ring, shrine aura and prayer ring, well sparkle, ward ring, gamble glint, peddler lamp
+  for (const p of poiList) {
+    if (p.broken || !inView(p.x, p.y - 60, 160)) continue;
+    const f = 0.5 + Math.sin(G.t * 7 + p.x) * 0.1;
+    if (p.t === 'bonfire') {
+      const z = 260 + Math.sin(G.t * 11 + p.y) * 10; ctx.globalAlpha = 0.34 * f + 0.1; dI(GL.amber, p.x - z / 2, p.y - 40 - z / 2, z, z);
+      ctx.globalAlpha = 0.9; dI(GL.fire || GL.amber, p.x - 40, p.y - 80, 80, 80);
+      ctx.globalAlpha = 0.22; ctx.strokeStyle = 'rgba(255,170,80,1)'; ctx.lineWidth = 2; ctx.setLineDash([6, 8]); ctx.beginPath(); ctx.ellipse(p.x, p.y, 130, 130 * 0.62, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+    } else if (p.t === 'shrine' && !p.used) {
+      ctx.globalAlpha = 0.35 + 0.2 * Math.sin(G.t * 2.4); dI(GL.sun, p.x - 50, p.y - 120, 100, 100);
+      ctx.globalAlpha = 0.3; ctx.strokeStyle = 'rgba(255,214,120,1)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.6, 0, 0, TAU); ctx.stroke();
+      if (p.pray > 0) { const k = Math.min(1, p.pray / 2); ctx.globalAlpha = 0.95; ctx.strokeStyle = 'rgba(255,230,150,1)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.6, 0, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke(); }
+    } else if (p.t === 'well' && G.t >= p.readyAt) {
+      ctx.globalAlpha = 0.45 + 0.25 * Math.sin(G.t * 3 + p.x); dI(GL.blue || GL.white, p.x - 26, p.y - 58, 52, 40);
+    } else if (p.t === 'sotdae') {
+      ctx.globalAlpha = 0.18 + 0.06 * Math.sin(G.t * 2); ctx.strokeStyle = 'rgba(150,190,255,1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(p.x, p.y, 120, 120 * 0.62, 0, 0, TAU); ctx.stroke();
+      ctx.lineWidth = 2.5; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = i * TAU / 12 + G.t * 0.4; ctx.moveTo(p.x + Math.cos(a) * 112, p.y + Math.sin(a) * 112 * 0.62); ctx.lineTo(p.x + Math.cos(a) * 126, p.y + Math.sin(a) * 126 * 0.62); } ctx.stroke();
+      ctx.globalAlpha = 0.5 * f; dI(GL.blue || GL.white, p.x - 22, p.y - 92, 44, 44);
+    } else if (p.t === 'mat' && !p.used) {
+      ctx.globalAlpha = 0.35 + 0.25 * Math.sin(G.t * 5 + p.x); dI(GL.sun, p.x - 30, p.y - 40, 60, 44);
+    } else if (p.t === 'peddler') {
+      ctx.globalAlpha = 0.5 * f + 0.2; dI(GL.amber, p.x - 30, p.y - 110, 60, 60);
+    }
+  }
+  for (const l of G.sky || []) { const a = Math.min(1, l.t / 1.5, (l.life - l.t) / 2), z = 90 + Math.sin(G.t * 4 + l.ph) * 8; ctx.globalAlpha = 0.6 * a; dI(GL.amber, l.x - z / 2, l.y - 40 - z / 2 + Math.sin(G.t * 1.5 + l.ph) * 4, z, z); }
   ctx.globalAlpha = 1;
   // market lanterns
   for (const p of G.lamps || []) {
@@ -551,7 +672,12 @@ function drawGlows() {
     for (const p of projs) { const t = p.tr; if (!t || t.length < 4) continue; ctx.moveTo(t[0], t[1]); for (let i = 2; i < t.length; i += 2) ctx.lineTo(t[i], t[i + 1]); }
     ctx.stroke();
   }
-  for (const p of projs) { ctx.globalAlpha = p.frag ? 0.9 : 0.7; const z = p.evo ? 30 : 24; dI(p.evo ? GL.fire : GL.red, p.x - z / 2, p.y - z / 2, z, z); if (p.frag && FIRE) { const f = FIRE[Math.floor(G.t * 16) % 4]; dI(f, p.x - 6, p.y - 10, 12, 17); } }
+  for (const p of projs) if (p.wave) {   // 도깨비 불꽃 wave: a green crescent riding its glow
+    const a = Math.min(1, p.life / 0.2); ctx.globalAlpha = 0.8 * a; dI(GL.jade || GL.white, p.x - 30, p.y - 30, 60, 60);
+    const fr = FX.slash; if (fr && fr.length) { const img = fr[2] || fr[0], z = 70; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx)); ctx.globalAlpha = a; dI(img, -z / 2, -z / 2, z, z); ctx.restore(); }
+  }
+  ctx.globalAlpha = 1;
+  for (const p of projs) { if (p.wave) continue; ctx.globalAlpha = p.frag ? 0.9 : 0.7; const z = p.evo ? 30 : 24; dI(p.evo ? GL.fire : GL.red, p.x - z / 2, p.y - z / 2, z, z); if (p.frag && FIRE) { const f = FIRE[Math.floor(G.t * 16) % 4]; dI(f, p.x - 6, p.y - 10, 12, 17); } }
   ctx.globalAlpha = 1;
   for (const p of eprojs) {
     if (p.k === 'fire') {
@@ -564,6 +690,8 @@ function drawGlows() {
       if (FOX && FOX[0]) { const f = FOX[Math.floor(G.t * 18) % 4], fw = SW(f) * 0.75, fh = SH(f) * 0.75; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(-p.vx, p.vy)); dI(f, -fw / 2, -fh * 0.25, fw, fh); ctx.restore(); }
       dI(GL.white, p.x - 6, p.y - 6, 12, 12); continue;
     }
+    if (p.k === 'water') { ctx.globalAlpha = 0.85; dI(GL.blue, p.x - 20, p.y - 20, 40, 40); ctx.globalAlpha = 1; dI(GL.white, p.x - 6, p.y - 6, 12, 12); continue; }
+    if (p.k === 'rock' || p.k === 'club') { ctx.globalAlpha = 0.35; dI(p.k === 'club' ? GL.red : GL.amber, p.x - 14, p.y - 14, 28, 28); ctx.globalAlpha = 1; continue; }   // bodies drawn above the dark
     if (p.k === 'tal') {
       ctx.globalAlpha = 0.7; dI(GL.sun, p.x - 18, p.y - 18, 36, 36); ctx.globalAlpha = 1;
       const t = SPR.talisman; if (t) { const tw = SW(t) * 0.7, th = SH(t) * 0.7; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(G.t * 14); dI(t, -tw / 2, -th / 2, tw, th); ctx.restore(); }
@@ -571,12 +699,18 @@ function drawGlows() {
     }
     dI(GL.pink, p.x - 16, p.y - 16, 32, 32); ctx.fillStyle = '#ffd2ea'; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, TAU); ctx.fill();
   }
+  if (P.pullT > 0 && P.pullE && !P.pullE.dead) {   // 물귀신's wet line while it drags you
+    const e = P.pullE; ctx.strokeStyle = 'rgba(140,210,255,0.8)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(e.x, e.y - 12);
+    for (let i = 1; i <= 8; i++) { const k = i / 8; ctx.lineTo(lerp(e.x, P.x, k) + Math.sin(G.t * 30 + k * 9) * 4, lerp(e.y - 12, P.y - 10, k)); } ctx.stroke();
+  }
+  for (const e of enemies) if (e.rageT > G.t && !e.dead && inView(e.x, e.y, 20)) { ctx.globalAlpha = 0.7; dI(GL.red, e.x - 10, e.y - 22, 20, 20); }
+  ctx.globalAlpha = 1;
   // particles: sparks as velocity streaks batched by colour and fade bucket, embers/souls as glow sprites
   const SB = {};
   for (const p of parts) {
     const a = Math.max(0, p.life / p.max);
     if (p.k === 'spark') { const key = p.col + (a > 0.66 ? '|0' : a > 0.33 ? '|1' : '|2'); (SB[key] = SB[key] || []).push(p); continue; }
-    if (p.k === 'dust' || p.k === 'chip') continue;
+    if (p.k === 'dust' || p.k === 'chip' || p.k === 'shade') continue;
     if (p.k === 'ember' || p.k === 'soul') {
       const img = GL[p.gl] || GL.amber, soulK = p.k === 'soul';
       const z = soulK ? p.size * (0.55 + 0.45 * Math.min(1, (1 - a) * 4)) : p.size * (0.35 + 0.65 * a);
@@ -651,6 +785,10 @@ function drawGlows() {
       const img = GL[f.gl] || GL.white, z = f.r * 2 * (1 - k * 0.35); ctx.globalAlpha = (1 - k) * (1 - k); dI(img, f.x - z / 2, f.y - z / 2, z, z);
       if (k < 0.5) { const c = z * 0.35; dI(GL.white, f.x - c / 2, f.y - c / 2, c, c); }
       ctx.globalAlpha = 1;
+    } else if (f.k === 'crack') {   // the cracks glow violet as they open, then go dark
+      const a = Math.max(0, 1 - f.t / (f.dur * 0.5)); if (a <= 0) continue;
+      ctx.strokeStyle = `rgba(200,140,255,${0.9 * a})`; ctx.lineWidth = 1.4;
+      for (const L of f.lines) { const n = Math.min(L.length, 1 + Math.ceil(f.t / 0.03)); ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]); for (let i = 1; i < n; i++) ctx.lineTo(L[i][0], L[i][1]); ctx.stroke(); }
     } else if (f.k === 'shock') {
       const r = f.r0 + (f.r1 - f.r0) * easeOut3(k); ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.col; ctx.lineWidth = Math.max(0.5, f.w * (1 - k));
       ctx.beginPath(); ctx.arc(f.x, f.y, Math.max(1, r), 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
@@ -749,6 +887,9 @@ function drawHUD() {
   const zone = P.light <= 0 ? ['빛이 꺼졌다 · 어둑시니 추적 중', '#ff6b5a'] : greed ? ['탐욕 · 경험치·엽전 ×2, 회복 없음', '#9fb2ff'] : warm ? ['온기 · 초당 체력 +0.4', '#f2c27a'] : ['보통 · 60 이상 회복, 30 이하 탐욕', '#a39a86'];
   txt(zone[0], lx0, ly + 11, 11.5, zone[1]);
   if (P.charmT > 0) txt('매혹 · 방향 반전', lx0, ly + 26, 11.5, '#ff8ac0');
+  { const bl = typeof BLESS !== 'undefined' ? BLESS.filter(([k]) => blessLeft(k) > 0).map(([k, n]) => `${n} ${Math.ceil(blessLeft(k))}초`) : [];
+    if (P.inFire) bl.unshift('화톳불 곁 · 빛이 줄지 않음');
+    if (bl.length) txt(bl.join(' · '), lx0, ly + (P.charmT > 0 ? 41 : 26), 11.5, '#ffd27a'); }
   drawPentagon(lx0 + 28, ly + (P.charmT > 0 ? 66 : 56));
   // right block
   const rx = W - sr - 12;
@@ -766,6 +907,8 @@ function drawHUD() {
   for (const d of drops) if (d.k === 'magnet' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#9fd0ff', '지남철'); break; }
   for (const d of drops) if (d.k === 'ginseng' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#7fe0a0', '산삼'); break; }
   for (const b of G.bosses) edgeArrow(b.x, b.y, '#c8463a', ED[b.type].name);
+  { const LM = [['shrine', '#ffd27a', '서낭당', p => !p.used], ['well', '#9fe0ff', '우물', p => G.t >= p.readyAt], ['peddler', '#f2a93b', '보부상', () => true], ['mat', '#ffd27a', '노름판', p => !p.used]];
+    for (const [t, col, name, ok] of LM) { let best = null, bd = 900; for (const p of poiList) if (p.t === t && ok(p)) { const d = Math.hypot(p.x - P.x, p.y - P.y); if (d < bd) { bd = d; best = p; } } if (best) edgeArrow(best.x, best.y - 30, col, name); } }
   // joystick
   if (joy) {
     const dx = joy.x - joy.ox, dy = joy.y - joy.oy, d = Math.hypot(dx, dy), m = Math.min(1, 44 / (d || 1));
@@ -807,7 +950,10 @@ function drawPentagon(cx, cy) {
     ctx.strokeStyle = on ? 'rgba(6,7,12,0.6)' : 'rgba(239,230,210,0.25)'; ctx.lineWidth = 1; ctx.stroke();
     txt(e, x, y + 3.5, 9.5, on ? '#140c08' : '#a39a86', 'center', FB, 700);
   });
-  if (P.ohaeng) txt(`오행 원환 ${Math.ceil(G.ohaengT)}초`, cx + 32, cy + 4, 11, '#efe6d2');
+  if (P.ohaeng) txt(`쓸어 버리기 ${Math.ceil(G.ohaengT)}초`, cx + 32, cy + 4, 11, '#efe6d2');
+  else txt(P.links.length ? `기운 ${P.links.length}줄 이어짐` : '무기의 기운', cx + 32, cy - 2, 11, P.links.length ? '#f2a93b' : '#a39a86');
+  if (!P.ohaeng) txt('눌러서 설명', cx + 32, cy + 12, 10.5, '#7d7564');
+  G.pentaHit = [cx, cy];   // tap target for the 오행 guide
 }
 function edgeArrow(wx, wy, col, label) {
   const [sx, sy] = toScreen(wx, wy);
