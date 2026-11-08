@@ -3863,10 +3863,11 @@ function tick(now) {
   // then leave the canvas alone until something changes, so the menu stays smooth on slow devices (and the battery rests).
   const st = G ? G.state : '';
   if (!redraw && FROZEN.has(st) && st === drawnState) return;
+  if (st === 'title' && !TITLE_EL.hidden) return;   // the title card is opaque (key art over a solid colour): nothing drawn here would show
   redraw = false; drawnState = st;
   render();
 }
-const FROZEN = new Set(['paused', 'levelup', 'peddler', 'guide', 'over']); let drawnState = '';
+const FROZEN = new Set(['paused', 'levelup', 'peddler', 'guide', 'over']); let drawnState = ''; const TITLE_EL = $('#title');
 for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { redraw = true; }, true);   // a click in a menu can change the HUD behind it (coins at the peddler)
 // First-use costs paid on the title screen instead of in the first frame of play: creating the audio context
 // (about 30ms; the sound files then decode in the background) and the fonts' first use on the canvas (about 45ms of
