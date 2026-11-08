@@ -202,6 +202,11 @@ ARM.update({
     'danbi_ese': ((17, 46), (17, 71), 5), 'danbi_sse': ((15, 46), (15, 70), 5), 'danbi_ene': ((14, 49), (11, 70), 4),
     'danbi_nne': ((11, 45), (8, 72), 4),
 })
+ARM.update({   # 막쇠: his empty arm shows in every view, the back ones included
+    'makswe': ((28, 40), (27, 67), 5), 'makswe_ese': ((20, 40), (19, 69), 5), 'makswe_se': ((21, 40), (16, 69), 5),
+    'makswe_sse': ((14, 40), (10, 69), 5), 'makswe_s': ((10, 40), (6, 67), 5), 'makswe_ene': ((14, 42), (9, 64), 5),
+    'makswe_ne': ((14, 42), (10, 64), 5), 'makswe_nne': ((12, 42), (7, 64), 5), 'makswe_n': ((9, 40), (6, 66), 5),
+})
 ARM_BORROW = {'yeoni_ne': ('yeoni_n', (31, 41)), 'yeoni_ene': ('yeoni_n', (28, 40))}
 
 
@@ -290,7 +295,7 @@ def split_feet(f, rp, who, front=False):
         if c[3] < 40:
             return False
         h, s_, v = hsv(c)
-        if who == 'yeoni':
+        if who in ('yeoni', 'makswe'):   # straw sandals under a pale skirt / a grey-blue robe
             return s_ > 0.32 and 0.02 < h < 0.16 and v > 0.12
         return s_ < 0.26 and v > 0.18   # white socks and their grey outline; the skirt is saturated red
     top = max(0, hem - 18)
@@ -308,7 +313,7 @@ def split_feet(f, rp, who, front=False):
             if 0 <= nx < W and 0 <= ny < H and (nx, ny) not in mask:
                 c = px[nx, ny]
                 h, s_, v = hsv(c)
-                if c[3] >= 40 and v < 0.42 and (who == 'yeoni' or s_ < 0.5):
+                if c[3] >= 40 and v < 0.42 and (who in ('yeoni', 'makswe') or s_ < 0.5):
                     ring.add((nx, ny))
     mask |= ring
     comps, seen = [], set()
@@ -378,13 +383,13 @@ S = {}      # name -> image (2x world size)
 META = {}
 
 # --- players: 4-frame walk cycles -------------------------------------------
-for who in ('yeoni', 'danbi'):
+for who in ('yeoni', 'danbi', 'makswe'):
     frames = row_frames(load(who), 4, h=108)
     for i, f in enumerate(frames):
         S[f'{who}{i}'] = f
     if who == 'yeoni':
         META['lantern'] = bright_point(frames[0], lambda r, g, b: r > 235 and g > 170 and b < 150)
-    else:
+    elif who == 'danbi':
         META['bells'] = bright_point(frames[0], lambda r, g, b: r > 200 and g > 150 and b < 90)
 
 # --- players: 8-direction walk. E is the original sheet; SW/W/NW are mirrored at runtime.
@@ -392,7 +397,8 @@ for who in ('yeoni', 'danbi'):
 # a body anchor so swapping views never makes the body hop sideways.
 META['ax'], META['lamp'], META['lampF'] = {}, {}, {}
 lamp_test = {'yeoni': lambda r, g, b: r > 235 and g > 170 and b < 150, 'danbi': lambda r, g, b: r > 200 and g > 150 and b < 90}
-for who in ('yeoni', 'danbi'):
+lamp_test['makswe'] = lamp_test['yeoni']   # 막쇠 carries the same brass lantern
+for who in ('yeoni', 'danbi', 'makswe'):
     for d in ('', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n'):   # 16 directions: 9 drawn views, west side mirrored
         im = load(who + d)
         if who == 'danbi' and d == '_s':
@@ -407,9 +413,13 @@ for who in ('yeoni', 'danbi'):
         META['lampF'][who + d] = [bright_point(S[f'{who}{d}{i}'], lamp_test[who]) for i in range(4)]   # the lantern swings between drawings
         rp = rig_params(frames)
         body, foot, info = split_feet(frames[rp['base']], rp, who, d in ('_s', '_n'))
+        if os.environ.get('RIG_DUMP') and who == os.environ['RIG_DUMP']:   # look at a view before tuning its ARM entry
+            body.save(os.path.join(os.environ['RIG_DIR'], f'{who}{d}_body.png'))
         if who + d in ARM:
             body, armimg, ao = cut_arm(body, ARM[who + d])
             S[f'{who}{d}_arm'] = armimg
+            if os.environ.get('RIG_DUMP') and who == os.environ['RIG_DUMP']:
+                body.save(os.path.join(os.environ['RIG_DIR'], f'{who}{d}_cut.png')); armimg.save(os.path.join(os.environ['RIG_DIR'], f'{who}{d}_arm.png'))
             (asx, asy), (ahx, ahy), _ = ARM[who + d]
             rp['arm'] = {'s': [asx, asy], 'h': [ahx, ahy], 'o': ao, 'src': who + d}
         elif who + d in ARM_BORROW:

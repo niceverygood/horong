@@ -146,7 +146,7 @@ function drawBoss(e) {
 // 16 views, 22.5° apart: E, ESE, SE, SSE, S, SSW … (west side mirrors the east drawings; S and N keep the last side)
 const OCT = [['', 1], ['_ese', 1], ['_se', 1], ['_sse', 1], ['_s', 0], ['_sse', -1], ['_se', -1], ['_ese', -1], ['', -1], ['_ene', -1], ['_ne', -1], ['_nne', -1], ['_n', 0], ['_nne', 1], ['_ne', 1], ['_ene', 1]];
 function playerView() {
-  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
+  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' || P.spr === 'makswe' ? P.spr : 'yeoni', name = who + o[0], fr = SPR[name];
   return { name, frames: fr && fr[0] ? fr : SPR[P.spr], flip: o[1] || P.side || 1, ax: fr && ART.meta.ax ? ART.meta.ax[name] || 0 : 0 };
 }
 // Cut-out walk rig: each view keeps ONE drawing (META.rig picks it and finds the skirt hem and the gap between
@@ -162,7 +162,7 @@ function footPhase(u) {   // unit stride profile: stance slides front→back lin
 }
 function walkPose() {
   const v = playerView(), sp = Math.min(1, P.spd01 || 0), th = (P.walk || 0) * STEP_K, u1 = ((th / TAU) % 1 + 1) % 1;
-  const R = ART.ok && ART.meta.rig ? ART.meta.rig[v.name] : null, mode = RIGMODE[v.name.replace(/^(yeoni|danbi)/, '')] || 'side';
+  const R = ART.ok && ART.meta.rig ? ART.meta.rig[v.name] : null, mode = RIGMODE[v.name.replace(/^(yeoni|danbi|makswe)/, '')] || 'side';
   const bob = (1 - Math.cos(4 * Math.PI * u1)) * 0.5 * 1.3 * sp;                       // up while the feet pass, down on contact
   const sway = (mode === 'front' || mode === 'back' ? 0.9 : mode === 'side' ? 0 : 0.5) * Math.sin(TAU * u1) * sp;   // weight over the stance foot
   const base = R ? R.base : 0;
