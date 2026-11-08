@@ -14,7 +14,7 @@ const persp = v => 1 / (1 - PERSP.b * v);   // scale of a flat row v (CSS px fro
 function screenT() { const d = PERSP.flat ? RS : DPR; ctx.setTransform(d, 0, 0, d, PERSP.flat ? d * PERSP.mx : 0, PERSP.flat ? d * PERSP.my : 0); }
 function project(sx, sy) { if (!PERSP.on || PERSP.flat) return [sx, sy]; const v = sy - H / 2, k = persp(v); return [W / 2 + (sx - W / 2) * k, H / 2 + v * k]; }
 function toScreen(x, y) { return project(W / 2 + (x - camX()) * ZOOM + G.shx, H / 2 + (y - camY()) * ZOOM + G.shy); }
-function inView(x, y, m) { const dy = y - camY(); return Math.abs(x - camX()) < VW * 1.22 + m && dy > -VH * 1.25 - m && dy < VH + m; }
+function inView(x, y, m) { const dy = y - (P.y + (G.coy || 0)); return Math.abs(x - (P.x + (G.cox || 0))) < VW * 1.22 + m && dy > -VH * 1.25 - m && dy < VH + m; }   // camX()/camY() inlined: called thousands of times a frame
 // upright things (people, ghosts, props) stand on the tilted floor: undo the warp's extra vertical squash so they only shrink
 const upK = y => PERSP.on && PERSP.flat ? 1 - PERSP.b * (y - camY()) * ZOOM : 1;
 // The GPU lays the flat world canvas onto the screen as a tilted plane (CSS matrix3d, w = 1 − b·y about the screen
@@ -30,7 +30,8 @@ function placeWorld(mx, my) {
   st.transform = PERSP.on ? 'matrix3d(1,0,0,0,0,1,0,' + (-PERSP.b) + ',0,0,1,0,0,0,0,1)' : 'none';
 }
 const easeOut3 = k => 1 - Math.pow(1 - k, 3);
-function enemyPose(e, pose) {
+// out: a scratch object to fill instead of a new one (the hot draw loops call this for every enemy, every frame)
+function enemyPose(e, pose, out) {
   const pz = pose === undefined ? e.pose : pose, ps = pz ? SPR[e.spr + '_' + pz] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
   const w = SW(base) * e.scale * k, h = SH(base) * e.scale * k;
   let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
@@ -74,6 +75,7 @@ function enemyPose(e, pose) {
   }
   if (e.type === 'bulga' && e.act && e.act.k === 'roll' && e.pose === 'p3' && pose === undefined) { rot = e.act.spin || 0; oy = -h / 2; y -= h / 2 * sy; sx = Math.abs(sx); }   // the spiked ball rolls about its centre
   if (e.stun > 0) rot = Math.sin(G.t * 30) * (e.boss ? 0.05 : 0.12);
+  if (out) { out.base = base; out.w = w; out.h = h; out.x = x; out.y = y; out.sx = sx; out.sy = sy; out.rot = rot; out.oy = oy; return out; }
   return { base, w, h, x, y, sx, sy, rot, oy };
 }
 // Bosses are drawn in strips so the drawing itself moves: 그슨대's robe ripples in rows (strongest at the hem, trailing
@@ -86,21 +88,29 @@ function drawDeform(e, img, p) {
   const sp = Math.hypot(e.mvx || 0, e.mvy || 0);
   if (e.type === 'gseun') {
     const drag = -(e.rd || 0) * 11 * e.scale, A1 = 4.6 * e.scale, A2 = 2 * e.scale, N = 30;   // the hem trails the drift (smoothed) and keeps rippling
+    let r0 = -1, r1 = 0;   // rows that don't move (above the waist) go out as one piece
     for (let j = 0; j < N; j++) {
       const y0 = Math.floor(Hs * j / N), y1 = Math.floor(Hs * (j + 1) / N), v = (y0 + y1) / 2 / Hs, wv = Math.pow(clamp((v - 0.26) / 0.74, 0, 1), 1.6);
+      if (wv === 0) { if (r0 < 0) r0 = y0; r1 = y1; continue; }
+      if (r0 >= 0) { ctx.drawImage(at, ax, ay + r0, Ws, r1 - r0 + 1, -p.w / 2, -p.h + r0 * ky, p.w, (r1 - r0 + 1) * ky); r0 = -1; }
       const dx = wv * (A1 * Math.sin(t * 2.1 - v * 7 + b) + A2 * Math.sin(t * 3.7 + v * 12 + b * 2) + drag);
       ctx.drawImage(at, ax, ay + y0, Ws, y1 - y0 + 1, -p.w / 2 + dx / p.sx, -p.h + y0 * ky, p.w, (y1 - y0 + 1) * ky);
     }
+    if (r0 >= 0) ctx.drawImage(at, ax, ay + r0, Ws, r1 - r0 + 1, -p.w / 2, -p.h + r0 * ky, p.w, (r1 - r0 + 1) * ky);
     return;
   }
   // 구미호: tails are on the image's left (the fox faces right); the 'howl' pose fans them on both sides
   const run = clamp((sp - 25) / 70, 0, 1), both = e.pose === 'p3', N = 34, A = (5 - 1.5 * run) * (e.type === 'clone' ? 0.9 : 1), f = 2.2 + 5 * run;   // a slow wide swish at rest, a quick flutter at a run
+  let r0 = -1, r1 = 0;   // columns that don't move (the body and head) go out as one piece instead of a dozen strips
   for (let j = 0; j < N; j++) {
     const x0 = Math.floor(Ws * j / N), x1 = Math.floor(Ws * (j + 1) / N), u = (x0 + x1) / 2 / Ws;
     const root = both ? Math.abs(u - 0.5) * 2 : 1 - u, wv = Math.pow(clamp((root - 0.42) / 0.58, 0, 1), 1.4);
+    if (wv === 0) { if (r0 < 0) r0 = x0; r1 = x1; continue; }
+    if (r0 >= 0) { ctx.drawImage(at, ax + r0, ay, r1 - r0 + 1, Hs, -p.w / 2 + r0 * kx, -p.h, (r1 - r0 + 1) * kx, p.h); r0 = -1; }
     const dy = wv * (A * Math.sin(t * f - root * 5.5 + b) + A * 0.4 * Math.sin(t * f * 1.7 + root * 9 + b));
     ctx.drawImage(at, ax + x0, ay, x1 - x0 + 1, Hs, -p.w / 2 + x0 * kx, -p.h + dy / p.sy, (x1 - x0 + 1) * kx, p.h);
   }
+  if (r0 >= 0) ctx.drawImage(at, ax + r0, ay, r1 - r0 + 1, Hs, -p.w / 2 + r0 * kx, -p.h, (r1 - r0 + 1) * kx, p.h);
 }
 function drawBoss(e) {
   const a0 = e.alpha || 1, k = e.prevPose !== undefined && (e.poseT ?? 9) < 0.12 ? (e.poseT || 0) / 0.12 : 1;
@@ -176,7 +186,7 @@ function drawPlayer() {
   if (gb.list.length) drawGear(gb.list, ox, oy, lean, false);
 }
 function drawRig(img, q, pw, ph, x0, flip) {
-  const R = q.R, name = q.v.name, body = SPR[name + '_body'], foot = SPR[name + '_foot'];
+  const R = q.R, name = q.v.name, body = SPR[name + '_body'], foot = SPR[name + '_foot'], footD = SPR[name + '_footD'];
   if (!body || !foot || !body.at) { dI(img, x0, -ph, pw, ph); return; }
   const Wd = body.width, Hd = body.height, kx = pw / Wd, ky = ph / Hd, wr = pw / R.w, hr = ph / R.h;   // world px per atlas px / per rig px
   const at = body.at, ax = body.sx, ay = body.sy, sp = q.sp, u = q.u1;
@@ -194,8 +204,8 @@ function drawRig(img, q, pw, ph, x0, flip) {
     const mirror = !side && f.i === 0, far = side && f.i === 0;
     ctx.save(); ctx.translate(x, y);
     if (mirror) ctx.scale(-1, 1);
-    if (far) ctx.filter = 'brightness(0.72)';
-    dI(foot, -fw / 2, -fh, fw, fh);
+    if (far && !footD) ctx.filter = 'brightness(0.72)';   // footD is the same foot pre-darkened: a canvas filter costs an offscreen layer per draw
+    dI(far && footD ? footD : foot, -fw / 2, -fh, fw, fh);
     ctx.restore();
   }
   const AR = R.arm, armImg = AR && SPR[AR.src + '_arm'], drawArm = () => {   // the free arm, turned at the shoulder
@@ -356,15 +366,16 @@ function drawProp(p) {
   const uk = upK(p.y); ctx.save(); ctx.translate(p.x, p.y); ctx.scale(1, uk); ctx.translate(-p.x, -p.y);   // stands up on the tilted floor
   ctx.globalAlpha = al; dI(sp, p.x - w / 2 + ox, p.y - h, w, h);
   if (p.t === 'bonfire' && FX.fire && FX.fire.length) {   // a live flame over the drawn one
-    const fr = FX.fire, i = Math.floor((G.t * 14 + p.x) % fr.length), img = fr[i], fw = 78 + Math.sin(G.t * 9 + p.y) * 4, fh = fw * SH(img) / SW(img);
+    const fr = FX.fire, i = ((Math.floor(G.t * 14 + p.x) % fr.length) + fr.length) % fr.length, img = fr[i], fw = 78 + Math.sin(G.t * 9 + p.y) * 4, fh = fw * SH(img) / SW(img);   // index kept ≥ 0: left of x = 0 it read frame −1 and threw, cutting the rest of the frame (darkness, HUD) short
     ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.85; dI(img, p.x - fw / 2, p.y - h * 0.42 - fh * 0.7, fw, fh); ctx.globalCompositeOperation = 'source-over';
   }
   if (age < 0.12) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5 * (1 - age / 0.12); dI(sp, p.x - w / 2 + ox, p.y - h, w, h); ctx.globalCompositeOperation = 'source-over'; }
   ctx.globalAlpha = 1; ctx.restore();
 }
+const POSE = { base: null, w: 0, h: 0, x: 0, y: 0, sx: 1, sy: 1, rot: 0, oy: undefined };
 function drawEnemy(e) {
   if (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone' || e.type === 'jangsan' || e.type === 'jclone' || e.type === 'dueok' || e.type === 'bulga') { drawBoss(e); return; }
-  const p = enemyPose(e);
+  const p = enemyPose(e, undefined, POSE);
   ctx.globalAlpha = e.alpha || 1; drawPose(p.base, p);
   const fl = SPRF[e.pose ? e.spr + '_' + e.pose : e.spr] || SPRF[e.spr];
   if (e.flash > 0 && fl) { ctx.globalAlpha = 0.6 * (e.alpha || 1); drawPose(fl, p); }
@@ -397,6 +408,29 @@ function drawImugi(e, emissive) {
   else dI(img, -w / 2, -h / 2, w, h);
   ctx.restore();
 }
+// The floor tile resampled once to the world canvas's pixel scale (2.5D tilt included), then laid as a few whole-pixel
+// copies. The scaled repeating pattern it replaces was filtered for every pixel of the view, every frame, and was
+// the most expensive thing drawn (a repeat pattern is also a slower shader than a plain image copy on the GPU).
+let groundDev = null;
+function groundAt(s, img) {
+  if (!img) return null;
+  if (groundDev && groundDev.s === s && groundDev.img === img) return groundDev.c;
+  const tw = Math.round(img.width * 0.5 * s), th = Math.round(img.height * 0.5 * 0.62 * s);
+  groundDev = { s, img, c: null };
+  if (tw < 64 || th < 64 || tw > 2048 || th > 2048) return null;
+  const c = document.createElement('canvas'); c.width = tw; c.height = th;
+  const g = c.getContext('2d'), src = g.createPattern(img, 'repeat');   // resample through a pattern so the tile edges wrap (no seam)
+  src.setTransform(new DOMMatrix([tw / img.width, 0, 0, th / img.height, 0, 0]));
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.fillStyle = src; g.fillRect(0, 0, tw, th);
+  return (groundDev.c = c);
+}
+function drawGround(tile) {   // the opaque floor covers the whole world canvas, so it also clears it
+  const tw = tile.width, th = tile.height, cw = ctx.canvas.width, ch = ctx.canvas.height;
+  const x0 = (Math.round(WM[1]) % tw + tw) % tw, y0 = (Math.round(WM[2]) % th + th) % th;   // tile origin = world origin, on a whole pixel
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  for (let y = y0 > 0 ? y0 - th : 0; y < ch; y += th) for (let x = x0 > 0 ? x0 - tw : 0; x < cw; x += tw) ctx.drawImage(tile, x, y);
+  worldT();
+}
 const PFT = { on: false, t: 0, acc: {}, n: 0 };
 function PF(k) { if (!PFT.on) return; const n = performance.now(); PFT.acc[k] = (PFT.acc[k] || 0) + n - PFT.t; PFT.t = n; }
 function render() {
@@ -415,7 +449,9 @@ function render() {
   worldT();
   ctx.imageSmoothingEnabled = ART.ok; ctx.imageSmoothingQuality = 'low';
   const LRd = lightR() * 1.12 + 30;
-  ctx.fillStyle = (stg() === 2 && groundPat2) || groundPat; ctx.fillRect(camX() - VW * 1.3 - 40, camY() - VH * 1.35 - 40, VW * 2.6 + 80, VH * 2.35 + 80);
+  const gimg = stg() === 2 ? groundImg2 : groundImg, gp = ART.ok && performance.now() - RES.at > 250 ? groundAt(s, gimg) : null;   // mid-resize: the scaled pattern, not a new tile every frame
+  if (gp) drawGround(gp);
+  else { ctx.fillStyle = (stg() === 2 && groundPat2) || groundPat; ctx.fillRect(camX() - VW * 1.3 - 40, camY() - VH * 1.35 - 40, VW * 2.6 + 80, VH * 2.35 + 80); }
   PF('ground');
   // props: collect visible ones (drawn y-sorted below), remember lamps for the glow pass
   G.lamps = []; const DL = G.dl || (G.dl = []); DL.length = 0;
@@ -521,9 +557,7 @@ function render() {
   screenT();
   const cx = W / 2 + G.shx - (G.cox || 0) * ZOOM, cy = H / 2 + G.shy - (G.coy || 0) * ZOOM, R = lightR() * ZOOM;
   const flick = 1 + Math.sin(G.t * 9) * 0.012 + Math.sin(G.t * 23) * 0.008;
-  const gr = ctx.createRadialGradient(cx, cy, Math.max(1, R * 0.55 * flick), cx, cy, R * 1.02 * flick);   // sight ends where the light ends
-  gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.62, 'rgba(6,7,14,0.38)'); gr.addColorStop(1, 'rgba(4,5,10,0.95)');
-  ctx.fillStyle = gr; ctx.fillRect(-mx, -my, W + 2 * mx, H + my);
+  drawNight(cx, cy, R * 1.02 * flick);   // sight ends where the light ends
   ctx.globalCompositeOperation = 'lighter';
   const wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
   wg.addColorStop(0, 'rgba(242,169,59,0.16)'); wg.addColorStop(0.6, 'rgba(242,140,40,0.07)'); wg.addColorStop(1, 'rgba(242,169,59,0)');
@@ -584,9 +618,12 @@ function render() {
   if (PG.on) { pgDrawWorld(); screenT(); }
   PF('pg');
   { // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear
-    screenT(); const hz = ctx.createLinearGradient(0, -my, 0, H * 0.55);
-    hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)');
-    ctx.fillStyle = hz; ctx.fillRect(-mx, -my, W + 2 * mx, my + H * 0.55);
+    screenT();
+    if (!hazeStrip) {   // the vertical gradient drawn once into a 1px-wide strip; stretching it is far cheaper than a gradient fill
+      const c = document.createElement('canvas'); c.width = 1; c.height = 128; const g = c.getContext('2d'), hz = g.createLinearGradient(0, 0, 0, 128);
+      hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)'); g.fillStyle = hz; g.fillRect(0, 0, 1, 128); hazeStrip = c;
+    }
+    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.drawImage(hazeStrip, -mx, -my, W + 2 * mx, my + H * 0.55); ctx.imageSmoothingEnabled = sm;
   }
   ctx = MCTX; PERSP.flat = false; screenT();   // world done (the GPU tilts it); screen tints and the HUD go on the top canvas
   PF('warp');
@@ -615,7 +652,6 @@ function render() {
   }
   PF('overlays');
   // damage text
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const t of texts) {
     const [sx, sy] = toScreen(t.x, t.y); ctx.globalAlpha = clamp(1 - Math.max(0, t.t - ((t.life || 0.7) - 0.35)) / 0.35, 0, 1);
     if (t.crit) {   // crits, 일격 and call-outs: display face, bigger pop, a slight tilt
@@ -633,8 +669,8 @@ function render() {
       ctx.restore(); continue;
     }
     const big = t.v.length > 2 || t.col !== '#efe6d2', pop = t.t < 0.09 ? 1.5 - t.t / 0.09 * 0.5 : 1;   // pop in, then settle
-    ctx.font = `700 ${Math.round((big ? 13 : 11.5) * Math.max(0.85, ZOOM) * pop)}px ${FB}`; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(6,7,12,0.85)';
-    ctx.strokeText(t.v, sx, sy); ctx.fillStyle = t.col; ctx.fillText(t.v, sx, sy);
+    const size = Math.round((big ? 13 : 11.5) * Math.max(0.85, ZOOM));
+    drawText(t.v, sx, sy, `700 ${size}px ${FB}`, t.col, 'center', 'middle', DMG_STROKE, pop);
   }
   ctx.globalAlpha = 1;
   { const fd = G.state === 'clear' ? clamp((G.endT - 2.4) / 1.1, 0, 1) : (G.fadeIn || 0);
@@ -642,6 +678,29 @@ function render() {
   PF('texts');
   drawHUD();
   PF('hud');
+}
+// Night outside the lantern: a light hole drawn once (clear inside 55% of the radius, 0.95 dark at the rim), placed on
+// whole device pixels of the world canvas, with plain dark rectangles around it. Same picture as one radial gradient
+// over the whole view, at a fraction of the cost: only the lit square is sampled, the rest is a flat fill.
+let nightHole = null, hazeStrip = null;
+const SPK = new Map();   // spark colour → three fade batches, reused every frame
+function drawNight(cx, cy, r) {
+  if (!nightHole) {
+    const S = 512, h = S / 2, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(h, h, h * 0.55 / 1.02, h, h, h);
+    gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.62, 'rgba(6,7,14,0.38)'); gr.addColorStop(1, 'rgba(4,5,10,0.95)');
+    g.fillStyle = gr; g.fillRect(0, 0, S, S); nightHole = c;
+  }
+  const k = PERSP.flat ? RS : DPR, ox = PERSP.flat ? PERSP.mx : 0, oy = PERSP.flat ? PERSP.my : 0;   // screen CSS px → this canvas's device px
+  const cw = ctx.canvas.width, ch = ctx.canvas.height, x0 = Math.round((cx - r + ox) * k), y0 = Math.round((cy - r + oy) * k), x1 = Math.round((cx + r + ox) * k), y1 = Math.round((cy + r + oy) * k);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (x1 > x0 && y1 > y0) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.drawImage(nightHole, x0, y0, x1 - x0, y1 - y0); ctx.imageSmoothingEnabled = sm; }
+  const t = clamp(y0, 0, ch), b = clamp(y1, 0, ch), l = clamp(x0, 0, cw), rr = clamp(x1, 0, cw);
+  ctx.fillStyle = 'rgba(4,5,10,0.95)';
+  if (t > 0) ctx.fillRect(0, 0, cw, t);
+  if (b < ch) ctx.fillRect(0, b, cw, ch - b);
+  if (b > t) { if (l > 0) ctx.fillRect(0, t, l, b - t); if (rr < cw) ctx.fillRect(rr, t, cw - rr, b - t); }
+  screenT();
 }
 function drawDark(e) {
   const a = e.fade;
@@ -724,11 +783,11 @@ function drawGlows() {
     if (e.dead || e.inLight || e.parent || e.type === 'dark' || !inView(e.x, e.y, 60)) continue;
     if (e.type === 'imugi') { if (EMIS.imugi) { worldT(); drawImugi(e, true); } continue; }
     if (ART.ok) {
-      if (ED[e.type].ghost) { ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], enemyPose(e)); ctx.globalAlpha = 1; continue; }
-      if (e.pose) { ctx.globalAlpha = 0.22; const q = enemyPose(e); drawPose(q.base, q); ctx.globalAlpha = 1; continue; }   // action pose: faint silhouette, no baked eye glow
+      if (ED[e.type].ghost) { ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], enemyPose(e, undefined, POSE)); ctx.globalAlpha = 1; continue; }
+      if (e.pose) { ctx.globalAlpha = 0.22; const q = enemyPose(e, undefined, POSE); drawPose(q.base, q); ctx.globalAlpha = 1; continue; }   // action pose: faint silhouette, no baked eye glow
       const em = EMIS[e.spr]; if (!em) continue;
       if (Math.sin(G.t * 0.7 + e.bob * 3) > 0.97) continue;
-      ctx.globalAlpha = 0.95; drawEmis(em, enemyPose(e)); ctx.globalAlpha = 1;
+      ctx.globalAlpha = 0.95; drawEmis(em, enemyPose(e, undefined, POSE)); ctx.globalAlpha = 1;
     } else {
       dI(GL.eyeW, e.x - 11, e.y - 13, 12, 12); dI(GL.eyeW, e.x - 1, e.y - 13, 12, 12);
     }
@@ -819,10 +878,10 @@ function drawGlows() {
   for (const e of enemies) if (e.rageT > G.t && !e.dead && inView(e.x, e.y, 20)) { ctx.globalAlpha = 0.7; dI(GL.red, e.x - 10, e.y - 22, 20, 20); }
   ctx.globalAlpha = 1;
   // particles: sparks as velocity streaks batched by colour and fade bucket, embers/souls as glow sprites
-  const SB = {};
+  for (const b of SPK.values()) b[0].length = b[1].length = b[2].length = 0;
   for (const p of parts) {
     const a = Math.max(0, p.life / p.max);
-    if (p.k === 'spark') { const key = p.col + (a > 0.66 ? '|0' : a > 0.33 ? '|1' : '|2'); (SB[key] = SB[key] || []).push(p); continue; }
+    if (p.k === 'spark') { let b = SPK.get(p.col); if (!b) SPK.set(p.col, b = [[], [], []]); b[a > 0.66 ? 0 : a > 0.33 ? 1 : 2].push(p); continue; }
     if (p.k === 'dust' || p.k === 'chip' || p.k === 'shade') continue;
     if (p.k === 'ember' || p.k === 'soul') {
       const img = GL[p.gl] || GL.amber, soulK = p.k === 'soul';
@@ -834,12 +893,12 @@ function drawGlows() {
     }
     ctx.globalAlpha = a * 0.85; ctx.fillStyle = p.col; const z = p.size || 3; ctx.fillRect(p.x - z / 2, p.y - z / 2, z, z);
   }
-  for (const key in SB) {
-    const [col, b] = key.split('|'), list = SB[key], al = b === '0' ? 1 : b === '1' ? 0.62 : 0.3;
-    ctx.globalAlpha = al; ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
+  for (const [col, bs] of SPK) for (let b = 0; b < 3; b++) {   // additive, so the order of the batches doesn't matter
+    const list = bs[b]; if (!list.length) continue;
+    ctx.globalAlpha = b === 0 ? 1 : b === 1 ? 0.62 : 0.3; ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
     for (const p of list) { ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.035, p.y - p.vy * 0.035); }
     ctx.stroke();
-    if (b === '0') { ctx.strokeStyle = '#fffbea'; ctx.lineWidth = 0.9; ctx.stroke(); }
+    if (b === 0) { ctx.strokeStyle = '#fffbea'; ctx.lineWidth = 0.9; ctx.stroke(); }
   }
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
@@ -1021,8 +1080,41 @@ function bar(x, y, w, h, frac, col, bg = 'rgba(239,230,210,0.12)') {
   ctx.fillStyle = bg; ctx.fillRect(x, y, w, h); ctx.fillStyle = col; ctx.fillRect(x, y, w * clamp(frac, 0, 1), h);
 }
 function txt(s, x, y, size, col, align = 'left', font = FB, weight = 400) {
-  ctx.font = `${weight} ${size}px ${font}`; ctx.textAlign = align; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = col; ctx.fillText(s, x, y);
+  drawText(s, x, y, `${weight} ${size}px ${font}`, col, align, 'alphabetic', null, 1);
 }
+// Text is drawn once into a small canvas at device resolution and copied after that. fillText shapes and rasterises
+// the glyphs on every call (strokeText even strokes their outlines); the HUD and the damage numbers repeat the same
+// few strings frame after frame. Copies land on whole device pixels, so they stay as crisp as direct text.
+const TXC = new Map(), DMG_STROKE = ['rgba(6,7,12,0.85)', 3];
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => TXC.clear());   // web fonts arrived: redraw
+function textSprite(s, font, col, base, stroke) {
+  const key = s + '\u0001' + font + '\u0001' + col + '\u0001' + base + '\u0001' + (stroke ? stroke[0] : '') + '\u0001' + DPR;
+  let t = TXC.get(key);
+  if (t) return t;
+  if (TXC.size >= 600) { let n = 0; for (const k of TXC.keys()) { TXC.delete(k); if (++n >= 200) break; } }   // drop the oldest third
+  const c = document.createElement('canvas'), g = c.getContext('2d');
+  g.font = font; g.textBaseline = base; g.textAlign = 'left';
+  const m = g.measureText(s), size = parseFloat(font.replace(/^\d+\s+/, '')) || 12, pad = (stroke ? stroke[1] / 2 : 0) + 2;
+  const asc = Math.max(m.fontBoundingBoxAscent || 0, m.actualBoundingBoxAscent || 0) || size, desc = Math.max(m.fontBoundingBoxDescent || 0, m.actualBoundingBoxDescent || 0, 0);
+  const left = Math.max(0, m.actualBoundingBoxLeft || 0), right = Math.max(m.width, m.actualBoundingBoxRight || 0);
+  const ox = Math.ceil(pad + left), oy = Math.ceil(pad + asc);   // the text origin inside the sprite, CSS px
+  c.width = Math.max(1, Math.ceil((ox + right + pad) * DPR)); c.height = Math.max(1, Math.ceil((oy + desc + pad) * DPR));
+  g.scale(DPR, DPR); g.font = font; g.textBaseline = base; g.textAlign = 'left';
+  if (stroke) { g.lineJoin = 'round'; g.lineWidth = stroke[1]; g.strokeStyle = stroke[0]; g.strokeText(s, ox, oy); }
+  g.fillStyle = col; g.fillText(s, ox, oy);
+  t = { c, ox, oy, adv: m.width }; TXC.set(key, t);
+  return t;
+}
+function drawText(s, x, y, font, col, align, base, stroke, scale) {
+  if (s === '' || s === undefined || s === null) return;
+  const t = textSprite(String(s), font, col, base, stroke), w = t.c.width / DPR, h = t.c.height / DPR;
+  const ax = t.ox + (align === 'center' ? t.adv / 2 : align === 'right' ? t.adv : 0);
+  if (scale === 1) ctx.drawImage(t.c, Math.round((x - ax) * DPR) / DPR, Math.round((y - t.oy) * DPR) / DPR, w, h);
+  else ctx.drawImage(t.c, x - ax * scale, y - t.oy * scale, w * scale, h * scale);
+}
+// One number formatter made while loading: toLocaleString('ko-KR') built a new one every frame, and the first one
+// (locale data setup) stalled the first frame of play.
+const KILLFMT = (() => { try { return new Intl.NumberFormat('ko-KR'); } catch (e) { return null; } })();
 function drawHUD() {
   const st = SAFE.t, sl = SAFE.l, sr = SAFE.r, sb = SAFE.b, narrow = W < 900;
   ctx.imageSmoothingEnabled = true;
@@ -1072,7 +1164,7 @@ function drawHUD() {
   const rx = W - sr - 12;
   if (SPR.coin && ART.ok) dI(SPR.coin, rx - 78, st + 58, 15, 15);
   txt(`엽전 ${P.coins}`, rx, st + 70, 13, '#d9ad45', 'right', FD, 700);
-  txt(`처치 ${P.kills.toLocaleString('ko-KR')}`, rx, st + 87, 11.5, '#a39a86', 'right');
+  txt(`처치 ${KILLFMT ? KILLFMT.format(P.kills) : P.kills}`, rx, st + 87, 11.5, '#a39a86', 'right');
   // slots
   const sy = H - sb - 14 - 30 - 6 - 40;
   P.weapons.forEach((w, i) => { const D = WEAPONS[w.id]; slot(lx0 + i * 44, sy, 40, ICON[w.id], D.glyph, w.evo ? '#f2a93b' : EL_COLOR[D.el], w.evo ? '진' : `${w.lv}`, w.evo); });

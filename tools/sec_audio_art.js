@@ -1,6 +1,6 @@
 /* ---------- art (generated sprite atlas) ---------- */
 const ATLAS = __ATLAS__;
-const ART = { ok: false, meta: {}, src: null, d: 0 }; const EMIS = {}, ICON = {}, ICONURL = {}; let FIRE = null, FOX = null, INK = null;
+const ART = { ok: false, meta: {}, src: null, d: 0 }; const EMIS = {}, ICON = {}, ICONURL = {}; let FIRE = null, FOX = null, INK = null, groundImg = null, groundImg2 = null;
 const SW = s => s.width * (s._s || 1), SH = s => s.height * (s._s || 1);
 // Flipbook VFX (Meshy gpt-image-2 sheets, luminance-keyed, drawn additively). Hit sparks are tinted per element.
 const FX = {}, FXSRC = {};
@@ -26,7 +26,7 @@ const FLOAT = new Set(['egg', 'water', 'wisp', 'saja', 'gseun', 'sonkaksi', 'gri
 function loadImg(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
 async function loadArt() {
   const [atlas, tile] = await Promise.all([loadImg('assets/sprites-__ATLAS_VER__.png'), loadImg('assets/ground.jpg')]);
-  loadImg('assets/ground2.jpg').then(t2 => { groundPat2 = ctx.createPattern(t2, 'repeat'); if (groundPat2 && groundPat2.setTransform && window.DOMMatrix) groundPat2.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0])); }, () => {});   // 2탄 floor, not needed to start
+  loadImg('assets/ground2.jpg').then(t2 => { groundPat2 = ctx.createPattern(t2, 'repeat'); if (groundPat2 && groundPat2.setTransform && window.DOMMatrix) { groundPat2.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0])); groundImg2 = t2; } }, () => {});   // 2탄 floor, not needed to start
   const src = {};
   for (const n in ATLAS.frames) {
     const [x, y, w, h] = ATLAS.frames[n], c = document.createElement('canvas');
@@ -35,7 +35,7 @@ async function loadArt() {
   ART.src = src; buildFx(src);
   for (const id of [...Object.keys(WEAPONS), ...Object.keys(PASSIVES)]) { ICON[id] = src['i_' + id]; try { ICONURL[id] = ICON[id].toDataURL(); } catch (e) {} }
   groundPat = ctx.createPattern(tile, 'repeat');
-  if (groundPat && groundPat.setTransform && window.DOMMatrix) groundPat.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0]));   // 2.5D: the floor is seen at the same tilt as the ellipses (y × 0.62)
+  if (groundPat && groundPat.setTransform && window.DOMMatrix) { groundPat.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0])); groundImg = tile; }   // 2.5D: the floor is seen at the same tilt as the ellipses (y × 0.62)
   ART.meta = ATLAS.meta; ART.ok = true; ART.d = 0;
   applyArtScale();
 }
@@ -54,7 +54,11 @@ function applyArtScale() {
   ART.d = d;
   const A = {};
   for (const n in ART.src) if (!n.startsWith('i_') && !n.startsWith('fx_')) A[n] = scaledArt(ART.src[n], d);
-  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot
+  const dim = c => {   // brightness(0.72) baked in: black at 28% over the opaque pixels only
+    if (!c) return c; const o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const g = o.getContext('2d');
+    g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(0, 0, o.width, o.height); o._s = c._s; return o;
+  };
+  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; SPR[who + v + '_footD'] = dim(A[who + v + '_foot']); if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot (and its darker far copy)
   SPR.player = SPR.yeoni;
   for (const k in FXSRC) FX[k] = FXSRC[k].slice();   // effects keep source resolution: they are drawn at many sizes
   for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae', 'stonelamp', 'sansin', 'spring', 'pagoda', 'offering', 'herbs', 'lotus', 'tbell', 'sonkaksi', 'grim', 'yagwang', 'crow', 'mangtae', 'totem', 'jangsan', 'jangsan_p1', 'jangsan_p2', 'jangsan_p3', 'dueok', 'dueok_p1', 'dueok_p2', 'dueok_p3', 'bulga', 'bulga_p1', 'bulga_p2', 'bulga_p3']) SPR[k] = A[k];
