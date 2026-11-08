@@ -730,7 +730,7 @@ function buyPeddler(i) {
 function closePeddler() { if (G.state !== 'peddler') return; showOnly(null); G.state = 'play'; }
 
 /* ---------- art (generated sprite atlas) ---------- */
-const ATLAS = {"frames":{"fx_ring":[0,0,509,512],"fx_circle":[511,0,445,448],"fx_pillar0":[958,0,90,384],"fx_pillar1":[1050,0,90,384],"fx_pillar2":[1142,0,90,384],"fx_pillar3":[1234,0,90,384],"fx_pillar4":[1326,0,90,384],"fx_pillar5":[1418,0,90,384],"fx_pillar6":[1510,0,90,384],"fx_pillar7":[1602,0,90,384],"fx_claw0":[1694,0,136,256],"fx_claw1":[1832,0,136,256],"fx_claw2":[0,514,136,256],"fx_claw3":[138,514,136,256],"fx_claw4":[276,514,136,256],"fx_claw5":[414,514,136,256],"fx_claw6":[552,514,136,256],"fx_claw7":[690,514,136,256],"fx_geyser0":[828,514,144,256],"fx_geyser1":[974,514,144,256],"fx_geyser2":[1120,514,144,256],"fx_geyser3":[1266,514,144,256],"fx_geyser4":[1412,514,144,256],"fx_geyser5":[1558,514,144,256],"fx_geyser6":[1704,514,144,256],"fx_geyser7":[1850,514,144,256],"gumiho_r0":[0,772,353,255],"gumiho_r1":[355,772,353,255],"gumiho_r2":[710,772,353,255],"gumiho_r3":[1065,772,353,255],"gumiho_r4":[1420,772,353,255],"gumiho_r5":[0,1029,353,255],"gseun_p1":[355,1029,143,243],"gumiho":[500,1029,290,241],"gumiho_e":[792,1029,289,241],"gseun":[1083,1029,122,230],"stall":[1207,1029,250,226],"fx_slash0":[1459,1029,190,224],"fx_slash1":[1651,1029,190,224],"fx_slash2":[1843,1029,190,224],"fx_slash3":[0,1286,190,224],"fx_slash4":[192,1286,190,224],"fx_slash5":[384,1286,190,224],"fx_slash6":[576,1286,190,224],"fx_slash7":[768,1286,190,224],"fx_slam0":[960,1286,288,224],"fx_slam1":[1250,1286,288,224],"fx_slam2":[1540,1286,288,224],"fx_slam3":[0,1512,288,224],"fx_slam4":[290,1512,288,224],"fx_slam5":[580,1512,288,224],"fx_slam6":[870,1512,288,224],"fx_slam7":[1160,1512,288,224],"fx_soul0":[1450,1512,199,224],"fx_soul1":[1651,1512,199,224],"fx_soul2":[0,1738,199,224],"fx_soul3":[201,1738,199,224],"fx_soul4":[402,1738,199,224],"fx_soul5":[603,1738,199,224],"fx_soul6":[804,1738,199,224],"fx_soul7":[1005,1738,199,224],"fx_fire0":[1206,1738,224,216],"fx_fire1":[1432,1738,224,216],"fx_fire2":[1658,1738,224,216],"fx_fire3":[0,1964,224,216],"fx_fire4":[226,1964,224,216],"fx_fire5":[452,1964,224,216],"fx_fire6":[678,1964,224,216],"fx_fire7":[904,1964,224,216],"gumiho_p3":[1130,1964,297,216],"gumiho_p1":[1429,1964,280,208],"shrine":[1711,1964,151,200],"fx_hit0":[0,2182,192,186],"fx_hit1":[194,2182,192,186],"fx_hit2":[388,2182,192,186],"fx_hit3":[582,2182,192,186],"fx_hit4":[776,2182,192,186],"fx_hit5":[970,2182,192,186],"fx_hit6":[1164,2182,192,186],"fx_hit7":[1358,2182,192,186],"tree":[1552,2182,160,180],"sotdae":[1714,2182,66,170],"gumiho_p2":[0,2370,326,168],"gseun_p2":[328,2370,231,166],"gumiho_p0":[561,2370,327,160],"fx_ink0":[890,2370,200,153],"fx_ink1":[1092,2370,200,153],"fx_ink2":[1294,2370,200,153],"fx_ink3":[1496,2370,200,153],"fx_ink4":[1698,2370,200,153],"fx_ink5":[0,2540,200,153],"fx_ink6":[202,2540,200,153],"fx_ink7":[404,2540,200,153],"imugi":[606,2540,150,150],"post":[758,2540,124,150],"imugi_p2":[884,2540,142,141],"jangseung":[1028,2540,90,140],"well":[1120,2540,151,140],"peddler":[1273,2540,141,140],"imugi_p0":[1416,2540,161,139],"bonfire":[1579,2540,120,138],"gseun_p3":[1701,2540,236,137],"cart":[0,2695,150,137],"imugi_p3":[152,2695,150,134],"imugi_p1":[304,2695,142,133],"cairn":[448,2695,82,130],"jars":[532,2695,200,126],"yeoni_se0":[734,2695,76,109],"yeoni_se1":[812,2695,76,109],"yeoni_se2":[890,2695,76,109],"yeoni_se3":[968,2695,76,109],"yeoni_se_body":[1046,2695,76,109],"yeoni_s0":[1124,2695,64,109],"yeoni_s1":[1190,2695,64,109],"yeoni_s2":[1256,2695,64,109],"yeoni_s3":[1322,2695,64,109],"yeoni_s_body":[1388,2695,64,109],"yeoni_n0":[1454,2695,61,109],"yeoni_n1":[1517,2695,61,109],"yeoni_n2":[1580,2695,61,109],"yeoni_n3":[1643,2695,61,109],"yeoni_n_body":[1706,2695,61,109],"danbi_ne0":[1769,2695,70,109],"danbi_ne1":[1841,2695,70,109],"danbi_ne2":[1913,2695,70,109],"danbi_ne3":[0,2834,70,109],"danbi_ne_body":[72,2834,70,109],"mat":[144,2834,150,109],"danbi0":[296,2834,70,108],"danbi1":[368,2834,70,108],"danbi2":[440,2834,70,108],"danbi3":[512,2834,70,108],"yeoni_ese0":[584,2834,76,108],"yeoni_ese1":[662,2834,76,108],"yeoni_ese2":[740,2834,76,108],"yeoni_ese3":[818,2834,76,108],"yeoni_ese_body":[896,2834,76,108],"yeoni_sse0":[974,2834,70,108],"yeoni_sse1":[1046,2834,70,108],"yeoni_sse2":[1118,2834,70,108],"yeoni_sse3":[1190,2834,70,108],"yeoni_sse_body":[1262,2834,70,108],"yeoni_ene0":[1334,2834,71,108],"yeoni_ene1":[1407,2834,71,108],"yeoni_ene2":[1480,2834,71,108],"yeoni_ene3":[1553,2834,71,108],"yeoni_ene_body":[1626,2834,71,108],"yeoni_ne0":[1699,2834,77,108],"yeoni_ne1":[1778,2834,77,108],"yeoni_ne2":[1857,2834,77,108],"yeoni_ne3":[1936,2834,77,108],"yeoni_ne_body":[0,2945,77,108],"yeoni_nne0":[79,2945,62,108],"yeoni_nne1":[143,2945,62,108],"yeoni_nne2":[207,2945,62,108],"yeoni_nne3":[271,2945,62,108],"yeoni_nne_body":[335,2945,62,108],"danbi_body":[399,2945,70,108],"danbi_ese0":[471,2945,68,108],"danbi_ese1":[541,2945,68,108],"danbi_ese2":[611,2945,68,108],"danbi_ese3":[681,2945,68,108],"danbi_ese_body":[751,2945,68,108],"danbi_se0":[821,2945,76,108],"danbi_se1":[899,2945,76,108],"danbi_se2":[977,2945,76,108],"danbi_se3":[1055,2945,76,108],"danbi_se_body":[1133,2945,76,108],"danbi_sse0":[1211,2945,70,108],"danbi_sse1":[1283,2945,70,108],"danbi_sse2":[1355,2945,70,108],"danbi_sse3":[1427,2945,70,108],"danbi_sse_body":[1499,2945,70,108],"danbi_s0":[1571,2945,68,108],"danbi_s1":[1641,2945,68,108],"danbi_s2":[1711,2945,68,108],"danbi_s3":[1781,2945,68,108],"danbi_s_body":[1851,2945,68,108],"danbi_ene0":[1921,2945,67,108],"danbi_ene1":[0,3055,67,108],"danbi_ene2":[69,3055,67,108],"danbi_ene3":[138,3055,67,108],"danbi_ene_body":[207,3055,67,108],"danbi_nne0":[276,3055,65,108],"danbi_nne1":[343,3055,65,108],"danbi_nne2":[410,3055,65,108],"danbi_nne3":[477,3055,65,108],"danbi_nne_body":[544,3055,65,108],"yeoni0":[611,3055,76,107],"yeoni1":[689,3055,76,107],"yeoni2":[767,3055,76,107],"yeoni3":[845,3055,76,107],"yeoni_body":[923,3055,76,107],"danbi_n0":[1001,3055,63,107],"danbi_n1":[1066,3055,63,107],"danbi_n2":[1131,3055,63,107],"danbi_n3":[1196,3055,63,107],"danbi_n_body":[1261,3055,63,107],"saja":[1326,3055,70,90],"fx_beam0":[1398,3055,512,86],"fx_beam1":[0,3165,512,86],"fx_beam2":[514,3165,512,86],"fx_beam3":[1028,3165,512,86],"water":[1542,3165,71,84],"gseun_e":[1615,3165,53,81],"dokkaebi":[1670,3165,91,80],"seg":[1763,3165,94,79],"egg":[1859,3165,60,76],"japgwi":[1921,3165,70,74],"chest":[0,3253,64,67],"jar":[66,3253,56,66],"water_e":[124,3253,51,64],"skylantern":[177,3253,49,64],"i_hollong":[228,3253,64,64],"i_bell":[294,3253,64,64],"i_club":[360,3253,64,64],"i_yukmo":[426,3253,64,64],"i_ink":[492,3253,64,64],"i_talisman":[558,3253,64,64],"i_oiljar":[624,3253,64,64],"i_shoes":[690,3253,64,64],"i_gat":[756,3253,64,64],"i_redink":[822,3253,64,64],"i_mirror":[888,3253,64,64],"i_rice":[954,3253,64,64],"fire0":[1020,3253,43,60],"fire1":[1065,3253,43,60],"fire2":[1110,3253,43,60],"fire3":[1155,3253,43,60],"fox0":[1200,3253,40,60],"fox1":[1242,3253,40,60],"fox2":[1284,3253,40,60],"fox3":[1326,3253,40,60],"wisp":[1368,3253,36,58],"wisp_e":[1406,3253,36,58],"imugi_e":[1444,3253,51,55],"ginseng":[1497,3253,48,54],"magnet":[1547,3253,50,48],"rice":[1599,3253,32,43],"dokkaebi_e":[1633,3253,58,42],"gem3":[1693,3253,29,42],"saja_e":[1724,3253,27,39],"yeoni_ese_arm":[1753,3253,11,38],"talisman":[1766,3253,32,38],"yeoni_se_arm":[1800,3253,9,37],"yeoni_sse_arm":[1811,3253,11,37],"yeoni_arm":[1824,3253,10,36],"yeoni_nne_arm":[1836,3253,11,36],"danbi_ese_arm":[1849,3253,11,36],"danbi_nne_arm":[1862,3253,11,36],"yeoni_s_arm":[1875,3253,11,35],"yeoni_n_arm":[1888,3253,13,35],"danbi_sse_arm":[1903,3253,11,35],"danbi_arm":[1916,3253,12,34],"danbi_se_arm":[1930,3253,11,34],"danbi_n_arm":[1943,3253,13,34],"gem2":[1958,3253,19,34],"danbi_s_arm":[1979,3253,14,32],"danbi_ene_arm":[1995,3253,12,30],"danbi_ne_arm":[2009,3253,11,28],"gem1":[2022,3253,21,28],"oil":[0,3322,22,28],"coin":[24,3322,30,28],"yeoni_ne_foot":[56,3322,13,18],"japgwi_e":[71,3322,26,17],"yeoni_n_foot":[99,3322,11,15],"yeoni_s_foot":[112,3322,13,14],"yeoni_foot":[127,3322,17,13],"yeoni_ene_foot":[146,3322,15,13],"danbi_ne_foot":[163,3322,14,13],"yeoni_se_foot":[179,3322,15,11],"danbi_foot":[196,3322,14,11],"danbi_n_foot":[212,3322,11,11],"yeoni_ese_foot":[225,3322,15,10],"yeoni_sse_foot":[242,3322,16,10],"danbi_ese_foot":[260,3322,14,10],"yeoni_nne_foot":[276,3322,16,9],"danbi_sse_foot":[294,3322,13,9],"danbi_s_foot":[309,3322,10,9],"danbi_nne_foot":[321,3322,13,9],"danbi_se_foot":[336,3322,12,8],"danbi_ene_foot":[350,3322,13,8]},"meta":{"lantern":[7.7,-33.9],"bells":[5.7,-33.4],"ax":{"yeoni":1.9,"yeoni_ese":2.0,"yeoni_se":2.0,"yeoni_sse":1.2,"yeoni_s":1.3,"yeoni_ene":2.1,"yeoni_ne":2.5,"yeoni_nne":0.6,"yeoni_n":1.0,"danbi":-2.0,"danbi_ese":-2.2,"danbi_se":-2.1,"danbi_sse":-2.2,"danbi_s":-1.8,"danbi_ene":-1.7,"danbi_ne":-0.2,"danbi_nne":-1.3,"danbi_n":-1.4},"lamp":{"yeoni":[6.4,-32.9],"yeoni_ese":[6.5,-33.1],"yeoni_se":[7.0,-32.6],"yeoni_sse":[4.4,-34.6],"yeoni_s":[3.7,-36.3],"yeoni_ene":[9.1,-31.6],"yeoni_ne":[9.9,-31.1],"yeoni_nne":[7.8,-27.3],"yeoni_n":[7.6,-25.8],"danbi":[3.7,-32.9],"danbi_ese":[3.5,-33.9],"danbi_se":[6.3,-33.8],"danbi_sse":[3.6,-34.0],"danbi_s":[4.2,-32.1],"danbi_ene":[12.6,-46.0],"danbi_ne":[12.5,-42.6],"danbi_nne":[11.7,-45.4],"danbi_n":[10.4,-44.2]},"lampF":{"yeoni":[[6.4,-32.9],[6.7,-33.1],[6.3,-34.0],[6.1,-33.8]],"yeoni_ese":[[6.5,-33.1],[6.5,-33.1],[6.5,-33.1],[6.5,-33.1]],"yeoni_se":[[7.0,-32.6],[7.2,-32.3],[7.0,-33.4],[6.8,-32.7]],"yeoni_sse":[[4.4,-34.6],[4.4,-34.6],[4.4,-34.6],[4.4,-34.6]],"yeoni_s":[[3.7,-36.3],[3.8,-35.2],[3.6,-34.7],[3.9,-36.3]],"yeoni_ene":[[9.1,-31.6],[9.1,-31.6],[9.1,-31.6],[9.1,-31.6]],"yeoni_ne":[[9.9,-31.1],[10.6,-32.5],[10.6,-32.4],[9.8,-33.0]],"yeoni_nne":[[7.8,-27.3],[7.8,-27.3],[7.8,-27.3],[7.8,-27.3]],"yeoni_n":[[7.6,-25.8],[5.8,-24.9],[7.0,-25.1],[7.0,-25.2]],"danbi":[[3.7,-32.9],[3.7,-36.1],[6.5,-35.9],[5.0,-37.0]],"danbi_ese":[[3.5,-33.9],[3.5,-33.9],[3.5,-33.9],[3.5,-33.9]],"danbi_se":[[6.3,-33.8],[5.1,-32.7],[5.8,-33.0],[7.7,-36.3]],"danbi_sse":[[3.6,-34.0],[3.6,-34.0],[3.6,-34.0],[3.6,-34.0]],"danbi_s":[[4.2,-32.1],[4.3,-32.6],[5.8,-34.9],[5.8,-34.2]],"danbi_ene":[[12.6,-46.0],[12.6,-46.0],[12.6,-46.0],[12.6,-46.0]],"danbi_ne":[[12.5,-42.6],[11.8,-43.5],[11.9,-43.2],[11.8,-44.3]],"danbi_nne":[[11.7,-45.4],[11.7,-45.4],[11.7,-45.4],[11.7,-45.4]],"danbi_n":[[10.4,-44.2],[10.1,-43.8],[10.6,-42.7],[10.4,-43.9]]},"rig":{"yeoni":{"base":2,"hem":96,"split":41,"w":76,"h":107,"fx":[16,58],"arm":{"s":[28,38],"h":[27,66],"o":[23,35],"src":"yeoni"},"fo":[42,94],"fc":38.1,"sep":34.4,"gy":107,"fw":17,"n":2},"yeoni_ese":{"base":0,"hem":101,"split":37,"w":76,"h":108,"fx":[17,58],"arm":{"s":[27,38],"h":[29,67],"o":[23,34],"src":"yeoni_ese"},"fo":[16,98],"fc":36.6,"sep":27.8,"gy":108,"fw":15,"n":2},"yeoni_se":{"base":3,"hem":96,"split":46,"w":76,"h":109,"fx":[26,61],"arm":{"s":[28,39],"h":[28,67],"o":[24,35],"src":"yeoni_se"},"fo":[47,97],"fc":47.3,"sep":35.8,"gy":108,"fw":15,"n":2},"yeoni_sse":{"base":0,"hem":101,"split":33,"w":70,"h":108,"fx":[13,54],"arm":{"s":[25,38],"h":[23,66],"o":[19,34],"src":"yeoni_sse"},"fo":[39,97],"fc":33.0,"sep":27.7,"gy":107,"fw":16,"n":2},"yeoni_s":{"base":0,"hem":95,"split":36,"w":64,"h":109,"fx":[22,48],"arm":{"s":[20,38],"h":[17,64],"o":[14,34],"src":"yeoni_s"},"fo":[23,94],"fc":31.6,"sep":0,"gy":108,"fw":13,"n":1},"yeoni_ene":{"base":0,"hem":97,"split":35,"w":71,"h":108,"fx":[17,54],"arm":{"s":[28,40],"h":[24,68],"src":"yeoni_n","borrow":true,"o":[20,38]},"fo":[17,95],"fc":33.3,"sep":23.0,"gy":108,"fw":15,"n":2},"yeoni_ne":{"base":1,"hem":95,"split":30,"w":77,"h":108,"fx":[17,46],"arm":{"s":[31,41],"h":[27,69],"src":"yeoni_n","borrow":true,"o":[23,39]},"fo":[17,90],"fc":31.6,"sep":32.5,"gy":108,"fw":13,"n":2},"yeoni_nne":{"base":0,"hem":103,"split":26,"w":62,"h":108,"fx":[11,42],"arm":{"s":[10,37],"h":[7,65],"o":[4,34],"src":"yeoni_nne"},"fo":[29,98],"fc":26.5,"sep":20.1,"gy":107,"fw":16,"n":2},"yeoni_n":{"base":0,"hem":99,"split":24,"w":61,"h":109,"fx":[14,34],"arm":{"s":[14,37],"h":[10,65],"o":[6,35],"src":"yeoni_n"},"fo":[25,94],"fc":30.8,"sep":12.7,"gy":109,"fw":11,"n":2},"danbi":{"base":3,"hem":94,"split":27,"w":70,"h":108,"fx":[20,50],"arm":{"s":[18,46],"h":[19,69],"o":[13,41],"src":"danbi"},"fo":[38,97],"fc":32.7,"sep":37.1,"gy":108,"fw":14,"n":2},"danbi_ese":{"base":0,"hem":99,"split":32,"w":68,"h":108,"fx":[8,49],"arm":{"s":[17,46],"h":[17,71],"o":[12,41],"src":"danbi_ese"},"fo":[37,98],"fc":29.3,"sep":30.3,"gy":108,"fw":14,"n":2},"danbi_se":{"base":0,"hem":95,"split":26,"w":76,"h":108,"fx":[17,49],"arm":{"s":[19,47],"h":[19,70],"o":[14,42],"src":"danbi_se"},"fo":[38,100],"fc":34.4,"sep":23.1,"gy":108,"fw":12,"n":2},"danbi_sse":{"base":0,"hem":99,"split":32,"w":70,"h":108,"fx":[10,49],"arm":{"s":[15,46],"h":[15,70],"o":[10,41],"src":"danbi_sse"},"fo":[37,99],"fc":30.1,"sep":28.9,"gy":108,"fw":13,"n":2},"danbi_s":{"base":3,"hem":94,"split":21,"w":68,"h":108,"fx":[15,41],"arm":{"s":[13,45],"h":[10,66],"o":[5,40],"src":"danbi_s"},"fo":[26,99],"fc":30.5,"sep":0,"gy":108,"fw":10,"n":1},"danbi_ene":{"base":0,"hem":99,"split":28,"w":67,"h":108,"fx":[6,45],"arm":{"s":[14,49],"h":[11,70],"o":[7,45],"src":"danbi_ene"},"fo":[33,100],"fc":25.2,"sep":28.5,"gy":108,"fw":13,"n":2},"danbi_ne":{"base":1,"hem":95,"split":30,"w":70,"h":109,"fx":[17,45],"arm":{"s":[15,49],"h":[12,70],"o":[9,46],"src":"danbi_ne"},"fo":[17,96],"fc":32.0,"sep":30.5,"gy":109,"fw":14,"n":2},"danbi_nne":{"base":0,"hem":100,"split":27,"w":65,"h":108,"fx":[7,47],"arm":{"s":[11,45],"h":[8,72],"o":[5,41],"src":"danbi_nne"},"fo":[35,99],"fc":26.9,"sep":30.7,"gy":108,"fw":13,"n":2},"danbi_n":{"base":3,"hem":94,"split":22,"w":63,"h":107,"fx":[18,35],"arm":{"s":[12,45],"h":[8,71],"o":[4,42],"src":"danbi_n"},"fo":[22,96],"fc":26.5,"sep":0,"gy":107,"fw":11,"n":1}},"jarsLamp":[48.2,-39.4],"postLamp":[21.2,-36.9],"emisOff":{"japgwi":[34,26],"water":[20,20],"dokkaebi":[21,0],"saja":[31,30],"wisp":[0,0],"gseun":[33,38],"gumiho":[1,0],"imugi":[97,43]}}};
+const ATLAS = {"frames":{"fx_ring":[0,0,509,512],"fx_circle":[511,0,445,448],"fx_pillar0":[958,0,90,384],"fx_pillar1":[1050,0,90,384],"fx_pillar2":[1142,0,90,384],"fx_pillar3":[1234,0,90,384],"fx_pillar4":[1326,0,90,384],"fx_pillar5":[1418,0,90,384],"fx_pillar6":[1510,0,90,384],"fx_pillar7":[1602,0,90,384],"fx_claw0":[1694,0,136,256],"fx_claw1":[1832,0,136,256],"fx_claw2":[0,514,136,256],"fx_claw3":[138,514,136,256],"fx_claw4":[276,514,136,256],"fx_claw5":[414,514,136,256],"fx_claw6":[552,514,136,256],"fx_claw7":[690,514,136,256],"fx_geyser0":[828,514,144,256],"fx_geyser1":[974,514,144,256],"fx_geyser2":[1120,514,144,256],"fx_geyser3":[1266,514,144,256],"fx_geyser4":[1412,514,144,256],"fx_geyser5":[1558,514,144,256],"fx_geyser6":[1704,514,144,256],"fx_geyser7":[1850,514,144,256],"gseun_p1":[0,772,143,243],"gumiho":[145,772,290,241],"gumiho_e":[437,772,289,241],"gseun":[728,772,122,230],"stall":[852,772,250,226],"fx_slash0":[1104,772,190,224],"fx_slash1":[1296,772,190,224],"fx_slash2":[1488,772,190,224],"fx_slash3":[1680,772,190,224],"fx_slash4":[0,1017,190,224],"fx_slash5":[192,1017,190,224],"fx_slash6":[384,1017,190,224],"fx_slash7":[576,1017,190,224],"fx_slam0":[768,1017,288,224],"fx_slam1":[1058,1017,288,224],"fx_slam2":[1348,1017,288,224],"fx_slam3":[1638,1017,288,224],"fx_slam4":[0,1243,288,224],"fx_slam5":[290,1243,288,224],"fx_slam6":[580,1243,288,224],"fx_slam7":[870,1243,288,224],"fx_soul0":[1160,1243,199,224],"fx_soul1":[1361,1243,199,224],"fx_soul2":[1562,1243,199,224],"fx_soul3":[1763,1243,199,224],"fx_soul4":[0,1469,199,224],"fx_soul5":[201,1469,199,224],"fx_soul6":[402,1469,199,224],"fx_soul7":[603,1469,199,224],"fx_fire0":[804,1469,224,216],"fx_fire1":[1030,1469,224,216],"fx_fire2":[1256,1469,224,216],"fx_fire3":[1482,1469,224,216],"fx_fire4":[1708,1469,224,216],"fx_fire5":[0,1695,224,216],"fx_fire6":[226,1695,224,216],"fx_fire7":[452,1695,224,216],"gumiho_p3":[678,1695,297,216],"gumiho_p1":[977,1695,280,208],"shrine":[1259,1695,151,200],"fx_hit0":[1412,1695,192,186],"fx_hit1":[1606,1695,192,186],"fx_hit2":[1800,1695,192,186],"fx_hit3":[0,1913,192,186],"fx_hit4":[194,1913,192,186],"fx_hit5":[388,1913,192,186],"fx_hit6":[582,1913,192,186],"fx_hit7":[776,1913,192,186],"gumiho_r0":[970,1913,369,181],"gumiho_r1":[1341,1913,369,181],"gumiho_r2":[0,2101,369,181],"gumiho_r3":[371,2101,369,181],"gumiho_r4":[742,2101,369,181],"gumiho_r5":[1113,2101,369,181],"tree":[1484,2101,160,180],"sotdae":[1646,2101,66,170],"gumiho_p2":[1714,2101,326,168],"gseun_p2":[0,2284,231,166],"gumiho_p0":[233,2284,327,160],"fx_ink0":[562,2284,200,153],"fx_ink1":[764,2284,200,153],"fx_ink2":[966,2284,200,153],"fx_ink3":[1168,2284,200,153],"fx_ink4":[1370,2284,200,153],"fx_ink5":[1572,2284,200,153],"fx_ink6":[1774,2284,200,153],"fx_ink7":[0,2452,200,153],"imugi":[202,2452,150,150],"post":[354,2452,124,150],"imugi_p2":[480,2452,142,141],"jangseung":[624,2452,90,140],"well":[716,2452,151,140],"peddler":[869,2452,141,140],"imugi_p0":[1012,2452,161,139],"bonfire":[1175,2452,120,138],"gseun_p3":[1297,2452,236,137],"cart":[1535,2452,150,137],"imugi_p3":[1687,2452,150,134],"imugi_p1":[1839,2452,142,133],"cairn":[0,2607,82,130],"jars":[84,2607,200,126],"yeoni_se0":[286,2607,76,109],"yeoni_se1":[364,2607,76,109],"yeoni_se2":[442,2607,76,109],"yeoni_se3":[520,2607,76,109],"yeoni_se_body":[598,2607,76,109],"yeoni_s0":[676,2607,64,109],"yeoni_s1":[742,2607,64,109],"yeoni_s2":[808,2607,64,109],"yeoni_s3":[874,2607,64,109],"yeoni_s_body":[940,2607,64,109],"yeoni_n0":[1006,2607,61,109],"yeoni_n1":[1069,2607,61,109],"yeoni_n2":[1132,2607,61,109],"yeoni_n3":[1195,2607,61,109],"yeoni_n_body":[1258,2607,61,109],"danbi_ne0":[1321,2607,70,109],"danbi_ne1":[1393,2607,70,109],"danbi_ne2":[1465,2607,70,109],"danbi_ne3":[1537,2607,70,109],"danbi_ne_body":[1609,2607,70,109],"mat":[1681,2607,150,109],"danbi0":[1833,2607,70,108],"danbi1":[1905,2607,70,108],"danbi2":[0,2739,70,108],"danbi3":[72,2739,70,108],"yeoni_ese0":[144,2739,76,108],"yeoni_ese1":[222,2739,76,108],"yeoni_ese2":[300,2739,76,108],"yeoni_ese3":[378,2739,76,108],"yeoni_ese_body":[456,2739,76,108],"yeoni_sse0":[534,2739,70,108],"yeoni_sse1":[606,2739,70,108],"yeoni_sse2":[678,2739,70,108],"yeoni_sse3":[750,2739,70,108],"yeoni_sse_body":[822,2739,70,108],"yeoni_ene0":[894,2739,71,108],"yeoni_ene1":[967,2739,71,108],"yeoni_ene2":[1040,2739,71,108],"yeoni_ene3":[1113,2739,71,108],"yeoni_ene_body":[1186,2739,71,108],"yeoni_ne0":[1259,2739,77,108],"yeoni_ne1":[1338,2739,77,108],"yeoni_ne2":[1417,2739,77,108],"yeoni_ne3":[1496,2739,77,108],"yeoni_ne_body":[1575,2739,77,108],"yeoni_nne0":[1654,2739,62,108],"yeoni_nne1":[1718,2739,62,108],"yeoni_nne2":[1782,2739,62,108],"yeoni_nne3":[1846,2739,62,108],"yeoni_nne_body":[1910,2739,62,108],"danbi_body":[1974,2739,70,108],"danbi_ese0":[0,2849,68,108],"danbi_ese1":[70,2849,68,108],"danbi_ese2":[140,2849,68,108],"danbi_ese3":[210,2849,68,108],"danbi_ese_body":[280,2849,68,108],"danbi_se0":[350,2849,76,108],"danbi_se1":[428,2849,76,108],"danbi_se2":[506,2849,76,108],"danbi_se3":[584,2849,76,108],"danbi_se_body":[662,2849,76,108],"danbi_sse0":[740,2849,70,108],"danbi_sse1":[812,2849,70,108],"danbi_sse2":[884,2849,70,108],"danbi_sse3":[956,2849,70,108],"danbi_sse_body":[1028,2849,70,108],"danbi_s0":[1100,2849,68,108],"danbi_s1":[1170,2849,68,108],"danbi_s2":[1240,2849,68,108],"danbi_s3":[1310,2849,68,108],"danbi_s_body":[1380,2849,68,108],"danbi_ene0":[1450,2849,67,108],"danbi_ene1":[1519,2849,67,108],"danbi_ene2":[1588,2849,67,108],"danbi_ene3":[1657,2849,67,108],"danbi_ene_body":[1726,2849,67,108],"danbi_nne0":[1795,2849,65,108],"danbi_nne1":[1862,2849,65,108],"danbi_nne2":[1929,2849,65,108],"danbi_nne3":[0,2959,65,108],"danbi_nne_body":[67,2959,65,108],"yeoni0":[134,2959,76,107],"yeoni1":[212,2959,76,107],"yeoni2":[290,2959,76,107],"yeoni3":[368,2959,76,107],"yeoni_body":[446,2959,76,107],"danbi_n0":[524,2959,63,107],"danbi_n1":[589,2959,63,107],"danbi_n2":[654,2959,63,107],"danbi_n3":[719,2959,63,107],"danbi_n_body":[784,2959,63,107],"saja":[849,2959,70,90],"fx_beam0":[921,2959,512,86],"fx_beam1":[1435,2959,512,86],"fx_beam2":[0,3069,512,86],"fx_beam3":[514,3069,512,86],"water":[1028,3069,71,84],"gseun_e":[1101,3069,53,81],"dokkaebi":[1156,3069,91,80],"seg":[1249,3069,94,79],"egg":[1345,3069,60,76],"japgwi":[1407,3069,70,74],"chest":[1479,3069,64,67],"jar":[1545,3069,56,66],"water_e":[1603,3069,51,64],"skylantern":[1656,3069,49,64],"i_hollong":[1707,3069,64,64],"i_bell":[1773,3069,64,64],"i_club":[1839,3069,64,64],"i_yukmo":[1905,3069,64,64],"i_ink":[1971,3069,64,64],"i_talisman":[0,3157,64,64],"i_oiljar":[66,3157,64,64],"i_shoes":[132,3157,64,64],"i_gat":[198,3157,64,64],"i_redink":[264,3157,64,64],"i_mirror":[330,3157,64,64],"i_rice":[396,3157,64,64],"fire0":[462,3157,43,60],"fire1":[507,3157,43,60],"fire2":[552,3157,43,60],"fire3":[597,3157,43,60],"fox0":[642,3157,40,60],"fox1":[684,3157,40,60],"fox2":[726,3157,40,60],"fox3":[768,3157,40,60],"wisp":[810,3157,36,58],"wisp_e":[848,3157,36,58],"imugi_e":[886,3157,51,55],"ginseng":[939,3157,48,54],"magnet":[989,3157,50,48],"rice":[1041,3157,32,43],"dokkaebi_e":[1075,3157,58,42],"gem3":[1135,3157,29,42],"saja_e":[1166,3157,27,39],"yeoni_ese_arm":[1195,3157,11,38],"talisman":[1208,3157,32,38],"yeoni_se_arm":[1242,3157,9,37],"yeoni_sse_arm":[1253,3157,11,37],"yeoni_arm":[1266,3157,10,36],"yeoni_nne_arm":[1278,3157,11,36],"danbi_ese_arm":[1291,3157,11,36],"danbi_nne_arm":[1304,3157,11,36],"yeoni_s_arm":[1317,3157,11,35],"yeoni_n_arm":[1330,3157,13,35],"danbi_sse_arm":[1345,3157,11,35],"danbi_arm":[1358,3157,12,34],"danbi_se_arm":[1372,3157,11,34],"danbi_n_arm":[1385,3157,13,34],"gem2":[1400,3157,19,34],"danbi_s_arm":[1421,3157,14,32],"danbi_ene_arm":[1437,3157,12,30],"danbi_ne_arm":[1451,3157,11,28],"gem1":[1464,3157,21,28],"oil":[1487,3157,22,28],"coin":[1511,3157,30,28],"yeoni_ne_foot":[1543,3157,13,18],"japgwi_e":[1558,3157,26,17],"yeoni_n_foot":[1586,3157,11,15],"yeoni_s_foot":[1599,3157,13,14],"yeoni_foot":[1614,3157,17,13],"yeoni_ene_foot":[1633,3157,15,13],"danbi_ne_foot":[1650,3157,14,13],"yeoni_se_foot":[1666,3157,15,11],"danbi_foot":[1683,3157,14,11],"danbi_n_foot":[1699,3157,11,11],"yeoni_ese_foot":[1712,3157,15,10],"yeoni_sse_foot":[1729,3157,16,10],"danbi_ese_foot":[1747,3157,14,10],"yeoni_nne_foot":[1763,3157,16,9],"danbi_sse_foot":[1781,3157,13,9],"danbi_s_foot":[1796,3157,10,9],"danbi_nne_foot":[1808,3157,13,9],"danbi_se_foot":[1823,3157,12,8],"danbi_ene_foot":[1837,3157,13,8]},"meta":{"lantern":[7.7,-33.9],"bells":[5.7,-33.4],"ax":{"yeoni":1.9,"yeoni_ese":2.0,"yeoni_se":2.0,"yeoni_sse":1.2,"yeoni_s":1.3,"yeoni_ene":2.1,"yeoni_ne":2.5,"yeoni_nne":0.6,"yeoni_n":1.0,"danbi":-2.0,"danbi_ese":-2.2,"danbi_se":-2.1,"danbi_sse":-2.2,"danbi_s":-1.8,"danbi_ene":-1.7,"danbi_ne":-0.2,"danbi_nne":-1.3,"danbi_n":-1.4},"lamp":{"yeoni":[6.4,-32.9],"yeoni_ese":[6.5,-33.1],"yeoni_se":[7.0,-32.6],"yeoni_sse":[4.4,-34.6],"yeoni_s":[3.7,-36.3],"yeoni_ene":[9.1,-31.6],"yeoni_ne":[9.9,-31.1],"yeoni_nne":[7.8,-27.3],"yeoni_n":[7.6,-25.8],"danbi":[3.7,-32.9],"danbi_ese":[3.5,-33.9],"danbi_se":[6.3,-33.8],"danbi_sse":[3.6,-34.0],"danbi_s":[4.2,-32.1],"danbi_ene":[12.6,-46.0],"danbi_ne":[12.5,-42.6],"danbi_nne":[11.7,-45.4],"danbi_n":[10.4,-44.2]},"lampF":{"yeoni":[[6.4,-32.9],[6.7,-33.1],[6.3,-34.0],[6.1,-33.8]],"yeoni_ese":[[6.5,-33.1],[6.5,-33.1],[6.5,-33.1],[6.5,-33.1]],"yeoni_se":[[7.0,-32.6],[7.2,-32.3],[7.0,-33.4],[6.8,-32.7]],"yeoni_sse":[[4.4,-34.6],[4.4,-34.6],[4.4,-34.6],[4.4,-34.6]],"yeoni_s":[[3.7,-36.3],[3.8,-35.2],[3.6,-34.7],[3.9,-36.3]],"yeoni_ene":[[9.1,-31.6],[9.1,-31.6],[9.1,-31.6],[9.1,-31.6]],"yeoni_ne":[[9.9,-31.1],[10.6,-32.5],[10.6,-32.4],[9.8,-33.0]],"yeoni_nne":[[7.8,-27.3],[7.8,-27.3],[7.8,-27.3],[7.8,-27.3]],"yeoni_n":[[7.6,-25.8],[5.8,-24.9],[7.0,-25.1],[7.0,-25.2]],"danbi":[[3.7,-32.9],[3.7,-36.1],[6.5,-35.9],[5.0,-37.0]],"danbi_ese":[[3.5,-33.9],[3.5,-33.9],[3.5,-33.9],[3.5,-33.9]],"danbi_se":[[6.3,-33.8],[5.1,-32.7],[5.8,-33.0],[7.7,-36.3]],"danbi_sse":[[3.6,-34.0],[3.6,-34.0],[3.6,-34.0],[3.6,-34.0]],"danbi_s":[[4.2,-32.1],[4.3,-32.6],[5.8,-34.9],[5.8,-34.2]],"danbi_ene":[[12.6,-46.0],[12.6,-46.0],[12.6,-46.0],[12.6,-46.0]],"danbi_ne":[[12.5,-42.6],[11.8,-43.5],[11.9,-43.2],[11.8,-44.3]],"danbi_nne":[[11.7,-45.4],[11.7,-45.4],[11.7,-45.4],[11.7,-45.4]],"danbi_n":[[10.4,-44.2],[10.1,-43.8],[10.6,-42.7],[10.4,-43.9]]},"rig":{"yeoni":{"base":2,"hem":96,"split":41,"w":76,"h":107,"fx":[16,58],"arm":{"s":[28,38],"h":[27,66],"o":[23,35],"src":"yeoni"},"fo":[42,94],"fc":38.1,"sep":34.4,"gy":107,"fw":17,"n":2},"yeoni_ese":{"base":0,"hem":101,"split":37,"w":76,"h":108,"fx":[17,58],"arm":{"s":[27,38],"h":[29,67],"o":[23,34],"src":"yeoni_ese"},"fo":[16,98],"fc":36.6,"sep":27.8,"gy":108,"fw":15,"n":2},"yeoni_se":{"base":3,"hem":96,"split":46,"w":76,"h":109,"fx":[26,61],"arm":{"s":[28,39],"h":[28,67],"o":[24,35],"src":"yeoni_se"},"fo":[47,97],"fc":47.3,"sep":35.8,"gy":108,"fw":15,"n":2},"yeoni_sse":{"base":0,"hem":101,"split":33,"w":70,"h":108,"fx":[13,54],"arm":{"s":[25,38],"h":[23,66],"o":[19,34],"src":"yeoni_sse"},"fo":[39,97],"fc":33.0,"sep":27.7,"gy":107,"fw":16,"n":2},"yeoni_s":{"base":0,"hem":95,"split":36,"w":64,"h":109,"fx":[22,48],"arm":{"s":[20,38],"h":[17,64],"o":[14,34],"src":"yeoni_s"},"fo":[23,94],"fc":31.6,"sep":0,"gy":108,"fw":13,"n":1},"yeoni_ene":{"base":0,"hem":97,"split":35,"w":71,"h":108,"fx":[17,54],"arm":{"s":[28,40],"h":[24,68],"src":"yeoni_n","borrow":true,"o":[20,38]},"fo":[17,95],"fc":33.3,"sep":23.0,"gy":108,"fw":15,"n":2},"yeoni_ne":{"base":1,"hem":95,"split":30,"w":77,"h":108,"fx":[17,46],"arm":{"s":[31,41],"h":[27,69],"src":"yeoni_n","borrow":true,"o":[23,39]},"fo":[17,90],"fc":31.6,"sep":32.5,"gy":108,"fw":13,"n":2},"yeoni_nne":{"base":0,"hem":103,"split":26,"w":62,"h":108,"fx":[11,42],"arm":{"s":[10,37],"h":[7,65],"o":[4,34],"src":"yeoni_nne"},"fo":[29,98],"fc":26.5,"sep":20.1,"gy":107,"fw":16,"n":2},"yeoni_n":{"base":0,"hem":99,"split":24,"w":61,"h":109,"fx":[14,34],"arm":{"s":[14,37],"h":[10,65],"o":[6,35],"src":"yeoni_n"},"fo":[25,94],"fc":30.8,"sep":12.7,"gy":109,"fw":11,"n":2},"danbi":{"base":3,"hem":94,"split":27,"w":70,"h":108,"fx":[20,50],"arm":{"s":[18,46],"h":[19,69],"o":[13,41],"src":"danbi"},"fo":[38,97],"fc":32.7,"sep":37.1,"gy":108,"fw":14,"n":2},"danbi_ese":{"base":0,"hem":99,"split":32,"w":68,"h":108,"fx":[8,49],"arm":{"s":[17,46],"h":[17,71],"o":[12,41],"src":"danbi_ese"},"fo":[37,98],"fc":29.3,"sep":30.3,"gy":108,"fw":14,"n":2},"danbi_se":{"base":0,"hem":95,"split":26,"w":76,"h":108,"fx":[17,49],"arm":{"s":[19,47],"h":[19,70],"o":[14,42],"src":"danbi_se"},"fo":[38,100],"fc":34.4,"sep":23.1,"gy":108,"fw":12,"n":2},"danbi_sse":{"base":0,"hem":99,"split":32,"w":70,"h":108,"fx":[10,49],"arm":{"s":[15,46],"h":[15,70],"o":[10,41],"src":"danbi_sse"},"fo":[37,99],"fc":30.1,"sep":28.9,"gy":108,"fw":13,"n":2},"danbi_s":{"base":3,"hem":94,"split":21,"w":68,"h":108,"fx":[15,41],"arm":{"s":[13,45],"h":[10,66],"o":[5,40],"src":"danbi_s"},"fo":[26,99],"fc":30.5,"sep":0,"gy":108,"fw":10,"n":1},"danbi_ene":{"base":0,"hem":99,"split":28,"w":67,"h":108,"fx":[6,45],"arm":{"s":[14,49],"h":[11,70],"o":[7,45],"src":"danbi_ene"},"fo":[33,100],"fc":25.2,"sep":28.5,"gy":108,"fw":13,"n":2},"danbi_ne":{"base":1,"hem":95,"split":30,"w":70,"h":109,"fx":[17,45],"arm":{"s":[15,49],"h":[12,70],"o":[9,46],"src":"danbi_ne"},"fo":[17,96],"fc":32.0,"sep":30.5,"gy":109,"fw":14,"n":2},"danbi_nne":{"base":0,"hem":100,"split":27,"w":65,"h":108,"fx":[7,47],"arm":{"s":[11,45],"h":[8,72],"o":[5,41],"src":"danbi_nne"},"fo":[35,99],"fc":26.9,"sep":30.7,"gy":108,"fw":13,"n":2},"danbi_n":{"base":3,"hem":94,"split":22,"w":63,"h":107,"fx":[18,35],"arm":{"s":[12,45],"h":[8,71],"o":[4,42],"src":"danbi_n"},"fo":[22,96],"fc":26.5,"sep":0,"gy":107,"fw":11,"n":1}},"jarsLamp":[48.2,-39.4],"postLamp":[21.2,-36.9],"emisOff":{"japgwi":[34,26],"water":[20,20],"dokkaebi":[21,0],"saja":[31,30],"wisp":[0,0],"gseun":[33,38],"gumiho":[1,0],"imugi":[97,43]}}};
 const ART = { ok: false, meta: {}, src: null, d: 0 }; const EMIS = {}, ICON = {}, ICONURL = {}; let FIRE = null, FOX = null, INK = null;
 const SW = s => s.width * (s._s || 1), SH = s => s.height * (s._s || 1);
 // Flipbook VFX (Meshy gpt-image-2 sheets, luminance-keyed, drawn additively). Hit sparks are tinted per element.
@@ -755,7 +755,7 @@ function buildFx(src) {
 const FLOAT = new Set(['egg', 'water', 'wisp', 'saja', 'gseun']);
 function loadImg(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
 async function loadArt() {
-  const [atlas, tile] = await Promise.all([loadImg('assets/sprites-8c8f77072c.png'), loadImg('assets/ground.jpg')]);
+  const [atlas, tile] = await Promise.all([loadImg('assets/sprites-298e1f4f43.png'), loadImg('assets/ground.jpg')]);
   const src = {};
   for (const n in ATLAS.frames) {
     const [x, y, w, h] = ATLAS.frames[n], c = document.createElement('canvas');
@@ -764,7 +764,7 @@ async function loadArt() {
   ART.src = src; buildFx(src);
   for (const id of [...Object.keys(WEAPONS), ...Object.keys(PASSIVES)]) { ICON[id] = src['i_' + id]; try { ICONURL[id] = ICON[id].toDataURL(); } catch (e) {} }
   groundPat = ctx.createPattern(tile, 'repeat');
-  if (groundPat && groundPat.setTransform && window.DOMMatrix) groundPat.setTransform(new DOMMatrix([0.5, 0, 0, 0.5, 0, 0]));
+  if (groundPat && groundPat.setTransform && window.DOMMatrix) groundPat.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0]));   // 2.5D: the floor is seen at the same tilt as the ellipses (y × 0.62)
   ART.meta = ATLAS.meta; ART.ok = true; ART.d = 0;
   applyArtScale();
 }
@@ -910,10 +910,11 @@ const xpFor = l => l < 10 ? 4 + (l - 1) * 6 : l < 25 ? 58 + (l - 10) * 11 : 223 
 const WSLOTS = 5, PSLOTS = 4;   // 체험판은 무기 6종·패시브 6종이라 칸을 줄여 선택을 강제
 const WARM = 60, GREED = 30;    // 빛 3구간: 60 이상 온기(회복), 30 이하 탐욕(경험치·엽전 ×2)
 const RICE_CD = 20;
+const FEET = 12;   // the drawings stand 12px below their position: floor effects are centred there
 // 놀이터 (playground): no clock, no waves; spawn anything, force any attack, slow time, inspect the walk cycle.
 const PG = { on: false, god: true, immortal: false, keep: false, target: {}, weapons: true, freeze: false, auto: true, mobAtk: true, hit: false, lead: true, bright: false, scale: 1, zoom: 1, spd: 1, walk: null, wT: 0, step: 0 };
 const pgAuto = () => !PG.on || PG.auto, pgMob = () => !PG.on || PG.mobAtk;
-const GEAR_WU = { club: 0.12, yukmo: 0.3, bell: 0.16, talisman: 0.1 };   // held-weapon wind-up (s) before the hit
+const GEAR_WU = { club: 0.24, yukmo: 0.4, bell: 0.16, talisman: 0.1 };   // includes reaching down to draw a hip-worn club   // held-weapon wind-up (s) before the hit
 const FIRE_T = 420;
 const MOVE = { acc: 0.05, dec: 0.07, steer: 0 };   // 이동 곡선 시간상수(초): 플레이어 가속·감속. 요괴 조향은 0(즉시) — 0.08~0.18초는 봇 승률을 크게 떨어뜨림, 대신 화면 위치·방향만 부드럽게 보간             // 7분부터 도깨비불이 화염구를 던짐             // 주먹밥은 30초에 한 번까지만 떨어짐 (처치 수에 비례한 회복 차단)
 const RING = { n: 56, rows: 2, gap: 36, hp: 3, knock: 0.3, scale: 1.2, spd: 62, life: 45 };   // 포위진: 두 겹 원진이 소환 지점으로 조여 옴 → 뚫고 나가야 함
@@ -1263,12 +1264,12 @@ function updateWeapons(dt) {
       w.cd = t.cd[L] * cdM;
       const R = w.evo ? 240 : t.R[L], dmg = w.evo ? 70 : t.dmg[L]; w.at = G.t;
       forTargets(P.x, P.y, R, e => { hurtEnemy(e, dmg, w, { knock: 60 }); if (w.evo && !e.boss) e.stun = 1; });
-      fx({ k: 'fb', a: 'slam', x: P.x, y: P.y + 6, s: R * 2.4, dur: 0.55 }); sfx('slam'); G.shake = Math.max(G.shake, w.evo ? 6 : 3);
-      fx({ k: 'fb', a: 'hit_earth', x: P.x, y: P.y - 4, s: R * 0.8, dur: 0.18, rot: rnd(0, TAU) });
-      if (w.evo) fx({ k: 'sigil', x: P.x, y: P.y + 6, r: R * 0.95, r0: R * 0.4, dur: 0.8, spin: 2.5, al: 0.75 });
-      if (w.trait === 'quake') { effects.push({ k: 'quake', x: P.x, y: P.y, r: R * 0.85, dmg: dmg * 0.25, w, t: 0, dur: 2, tick: 0.3 }); crackFx(P.x, P.y, R * 0.8); }
+      fx({ k: 'fb', a: 'slam', x: P.x, y: P.y + FEET, s: R * 2.4, dur: 0.55 }); sfx('slam'); G.shake = Math.max(G.shake, w.evo ? 6 : 3);
+      { const fa2 = Math.atan2(P.face.y, P.face.x); fx({ k: 'fb', a: 'hit_earth', x: P.x + Math.cos(fa2) * 12, y: P.y + FEET + Math.sin(fa2) * 6, s: R * 0.8, dur: 0.18, rot: rnd(0, TAU) }); }   // where the stake goes into the ground
+      if (w.evo) fx({ k: 'sigil', x: P.x, y: P.y + FEET, r: R * 0.95, r0: R * 0.4, dur: 0.8, spin: 2.5, al: 0.75 });
+      if (w.trait === 'quake') { effects.push({ k: 'quake', x: P.x, y: P.y, r: R * 0.85, dmg: dmg * 0.25, w, t: 0, dur: 2, tick: 0.3 }); crackFx(P.x, P.y + FEET, R * 0.8); }
       damageProps(P.x, P.y, R);
-      for (let i = 0; i < (REDUCED ? 4 : 10); i++) { const a = rnd(0, TAU), v = rnd(140, 320); addPart({ k: 'dust', x: P.x + Math.cos(a) * 20, y: P.y + 6 + Math.sin(a) * 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6, life: rnd(0.3, 0.55), max: 0.55, col: '#b89a64', size: rnd(10, 18), drag: 7 }); }
+      for (let i = 0; i < (REDUCED ? 4 : 10); i++) { const a = rnd(0, TAU), v = rnd(140, 320); addPart({ k: 'dust', x: P.x + Math.cos(a) * 20, y: P.y + FEET + Math.sin(a) * 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6, life: rnd(0.3, 0.55), max: 0.55, col: '#b89a64', size: rnd(10, 18), drag: 7 }); }
     } else if (w.id === 'ink') {
       if (!P.moving) { w.cd = 0.05; continue; }
       w.cd = t.cd[L] * cdM;
@@ -1341,7 +1342,7 @@ function updateEffects(dt) {
       });
       damageProps(P.x, P.y, r, f.hitp || (f.hitp = new Set()));
     } else if (f.k === 'quake') {   // 땅울림: the slam keeps shaking the ground
-      f.tick -= dt; if (f.tick <= 0) { f.tick = 0.4; forTargets(f.x, f.y, f.r, e => hurtEnemy(e, f.dmg, f.w)); for (let i = 0; i < 3; i++) { const a = rnd(0, TAU), r2 = rnd(0, f.r); chips(f.x + Math.cos(a) * r2, f.y + Math.sin(a) * r2 * 0.6, '#9a8060', 2); } G.shake = Math.max(G.shake, 1.2); }
+      f.tick -= dt; if (f.tick <= 0) { f.tick = 0.4; forTargets(f.x, f.y, f.r, e => hurtEnemy(e, f.dmg, f.w)); for (let i = 0; i < 3; i++) { const a = rnd(0, TAU), r2 = rnd(0, f.r); chips(f.x + Math.cos(a) * r2, f.y + FEET + Math.sin(a) * r2 * 0.62, '#9a8060', 2); } G.shake = Math.max(G.shake, 1.2); }
     }
   }
   effects = effects.filter(f => f.t < f.dur);
@@ -1623,7 +1624,8 @@ function bossMove(e, tx, ty, s, dt, tau) {   // inertial steering: bosses accele
   const vx = ex / el * s * arrive, vy = ey / el * s * arrive;
   e.mvx = (e.mvx || 0) + (vx - (e.mvx || 0)) * k; e.mvy = (e.mvy || 0) + (vy - (e.mvy || 0)) * k;
   e.x += e.mvx * dt; e.y += e.mvy * dt; e.wk = (e.wk || 0) + Math.hypot(e.mvx, e.mvy) * dt;
-  if (e.mvx < -15) e.fx = -1; else if (e.mvx > 15) e.fx = 1;
+  const ft = e.type === 'gseun' ? 40 : 15;   // the wraith only turns round when it really changes course
+  if (e.mvx < -ft) e.fx = -1; else if (e.mvx > ft) e.fx = 1;
 }
 function setPose(e, p) { if (e.pose !== p) { e.prevPose = e.pose ?? null; e.pose = p; e.poseT = 0; } }
 function ghostTrail(e, dt, every = 0.035) {   // afterimages while dashing, drawn additively and fading over 0.3s
@@ -1646,20 +1648,20 @@ function shadeBurst(x, y, n, s = 1) {
 function clawFx(z) {
   const s = z.big ? 1.3 : 1;
   fx({ k: 'flash', x: z.x, y: z.y - 22, r: 80 * s, gl: 'violet', dur: 0.16 }); fx({ k: 'flash', x: z.x, y: z.y - 10, r: 36 * s, gl: 'white', dur: 0.08 });
-  fx({ k: 'fb', a: 'claw', x: z.x, y: z.y + 10, s: 240 * s, dur: 0.48, anchor: 'b' });
-  shock(z.x, z.y, z.r * 1.9 * s, '#c49bff', 0.42, 6); shock(z.x, z.y, z.r * 1.05 * s, '#ffffff', 0.16, 2.5);
-  crackFx(z.x, z.y, z.r * 1.2 * s); shadeBurst(z.x, z.y, 8, s);
+  fx({ k: 'fb', a: 'claw', x: z.x, y: z.y + FEET, s: 240 * s, dur: 0.48, anchor: 'b' });
+  shock(z.x, z.y + FEET, z.r * 1.9 * s, '#c49bff', 0.42, 6); shock(z.x, z.y + FEET, z.r * 1.05 * s, '#ffffff', 0.16, 2.5);
+  crackFx(z.x, z.y + FEET, z.r * 1.2 * s); shadeBurst(z.x, z.y + FEET, 8, s);
   chips(z.x, z.y, '#2e2540', 9); chips(z.x, z.y, '#8a6cc0', 4);
   sparks(z.x, z.y - 16, '#d8b8ff', 12, 140, 340, -90);
   G.shake = Math.max(G.shake, z.first ? 7 : 4); if (z.first) G.hitstop = Math.max(G.hitstop || 0, 0.05);
 }
 function geyserFx(z) {
-  fx({ k: 'fb', a: 'geyser', x: z.x, y: z.y + 12, s: 200, dur: 0.7, anchor: 'b' });
-  shock(z.x, z.y, z.r * 1.6, '#9fe8ff', 0.4, 5); sparks(z.x, z.y - 20, '#c8f2ff', 10, 100, 260, -120); G.shake = Math.max(G.shake, 3);
+  fx({ k: 'fb', a: 'geyser', x: z.x, y: z.y + FEET, s: 200, dur: 0.7, anchor: 'b' });
+  shock(z.x, z.y + FEET, z.r * 1.6, '#9fe8ff', 0.4, 5); sparks(z.x, z.y - 20, '#c8f2ff', 10, 100, 260, -120); G.shake = Math.max(G.shake, 3);
 }
 function foxPillar(z) {
-  fx({ k: 'fb', a: 'fire_p', x: z.x, y: z.y + 6, s: 150, dur: 0.55, anchor: 'b' });
-  shock(z.x, z.y, z.r * 1.4, '#ff9ccc', 0.3, 4); G.shake = Math.max(G.shake, 2);
+  fx({ k: 'fb', a: 'fire_p', x: z.x, y: z.y + FEET, s: 150, dur: 0.55, anchor: 'b' });
+  shock(z.x, z.y + FEET, z.r * 1.4, '#ff9ccc', 0.3, 4); G.shake = Math.max(G.shake, 2);
 }
 function foxPuff(x, y) { fx({ k: 'fb', a: 'fire_p', x, y: y - 24, s: 170, dur: 0.42 }); fx({ k: 'flash', x, y: y - 24, r: 80, gl: 'pink', dur: 0.2 }); sparks(x, y - 24, '#ffb0d8', 14, 80, 240, -30); }
 
@@ -1678,6 +1680,9 @@ function gseunStart(e, k) {
 // 그슨대: slow, looming; brackets you with three shadow hands, or crouches and throws itself where you're going.
 function gseunAI(e, dt, d, mult) {
   e.scale = clamp(e.scale + (e.inLight ? -0.3 : 0.07) * dt, 1, 2.2); e.r = 24 * e.scale; e.dmg = 14 * e.scale;
+  e.rd = (e.rd || 0) + (clamp((e.mvx || 0) / 70, -1, 1) - (e.rd || 0)) * (1 - Math.exp(-dt / 0.45));   // the robe follows the drift late, like cloth
+  if (e.lastFx !== undefined && e.lastFx !== e.fx) shadeBurst(e.x, e.y - 30 * e.scale, 6, e.scale * 0.8);   // turning round inside its own smoke
+  e.lastFx = e.fx;
   if (parts.length < 560 && inView(e.x, e.y, 80)) {   // the robe sheds shadow as it drifts; a few violet motes rise off it
     if (Math.random() < dt * 16) addPart({ k: 'shade', x: e.x + rnd(-16, 16) * e.scale, y: e.y + rnd(-6, 8), vx: -(e.mvx || 0) * 0.35 + rnd(-12, 12), vy: rnd(-26, -10), life: rnd(0.7, 1.2), max: 1.2, size: rnd(18, 30) * e.scale, drag: 1.4 });
     if (Math.random() < dt * 5) addPart({ k: 'ember', x: e.x + rnd(-18, 18) * e.scale, y: e.y - rnd(10, 70) * e.scale, vx: rnd(-8, 8), vy: rnd(-40, -18), life: 0.9, max: 0.9, gl: 'violet', size: rnd(6, 10), drag: 1.2 });
@@ -1755,9 +1760,10 @@ function gumihoAI(e, dt, d, mult) {
     const ang = Math.atan2(e.y - P.y, e.x - P.x) + e.orb * 0.6, R = clone ? 115 : 130;   // close enough for your weapons to bite
     bossMove(e, P.x + Math.cos(ang) * R, P.y + Math.sin(ang) * R, e.spd * 1.5 * mult, dt, 0.32);
     const rv = Math.hypot(e.mvx, e.mvy);
-    if (rv > 90) { const fr = 'r' + (Math.floor((e.wk || 0) / 12) % 6); if (!e.pose || e.pose[0] !== 'r') setPose(e, fr); else e.pose = fr; }   // gallop: 6 drawn frames, one every 12px
+    e.running = rv > (e.running ? 35 : 70);   // hysteresis: no flicker between standing and galloping at orbit speed
+    if (e.running) { const fr = 'r' + (Math.floor((e.wk || 0) / 12) % 6); if (!e.pose || e.pose[0] !== 'r') setPose(e, fr); else e.pose = fr; }   // gallop: 6 drawn frames, one every 12px
     else setPose(e, null);
-    if (rv > 90 && inView(e.x, e.y, 60)) {   // foxfire streams off the tails; a faint afterimage at full stride
+    if (e.running && inView(e.x, e.y, 60)) {   // foxfire streams off the tails; a faint afterimage at full stride
       const tx = e.x - (e.fx || 1) * 46 * e.scale, ty = e.y - 34 * e.scale;
       if (parts.length < 600 && Math.random() < dt * 26) addPart({ k: 'ember', x: tx + rnd(-14, 14), y: ty + rnd(-14, 10), vx: -(e.mvx) * 0.25 + rnd(-10, 10), vy: rnd(-34, -12), life: rnd(0.35, 0.6), max: 0.6, gl: 'pink', size: rnd(7, 12), drag: 2 });
       if (rv > 150) ghostTrail(e, dt, 0.09);
@@ -2329,10 +2335,15 @@ function enemyPose(e, pose) {
     if (A && A.k === 'lunge' && A.t >= 0.6 && !A.land) { sx *= 1.22; sy *= 0.86; rot = 0; }        // stretched along the throw
     else if (A && A.k === 'lunge' && A.t < 0.6) { const q = A.t / 0.6; sy *= 1 - 0.1 * q; sx *= 1 + 0.06 * q; }   // coils before it
   } else if (e.type === 'gumiho' || e.type === 'clone') {   // gallop: leap, pitch, squash on landing; breathe when still
-    const drawn = e.pose && e.pose[0] === 'r', run = e.act ? 0 : clamp((sp - 30) / 80, 0, 1) * (drawn ? 0.25 : 1), ph = (e.wk || 0) * (TAU / 72) + e.bob, s1 = Math.sin(ph), face = sx;   // the gallop frames carry the legs; only a little lift on top
-    y -= Math.max(0, s1) * 6 * run;
-    rot = -Math.cos(ph) * 0.05 * run * face;
-    const land = Math.max(0, -s1); sy *= 1 - 0.08 * land * run; sx *= 1 + 0.06 * land * run;
+    const drawn = e.pose && e.pose[0] === 'r', run = e.act ? 0 : clamp((sp - 25) / 70, 0, 1), face = sx;
+    if (drawn) {   // registered gallop frames: the body rises on the stretch (frames 6→1), sinks gathered (3→4), pitches with it
+      const u = (((e.wk || 0) / 72) % 1 + 1) % 1, lift = 0.5 + 0.5 * Math.cos(TAU * (u - 0.04));
+      y -= lift * 7 * run; rot = Math.sin(TAU * (u - 0.04)) * 0.045 * face * run;
+      sy *= 1 - (1 - lift) * 0.05 * run; sx *= 1 + (1 - lift) * 0.03 * run;
+    } else {
+      const ph = (e.wk || 0) * (TAU / 72) + e.bob, s1 = Math.sin(ph);
+      y -= Math.max(0, s1) * 4 * run; rot = -Math.cos(ph) * 0.04 * run * face;
+    }
     const br = Math.sin(G.t * 2 + e.bob) * (1 - run); sy *= 1 + br * 0.02;
   } else if (FLOAT.has(e.type)) { y += Math.sin(G.t * 3 + e.bob) * 3 - 3; rot = Math.sin(G.t * 1.7 + e.bob) * 0.05; }
   else {
@@ -2365,16 +2376,16 @@ function drawDeform(e, img, p) {
   const at = img.at, ax = img.sx, ay = img.sy, Ws = img.width, Hs = img.height, kx = p.w / Ws, ky = p.h / Hs, t = G.t, b = e.bob || 0;
   const sp = Math.hypot(e.mvx || 0, e.mvy || 0);
   if (e.type === 'gseun') {
-    const drag = -clamp((e.mvx || 0) / 90, -1, 1) * 8 * e.scale, A1 = 3.4 * e.scale, A2 = 1.5 * e.scale, N = 26;
+    const drag = -(e.rd || 0) * 11 * e.scale, A1 = 4.6 * e.scale, A2 = 2 * e.scale, N = 30;   // the hem trails the drift (smoothed) and keeps rippling
     for (let j = 0; j < N; j++) {
-      const y0 = Math.floor(Hs * j / N), y1 = Math.floor(Hs * (j + 1) / N), v = (y0 + y1) / 2 / Hs, wv = Math.pow(clamp((v - 0.28) / 0.72, 0, 1), 1.25);
-      const dx = wv * (A1 * Math.sin(t * 2.6 - v * 6 + b) + A2 * Math.sin(t * 4.3 + v * 10 + b * 2) + drag);
+      const y0 = Math.floor(Hs * j / N), y1 = Math.floor(Hs * (j + 1) / N), v = (y0 + y1) / 2 / Hs, wv = Math.pow(clamp((v - 0.26) / 0.74, 0, 1), 1.6);
+      const dx = wv * (A1 * Math.sin(t * 2.1 - v * 7 + b) + A2 * Math.sin(t * 3.7 + v * 12 + b * 2) + drag);
       ctx.drawImage(at, ax, ay + y0, Ws, y1 - y0 + 1, -p.w / 2 + dx / p.sx, -p.h + y0 * ky, p.w, (y1 - y0 + 1) * ky);
     }
     return;
   }
   // 구미호: tails are on the image's left (the fox faces right); the 'howl' pose fans them on both sides
-  const run = clamp((sp - 30) / 80, 0, 1), both = e.pose === 'p3', N = 30, A = (2.2 + 2.6 * run) * (e.type === 'clone' ? 0.9 : 1), f = 3.2 + 5.5 * run;
+  const run = clamp((sp - 25) / 70, 0, 1), both = e.pose === 'p3', N = 34, A = (5 - 1.5 * run) * (e.type === 'clone' ? 0.9 : 1), f = 2.2 + 5 * run;   // a slow wide swish at rest, a quick flutter at a run
   for (let j = 0; j < N; j++) {
     const x0 = Math.floor(Ws * j / N), x1 = Math.floor(Ws * (j + 1) / N), u = (x0 + x1) / 2 / Ws;
     const root = both ? Math.abs(u - 0.5) * 2 : 1 - u, wv = Math.pow(clamp((root - 0.42) / 0.58, 0, 1), 1.4);
@@ -2531,30 +2542,31 @@ function gearPoses(q, ph, arm) {
     const img = ICON[w.id]; if (!img) continue;
     const L = S.len * ph, wind = w.wuAt > (w.at ?? -9) && G.t - w.wuAt < GEAR_WU[w.id] + 0.35, wk = wind ? clamp((G.t - w.wuAt) / GEAR_WU[w.id], 0, 1) : 0, h = w.at === undefined ? 9 : G.t - w.at;   // a wind-up with nothing to throw at lowers again
     let pose, rest, alpha = 1, smear = null, hold = 0, armDir = null, pri = 0;
-    if (w.id === 'club') {
-      rest = { x: -s * 6, y: -0.36 * ph, a: -Math.PI / 2 - s * 0.62, f: 1, back: !north };
-      const d = w.dir || 1, fa = wind ? fa0 : (w.fa ?? fa0);
-      if (wind) { pose = lpose(rest, gpose(fa - d * 1.9, ph, 0.35), easeOut2(wk)); hold = easeOut2(wk); out.dx -= Math.cos(fa) * 2 * wk; out.sy *= 1 - 0.03 * wk; out.sx *= 1 + 0.02 * wk; }
-      else if (h < 0.09) { const k = easeOut2(h / 0.09); pose = gpose(fa - d * 1.5 + d * 3 * k, ph, 0.35 * (1 - k)); hold = 1; smear = { a0: fa - d * 1.5, a1: fa - d * 1.5 + d * 3 * k, al: 1 }; }
-      else if (h < 0.24) { const k = easeOut2((h - 0.09) / 0.15); pose = gpose(fa + d * (1.5 + 0.4 * k), ph); hold = 1; smear = { a0: fa - d * 1.5, a1: fa + d * 1.5, al: 1 - k }; }
-      else if (h < 0.5) { const k = easeIO((h - 0.24) / 0.26); pose = lpose(gpose(fa + d * 1.9, ph), rest, k); hold = 1 - k; }
-      else pose = rest;
-      armDir = pose.a;   // straight-arm swing: arm and club in one line
-      if (!wind && h < 0.3) { const e = h < 0.06 ? h / 0.06 : 1 - (h - 0.06) / 0.24; out.dx += Math.cos(fa) * 3 * e; out.dy += Math.sin(fa) * 1.5 * e; out.rot += Math.cos(fa) * 0.08 * e; out.sy *= 1 + 0.03 * e; }
-    } else if (w.id === 'yukmo') {
-      rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
-      const d = s, fa = fa0, p0 = fa - d * Math.PI / 2;
-      const plant = () => aimPose(Math.cos(fa) * 8, -0.42 * ph + Math.sin(fa) * 4, Math.cos(fa) * 30, Math.sin(fa) * 15, L);
+    if (w.id === 'club') {   // worn at the hip; the hand comes down, draws it, cocks it and swings in the screen plane
+      rest = { x: -s * 9, y: -0.42 * ph, a: Math.PI / 2 + s * 0.75 + swing * 0.18, f: 0.82, back: false };   // tucked in the sash, slanting back
+      const d = w.dir || 1, fa = wind ? fa0 : (w.fa ?? fa0), endA = Math.atan2(Math.sin(fa) * 0.62, Math.cos(fa)), start = endA - d * 2.4, fol = endA + d * 0.7;
+      const sp2 = a => ({ x: 0, y: -0.45 * ph, a, f: 1, back: Math.cos(a) * Math.cos(endA) + Math.sin(a) * Math.sin(endA) < -0.25 });   // behind the head while cocked
       if (wind) {
-        const t = wk * GEAR_WU.yukmo;
-        if (t < 0.08) { pose = lpose(rest, gpose(p0, ph, 0.1, 7), easeOut2(t / 0.08)); hold = easeOut2(t / 0.08); }
-        else { const u = (t - 0.08) / 0.22, ph2 = p0 + d * 2.5 * Math.PI * u * u; pose = gpose(ph2, ph, 0.08, 7); hold = 1; smear = { a0: ph2 - d * Math.min(1.8, u * 4), a1: ph2, al: 0.9, r: 1 }; out.dy -= Math.sin(Math.PI * u) * 6; }
-      } else if (h < 0.07) { pose = lpose(gpose(fa, ph, 0.08, 7), plant(), easeOut2(h / 0.07)); hold = 1; }
-      else if (h < 0.28) { pose = plant(); hold = 1; }
-      else if (h < 0.6) { const k = easeIO((h - 0.28) / 0.32); pose = lpose(plant(), rest, k); hold = 1 - k; }
+        if (wk < 0.45) { pose = rest; hold = easeOut2(wk / 0.45); armDir = null; }   // reach down to the hip
+        else { const k = easeOut2((wk - 0.45) / 0.55); pose = lpose(rest, sp2(start), k); hold = 1; armDir = pose.a; out.dx -= Math.cos(fa) * 2 * k; out.sy *= 1 - 0.03 * k; }
+      }
+      else if (h < 0.1) { const k = easeOut2(h / 0.1), a = start + (fol - start) * k; pose = sp2(a); hold = 1; armDir = a; smear = { a0: start, a1: a, al: 1, screen: true }; }
+      else if (h < 0.24) { const k = easeOut2((h - 0.1) / 0.14); pose = sp2(fol + d * 0.15 * k); hold = 1; armDir = pose.a; smear = { a0: start, a1: fol, al: 1 - k, screen: true }; }
+      else if (h < 0.55) { const k = easeIO((h - 0.24) / 0.31); pose = lpose(sp2(fol + d * 0.15), rest, k); hold = 1 - k; armDir = pose.a; }   // back to the hip
       else pose = rest;
-      armDir = pose.a;
-      if (!wind && h < 0.2) { const e = 1 - h / 0.2; out.sy *= 1 - 0.12 * e; out.sx *= 1 + 0.08 * e; out.dy += 1.5 * e; }
+      if (!wind && h < 0.3) { const e = h < 0.06 ? h / 0.06 : 1 - (h - 0.06) / 0.24; out.dx += Math.cos(fa) * 3 * e; out.dy += Math.sin(fa) * 1.5 * e; out.rot += Math.cos(fa) * 0.08 * e; out.sy *= 1 + 0.03 * e; }
+    } else if (w.id === 'yukmo') {   // slung on the back; pulled over the shoulder, held point-down and driven straight into the ground
+      rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
+      const held = { x: 0, y: -0.6 * ph, a: Math.PI / 2, f: 1, back: false };   // point down, like a stake
+      const upDir = -Math.PI / 2 + s * 0.3, downDir = Math.PI / 2 - s * 0.35, reachDir = -Math.PI / 2 - s * 0.5;   // held straight up, so the stake clears the body
+      if (wind) {
+        if (wk < 0.3) { pose = rest; hold = easeOut2(wk / 0.3); armDir = reachDir; }   // reach over the shoulder for it
+        else { const k = easeOut2((wk - 0.3) / 0.7); pose = lpose(rest, held, k); hold = 1; armDir = reachDir + angDiff(upDir, reachDir) * k; out.sy *= 1 + 0.05 * k; out.dy -= 3 * k; }   // up on the toes, stake held high
+      } else if (h < 0.06) { const k = easeOut2(h / 0.06); pose = { ...held }; hold = 1; armDir = upDir + angDiff(downDir, upDir) * k; }   // straight down
+      else if (h < 0.3) { pose = { ...held }; hold = 1; armDir = downDir; }   // driven in: hold it there
+      else if (h < 0.6) { const k = easeIO((h - 0.3) / 0.3); pose = lpose(held, rest, k); hold = 1 - k; armDir = downDir + angDiff(reachDir, downDir) * k; }   // pull it out, back over the shoulder
+      else pose = rest;
+      if (!wind && h < 0.22) { const e = 1 - h / 0.22; out.sy *= 1 - 0.14 * e; out.sx *= 1 + 0.1 * e; out.dy += 2 * e; }   // the body lands into the blow
     } else if (w.id === 'bell') {
       const act = h < 0.4 ? 1 - h / 0.4 : 0;
       if (danbi) { if (act > 0) { out.rot += Math.sin(h * 40) * 0.035 * act; out.dy -= Math.sin(Math.min(1, h / 0.12) * Math.PI) * 2.5; } continue; }   // her staff already has the bells
@@ -2592,6 +2604,7 @@ function gearPoses(q, ph, arm) {
     const a0 = arm.a0 + idle, want = drv.armDir ?? (drv.lantern ? a0 : Math.atan2(drv.pose.y - arm.sy, drv.pose.x - arm.sx));
     const ad = a0 + angDiff(want, a0) * drv.hold, hx = arm.sx + Math.cos(ad) * arm.L, hy = arm.sy + Math.sin(ad) * arm.L;
     drv.pose = { ...drv.pose, x: lerp(drv.pose.x, hx, drv.hold), y: lerp(drv.pose.y, hy, drv.hold) };
+    if (drv.smear && drv.smear.screen) Object.assign(drv.smear, { cx: arm.sx, cy: arm.sy, r0: drv.smear.thin ? arm.L + drv.L * 0.55 : arm.L * 0.6, r1: arm.L + drv.L * 1.02 });   // a thin band near the tip for the baton
     if (drv.lantern) drv.pose.back = false;
     out.arm = { d: ad - arm.a0, back: arm.borrow || (drv.hold > 0.5 && drv.pose.back) };
     for (const it of out.list) if (it !== drv && it.hold > 0.01 && it.lantern) it.pose = it.rest;   // the lantern waits at the hip while the hand is busy
@@ -2603,16 +2616,16 @@ function drawGear(list, ox, oy, lean, back) {
   for (const it of list) {
     const p = it.pose, S = it.S, img = it.img;
     if (back && it.smear) {   // motion smear: an additive wedge from the swing start to the club, behind the body
-      const sm = it.smear, n = 12, r0 = it.L * 0.25, r1 = it.L * 1.08, cx = p.x - Math.cos(sm.a1) * 0, cy = p.y;
+      const sm = it.smear, n = 12, r0 = sm.r0 ?? it.L * 0.25, r1 = sm.r1 ?? it.L * 1.08, cx = sm.cx ?? p.x, cy = sm.cy ?? p.y, ys = sm.screen ? 1 : 0.5;
       ctx.globalCompositeOperation = 'lighter';
       for (let i = 0; i < n; i++) {
         const t0 = i / n, t1 = (i + 1) / n, b0 = sm.a0 + (sm.a1 - sm.a0) * t0, b1 = sm.a0 + (sm.a1 - sm.a0) * t1;
         ctx.fillStyle = `rgba(${S.col},${0.6 * sm.al * Math.pow(t1, 1.4)})`; ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(b0) * r0, cy + Math.sin(b0) * r0 * 0.5); ctx.lineTo(cx + Math.cos(b0) * r1, cy + Math.sin(b0) * r1 * 0.5);
-        ctx.lineTo(cx + Math.cos(b1) * r1, cy + Math.sin(b1) * r1 * 0.5); ctx.lineTo(cx + Math.cos(b1) * r0, cy + Math.sin(b1) * r0 * 0.5); ctx.fill();
+        ctx.moveTo(cx + Math.cos(b0) * r0, cy + Math.sin(b0) * r0 * ys); ctx.lineTo(cx + Math.cos(b0) * r1, cy + Math.sin(b0) * r1 * ys);
+        ctx.lineTo(cx + Math.cos(b1) * r1, cy + Math.sin(b1) * r1 * ys); ctx.lineTo(cx + Math.cos(b1) * r0, cy + Math.sin(b1) * r0 * ys); ctx.fill();
       }
       ctx.strokeStyle = `rgba(255,252,236,${0.85 * sm.al})`; ctx.lineWidth = 1.6; ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(sm.a1) * r0, cy + Math.sin(sm.a1) * r0 * 0.5); ctx.lineTo(cx + Math.cos(sm.a1) * r1, cy + Math.sin(sm.a1) * r1 * 0.5); ctx.stroke();
+      ctx.moveTo(cx + Math.cos(sm.a1) * r0, cy + Math.sin(sm.a1) * r0 * ys); ctx.lineTo(cx + Math.cos(sm.a1) * r1, cy + Math.sin(sm.a1) * r1 * ys); ctx.stroke();
       ctx.globalCompositeOperation = 'source-over';
     }
     if (p.back !== back || it.alpha <= 0) continue;
@@ -2709,7 +2722,7 @@ function render() {
   for (const z of zones) {
     if (!z.pool) continue;
     const q = clamp(z.t / z.warn, 0, 1), fade = z.fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : 1, R = z.r * (0.35 + 0.8 * easeOut3(q));
-    ctx.globalAlpha = 0.7 * q * fade; dI(GL.shadow, z.x - R, z.y - R * 0.55, R * 2, R * 1.1);
+    ctx.globalAlpha = 0.7 * q * fade; dI(GL.shadow, z.x - R, z.y + FEET - R * 0.55, R * 2, R * 1.1);
   }
   for (const h of hazards) {   // 물귀신 water pools: slow you while you stand in them
     const a = Math.min(1, h.t / 0.3, (h.life - h.t) / 0.6), w = Math.sin(G.t * 3 + h.x) * 2;
@@ -2814,6 +2827,11 @@ function render() {
     ctx.globalAlpha = 1; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   if (PG.on) { pgDrawWorld(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+  { // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear
+    const hz = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)');
+    ctx.fillStyle = hz; ctx.fillRect(0, 0, W, H * 0.55);
+  }
   if (P.light <= GREED) {
     const pulse = 0.5 + Math.sin(G.t * 3) * 0.15;
     const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.hypot(W, H) / 2);
@@ -3044,7 +3062,8 @@ function drawGlows() {
   ctx.globalCompositeOperation = 'source-over';
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
-function drawZones() {   // attack warnings on the floor, under every character
+function drawZones() {   // attack warnings on the floor, under every character, at foot level
+  ctx.save(); ctx.translate(0, FEET);
   // danger zones: tinted floor that fills toward the strike, rim flickers in the last quarter
   for (const z of zones) {
     const k = Math.min(1, z.t / z.warn), fired = z.fired, fa = fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : Math.min(1, z.t / 0.08), late = !fired && k > 0.75 ? 0.5 + 0.5 * Math.sin(G.t * 42) : 0, c = z.col;
@@ -3062,7 +3081,7 @@ function drawZones() {   // attack warnings on the floor, under every character
       ctx.restore();
     }
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 1; ctx.restore();
 }
 function drawBeam() {   // 이무기's water beam runs along the floor, under the characters
   if (G.beam) {
@@ -3096,37 +3115,37 @@ function drawFxList() {   // every effect sits on the floor, under the character
     }
     if (f.k === 'sigil') {   // magic circle on the ground: snaps open, turns, fades
       const img = FX[f.a || 'circle'] && FX[f.a || 'circle'][0]; if (!img) continue;
-      const x = f.follow ? P.x : f.x, y = f.follow ? P.y + 10 : f.y, r0 = f.r0 ?? f.r * 0.6, r = r0 + (f.r - r0) * easeOut3(Math.min(1, k * 3));
+      const x = f.follow ? P.x : f.x, y = f.follow ? P.y + FEET : f.y, r0 = f.r0 ?? f.r * 0.6, r = r0 + (f.r - r0) * easeOut3(Math.min(1, k * 3));
       ctx.globalAlpha = (f.al ?? 0.9) * Math.min(1, k * 10) * (k > 0.55 ? (1 - k) / 0.45 : 1);
       ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.62); ctx.rotate((f.rot || 0) + (REDUCED ? 0 : f.t * (f.spin ?? 1.2))); dI(img, -r, -r, r * 2, r * 2); ctx.restore();
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring' && FX.ring && FX.ring[0]) {   // bell: generated sound-wave ring, sharp edge at the hit radius
       const r = f.r || 16, fa = 1 - k, z = r * 2.06;
-      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y - z * 0.31, z, z * 0.62);   // a ground ripple: squashed to the floor
-      if (k < 0.25) { ctx.globalAlpha = (0.25 - k) * 3; const c = 50; dI(GL.gold, P.x - c / 2, P.y - 12 - c / 2, c, c); }
+      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y + FEET - z * 0.31, z, z * 0.62);   // a ground ripple: squashed to the floor
+      if (k < 0.25) { ctx.globalAlpha = (0.25 - k) * 3; const c = 50; dI(GL.gold, P.x - c / 2, P.y + FEET - c * 0.31, c, c * 0.62); }
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring') {
       const r = f.r || 16, fa = 1 - k, c = f.evo ? '255,214,120' : '240,226,180';
-      ctx.beginPath(); ctx.ellipse(P.x, P.y, r, r * 0.62, 0, 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, r, r * 0.62, 0, 0, TAU);
       ctx.strokeStyle = `rgba(${c},${0.12 * fa})`; ctx.lineWidth = 22; ctx.stroke();       // wake
       ctx.strokeStyle = `rgba(${c},${0.35 * fa})`; ctx.lineWidth = 7; ctx.stroke();        // body
       ctx.strokeStyle = `rgba(255,250,232,${0.95 * fa})`; ctx.lineWidth = 2.2; ctx.stroke();   // hot edge
       if (f.evo) {   // rotating glyph ticks on the evolved bell
         ctx.strokeStyle = `rgba(255,230,160,${0.8 * fa})`; ctx.lineWidth = 2.5; ctx.beginPath();
-        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + Math.sin(a) * (r - 9) * 0.62); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + Math.sin(a) * (r + 9) * 0.62); }
+        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + FEET + Math.sin(a) * (r - 9) * 0.62); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + FEET + Math.sin(a) * (r + 9) * 0.62); }
         ctx.stroke();
       }
     } else if (f.k === 'swing') {
-      ctx.save(); ctx.translate(P.x, P.y); ctx.scale(1, 0.62); ctx.translate(-P.x, -P.y);
+      ctx.save(); ctx.translate(P.x, P.y + FEET); ctx.scale(1, 0.62); ctx.translate(-P.x, -P.y);
       const g = ctx.createRadialGradient(P.x, P.y, f.r * 0.3, P.x, P.y, f.r);
       g.addColorStop(0, 'rgba(79,163,122,0)'); g.addColorStop(0.75, `rgba(120,210,160,${0.35 * (1 - k)})`); g.addColorStop(1, `rgba(200,255,220,${0.6 * (1 - k)})`);
       ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.closePath(); ctx.fill();
       ctx.strokeStyle = `rgba(230,255,240,${0.9 * (1 - k)})`; ctx.lineWidth = 3 * (1 - k) + 0.5; ctx.beginPath(); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.stroke(); ctx.restore();
     } else if (f.k === 'slam') {
       const r = f.r * (0.3 + 0.7 * easeOut3(k)), fa = 1 - k;
-      ctx.beginPath(); ctx.ellipse(P.x, P.y, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU);
       ctx.fillStyle = `rgba(217,173,69,${0.14 * fa})`; ctx.fill();
       ctx.strokeStyle = `rgba(240,200,110,${0.32 * fa})`; ctx.lineWidth = 8 * fa + 1; ctx.stroke();
       ctx.strokeStyle = `rgba(255,246,214,${0.8 * fa})`; ctx.lineWidth = 2.2 * fa + 0.5; ctx.stroke();
@@ -3169,9 +3188,9 @@ function drawFxList() {   // every effect sits on the floor, under the character
     } else if (f.k === 'puff') {
       ctx.strokeStyle = `rgba(170,200,255,${0.4 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(f.x, f.y, 6 + k * f.r, (6 + k * f.r) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'lightburst') {
-      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(P.x, P.y, 30 + k * 260, (30 + k * 260) * 0.62, 0, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, 30 + k * 260, (30 + k * 260) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'ohaeng') {
-      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; const rr = Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26); ctx.beginPath(); ctx.ellipse(P.x, P.y, rr, rr * 0.62, 0, 0, TAU); ctx.stroke(); });
+      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; const rr = Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26); ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, rr, rr * 0.62, 0, 0, TAU); ctx.stroke(); });
       ctx.globalAlpha = 1;
     }
   }

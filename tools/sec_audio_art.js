@@ -33,7 +33,7 @@ async function loadArt() {
   ART.src = src; buildFx(src);
   for (const id of [...Object.keys(WEAPONS), ...Object.keys(PASSIVES)]) { ICON[id] = src['i_' + id]; try { ICONURL[id] = ICON[id].toDataURL(); } catch (e) {} }
   groundPat = ctx.createPattern(tile, 'repeat');
-  if (groundPat && groundPat.setTransform && window.DOMMatrix) groundPat.setTransform(new DOMMatrix([0.5, 0, 0, 0.5, 0, 0]));
+  if (groundPat && groundPat.setTransform && window.DOMMatrix) groundPat.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0]));   // 2.5D: the floor is seen at the same tilt as the ellipses (y × 0.62)
   ART.meta = ATLAS.meta; ART.ok = true; ART.d = 0;
   applyArtScale();
 }

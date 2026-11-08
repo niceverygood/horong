@@ -434,6 +434,11 @@ for name, cols, rows, box in (('fx_hit', 4, 2, 192), ('fx_fire', 4, 2, 224), ('f
                               ('fx_slam', 4, 2, 288), ('fx_soul', 4, 2, 224), ('fx_pillar', 8, 1, 384)):
     for i, f in enumerate(fx_sheet(name, cols, rows, box)):
         S[f'{name}{i}'] = f
+# the slam sheet's two rows put the ring at different heights (65% / 37% of the frame): centre every frame on its ring
+for i in range(8):
+    f_ = S[f'fx_slam{i}']
+    dy_ = round(f_.height * (0.5 - (0.655 if i < 4 else 0.36)))
+    g_ = Image.new('RGBA', f_.size, (0, 0, 0, 0)); g_.paste(f_, (0, dy_), f_); S[f'fx_slam{i}'] = g_
 for name, box in (('fx_claw', 256), ('fx_geyser', 256)):   # boss attack flipbooks
     for i, f in enumerate(fx_sheet(name, 4, 2, box)):
         S[f'{name}{i}'] = f
@@ -485,8 +490,30 @@ pose_sheet('imugi_p', 2, 2, 3, 'w', 150, ['imugi_p0', 'imugi_p1', 'imugi_p2', 'i
 _run = load('gumiho_run')
 _cells = union_crop([clean(cell(_run, 3, 2, i % 3, i // 3)) for i in range(6)])
 _k = 330 / max(1, trim(_cells[0]).width)
-for i, c in enumerate(_cells):
-    S[f'gumiho_r{i}'] = c.resize((max(1, round(c.width * _k)), max(1, round(c.height * _k))), Image.LANCZOS)
+_frames = [c.resize((max(1, round(c.width * _k)), max(1, round(c.height * _k))), Image.LANCZOS) for c in _cells]
+
+
+def _harness(im):   # the gold harness marks the torso: register every frame on it so the body doesn't jump between rows
+    px = im.load()
+    xs, ys = [], []
+    for y in range(im.height):
+        for x in range(im.width):
+            r, g, b, a = px[x, y]
+            if a > 200 and r > 170 and g > 110 and b < 90 and r - b > 90:
+                xs.append(x)
+                ys.append(y)
+    return sum(xs) / len(xs), sum(ys) / len(ys)
+
+
+_hc = [_harness(f) for f in _frames]
+_pad = 100
+_reg = []
+for f, (hx, hy) in zip(_frames, _hc):
+    g_ = Image.new('RGBA', (f.width + 2 * _pad, f.height + 2 * _pad), (0, 0, 0, 0))
+    g_.paste(f, (_pad + round(_hc[0][0] - hx), _pad + round(_hc[0][1] - hy)), f)
+    _reg.append(g_)
+for i, c in enumerate(union_crop(_reg)):
+    S[f'gumiho_r{i}'] = c
 
 # --- items --------------------------------------------------------------------
 items = load('items')

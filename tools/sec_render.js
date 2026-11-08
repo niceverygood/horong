@@ -21,10 +21,15 @@ function enemyPose(e, pose) {
     if (A && A.k === 'lunge' && A.t >= 0.6 && !A.land) { sx *= 1.22; sy *= 0.86; rot = 0; }        // stretched along the throw
     else if (A && A.k === 'lunge' && A.t < 0.6) { const q = A.t / 0.6; sy *= 1 - 0.1 * q; sx *= 1 + 0.06 * q; }   // coils before it
   } else if (e.type === 'gumiho' || e.type === 'clone') {   // gallop: leap, pitch, squash on landing; breathe when still
-    const drawn = e.pose && e.pose[0] === 'r', run = e.act ? 0 : clamp((sp - 30) / 80, 0, 1) * (drawn ? 0.25 : 1), ph = (e.wk || 0) * (TAU / 72) + e.bob, s1 = Math.sin(ph), face = sx;   // the gallop frames carry the legs; only a little lift on top
-    y -= Math.max(0, s1) * 6 * run;
-    rot = -Math.cos(ph) * 0.05 * run * face;
-    const land = Math.max(0, -s1); sy *= 1 - 0.08 * land * run; sx *= 1 + 0.06 * land * run;
+    const drawn = e.pose && e.pose[0] === 'r', run = e.act ? 0 : clamp((sp - 25) / 70, 0, 1), face = sx;
+    if (drawn) {   // registered gallop frames: the body rises on the stretch (frames 6→1), sinks gathered (3→4), pitches with it
+      const u = (((e.wk || 0) / 72) % 1 + 1) % 1, lift = 0.5 + 0.5 * Math.cos(TAU * (u - 0.04));
+      y -= lift * 7 * run; rot = Math.sin(TAU * (u - 0.04)) * 0.045 * face * run;
+      sy *= 1 - (1 - lift) * 0.05 * run; sx *= 1 + (1 - lift) * 0.03 * run;
+    } else {
+      const ph = (e.wk || 0) * (TAU / 72) + e.bob, s1 = Math.sin(ph);
+      y -= Math.max(0, s1) * 4 * run; rot = -Math.cos(ph) * 0.04 * run * face;
+    }
     const br = Math.sin(G.t * 2 + e.bob) * (1 - run); sy *= 1 + br * 0.02;
   } else if (FLOAT.has(e.type)) { y += Math.sin(G.t * 3 + e.bob) * 3 - 3; rot = Math.sin(G.t * 1.7 + e.bob) * 0.05; }
   else {
@@ -57,16 +62,16 @@ function drawDeform(e, img, p) {
   const at = img.at, ax = img.sx, ay = img.sy, Ws = img.width, Hs = img.height, kx = p.w / Ws, ky = p.h / Hs, t = G.t, b = e.bob || 0;
   const sp = Math.hypot(e.mvx || 0, e.mvy || 0);
   if (e.type === 'gseun') {
-    const drag = -clamp((e.mvx || 0) / 90, -1, 1) * 8 * e.scale, A1 = 3.4 * e.scale, A2 = 1.5 * e.scale, N = 26;
+    const drag = -(e.rd || 0) * 11 * e.scale, A1 = 4.6 * e.scale, A2 = 2 * e.scale, N = 30;   // the hem trails the drift (smoothed) and keeps rippling
     for (let j = 0; j < N; j++) {
-      const y0 = Math.floor(Hs * j / N), y1 = Math.floor(Hs * (j + 1) / N), v = (y0 + y1) / 2 / Hs, wv = Math.pow(clamp((v - 0.28) / 0.72, 0, 1), 1.25);
-      const dx = wv * (A1 * Math.sin(t * 2.6 - v * 6 + b) + A2 * Math.sin(t * 4.3 + v * 10 + b * 2) + drag);
+      const y0 = Math.floor(Hs * j / N), y1 = Math.floor(Hs * (j + 1) / N), v = (y0 + y1) / 2 / Hs, wv = Math.pow(clamp((v - 0.26) / 0.74, 0, 1), 1.6);
+      const dx = wv * (A1 * Math.sin(t * 2.1 - v * 7 + b) + A2 * Math.sin(t * 3.7 + v * 12 + b * 2) + drag);
       ctx.drawImage(at, ax, ay + y0, Ws, y1 - y0 + 1, -p.w / 2 + dx / p.sx, -p.h + y0 * ky, p.w, (y1 - y0 + 1) * ky);
     }
     return;
   }
   // 구미호: tails are on the image's left (the fox faces right); the 'howl' pose fans them on both sides
-  const run = clamp((sp - 30) / 80, 0, 1), both = e.pose === 'p3', N = 30, A = (2.2 + 2.6 * run) * (e.type === 'clone' ? 0.9 : 1), f = 3.2 + 5.5 * run;
+  const run = clamp((sp - 25) / 70, 0, 1), both = e.pose === 'p3', N = 34, A = (5 - 1.5 * run) * (e.type === 'clone' ? 0.9 : 1), f = 2.2 + 5 * run;   // a slow wide swish at rest, a quick flutter at a run
   for (let j = 0; j < N; j++) {
     const x0 = Math.floor(Ws * j / N), x1 = Math.floor(Ws * (j + 1) / N), u = (x0 + x1) / 2 / Ws;
     const root = both ? Math.abs(u - 0.5) * 2 : 1 - u, wv = Math.pow(clamp((root - 0.42) / 0.58, 0, 1), 1.4);
@@ -223,30 +228,31 @@ function gearPoses(q, ph, arm) {
     const img = ICON[w.id]; if (!img) continue;
     const L = S.len * ph, wind = w.wuAt > (w.at ?? -9) && G.t - w.wuAt < GEAR_WU[w.id] + 0.35, wk = wind ? clamp((G.t - w.wuAt) / GEAR_WU[w.id], 0, 1) : 0, h = w.at === undefined ? 9 : G.t - w.at;   // a wind-up with nothing to throw at lowers again
     let pose, rest, alpha = 1, smear = null, hold = 0, armDir = null, pri = 0;
-    if (w.id === 'club') {
-      rest = { x: -s * 6, y: -0.36 * ph, a: -Math.PI / 2 - s * 0.62, f: 1, back: !north };
-      const d = w.dir || 1, fa = wind ? fa0 : (w.fa ?? fa0);
-      if (wind) { pose = lpose(rest, gpose(fa - d * 1.9, ph, 0.35), easeOut2(wk)); hold = easeOut2(wk); out.dx -= Math.cos(fa) * 2 * wk; out.sy *= 1 - 0.03 * wk; out.sx *= 1 + 0.02 * wk; }
-      else if (h < 0.09) { const k = easeOut2(h / 0.09); pose = gpose(fa - d * 1.5 + d * 3 * k, ph, 0.35 * (1 - k)); hold = 1; smear = { a0: fa - d * 1.5, a1: fa - d * 1.5 + d * 3 * k, al: 1 }; }
-      else if (h < 0.24) { const k = easeOut2((h - 0.09) / 0.15); pose = gpose(fa + d * (1.5 + 0.4 * k), ph); hold = 1; smear = { a0: fa - d * 1.5, a1: fa + d * 1.5, al: 1 - k }; }
-      else if (h < 0.5) { const k = easeIO((h - 0.24) / 0.26); pose = lpose(gpose(fa + d * 1.9, ph), rest, k); hold = 1 - k; }
-      else pose = rest;
-      armDir = pose.a;   // straight-arm swing: arm and club in one line
-      if (!wind && h < 0.3) { const e = h < 0.06 ? h / 0.06 : 1 - (h - 0.06) / 0.24; out.dx += Math.cos(fa) * 3 * e; out.dy += Math.sin(fa) * 1.5 * e; out.rot += Math.cos(fa) * 0.08 * e; out.sy *= 1 + 0.03 * e; }
-    } else if (w.id === 'yukmo') {
-      rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
-      const d = s, fa = fa0, p0 = fa - d * Math.PI / 2;
-      const plant = () => aimPose(Math.cos(fa) * 8, -0.42 * ph + Math.sin(fa) * 4, Math.cos(fa) * 30, Math.sin(fa) * 15, L);
+    if (w.id === 'club') {   // worn at the hip; the hand comes down, draws it, cocks it and swings in the screen plane
+      rest = { x: -s * 9, y: -0.42 * ph, a: Math.PI / 2 + s * 0.75 + swing * 0.18, f: 0.82, back: false };   // tucked in the sash, slanting back
+      const d = w.dir || 1, fa = wind ? fa0 : (w.fa ?? fa0), endA = Math.atan2(Math.sin(fa) * 0.62, Math.cos(fa)), start = endA - d * 2.4, fol = endA + d * 0.7;
+      const sp2 = a => ({ x: 0, y: -0.45 * ph, a, f: 1, back: Math.cos(a) * Math.cos(endA) + Math.sin(a) * Math.sin(endA) < -0.25 });   // behind the head while cocked
       if (wind) {
-        const t = wk * GEAR_WU.yukmo;
-        if (t < 0.08) { pose = lpose(rest, gpose(p0, ph, 0.1, 7), easeOut2(t / 0.08)); hold = easeOut2(t / 0.08); }
-        else { const u = (t - 0.08) / 0.22, ph2 = p0 + d * 2.5 * Math.PI * u * u; pose = gpose(ph2, ph, 0.08, 7); hold = 1; smear = { a0: ph2 - d * Math.min(1.8, u * 4), a1: ph2, al: 0.9, r: 1 }; out.dy -= Math.sin(Math.PI * u) * 6; }
-      } else if (h < 0.07) { pose = lpose(gpose(fa, ph, 0.08, 7), plant(), easeOut2(h / 0.07)); hold = 1; }
-      else if (h < 0.28) { pose = plant(); hold = 1; }
-      else if (h < 0.6) { const k = easeIO((h - 0.28) / 0.32); pose = lpose(plant(), rest, k); hold = 1 - k; }
+        if (wk < 0.45) { pose = rest; hold = easeOut2(wk / 0.45); armDir = null; }   // reach down to the hip
+        else { const k = easeOut2((wk - 0.45) / 0.55); pose = lpose(rest, sp2(start), k); hold = 1; armDir = pose.a; out.dx -= Math.cos(fa) * 2 * k; out.sy *= 1 - 0.03 * k; }
+      }
+      else if (h < 0.1) { const k = easeOut2(h / 0.1), a = start + (fol - start) * k; pose = sp2(a); hold = 1; armDir = a; smear = { a0: start, a1: a, al: 1, screen: true }; }
+      else if (h < 0.24) { const k = easeOut2((h - 0.1) / 0.14); pose = sp2(fol + d * 0.15 * k); hold = 1; armDir = pose.a; smear = { a0: start, a1: fol, al: 1 - k, screen: true }; }
+      else if (h < 0.55) { const k = easeIO((h - 0.24) / 0.31); pose = lpose(sp2(fol + d * 0.15), rest, k); hold = 1 - k; armDir = pose.a; }   // back to the hip
       else pose = rest;
-      armDir = pose.a;
-      if (!wind && h < 0.2) { const e = 1 - h / 0.2; out.sy *= 1 - 0.12 * e; out.sx *= 1 + 0.08 * e; out.dy += 1.5 * e; }
+      if (!wind && h < 0.3) { const e = h < 0.06 ? h / 0.06 : 1 - (h - 0.06) / 0.24; out.dx += Math.cos(fa) * 3 * e; out.dy += Math.sin(fa) * 1.5 * e; out.rot += Math.cos(fa) * 0.08 * e; out.sy *= 1 + 0.03 * e; }
+    } else if (w.id === 'yukmo') {   // slung on the back; pulled over the shoulder, held point-down and driven straight into the ground
+      rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
+      const held = { x: 0, y: -0.6 * ph, a: Math.PI / 2, f: 1, back: false };   // point down, like a stake
+      const upDir = -Math.PI / 2 + s * 0.3, downDir = Math.PI / 2 - s * 0.35, reachDir = -Math.PI / 2 - s * 0.5;   // held straight up, so the stake clears the body
+      if (wind) {
+        if (wk < 0.3) { pose = rest; hold = easeOut2(wk / 0.3); armDir = reachDir; }   // reach over the shoulder for it
+        else { const k = easeOut2((wk - 0.3) / 0.7); pose = lpose(rest, held, k); hold = 1; armDir = reachDir + angDiff(upDir, reachDir) * k; out.sy *= 1 + 0.05 * k; out.dy -= 3 * k; }   // up on the toes, stake held high
+      } else if (h < 0.06) { const k = easeOut2(h / 0.06); pose = { ...held }; hold = 1; armDir = upDir + angDiff(downDir, upDir) * k; }   // straight down
+      else if (h < 0.3) { pose = { ...held }; hold = 1; armDir = downDir; }   // driven in: hold it there
+      else if (h < 0.6) { const k = easeIO((h - 0.3) / 0.3); pose = lpose(held, rest, k); hold = 1 - k; armDir = downDir + angDiff(reachDir, downDir) * k; }   // pull it out, back over the shoulder
+      else pose = rest;
+      if (!wind && h < 0.22) { const e = 1 - h / 0.22; out.sy *= 1 - 0.14 * e; out.sx *= 1 + 0.1 * e; out.dy += 2 * e; }   // the body lands into the blow
     } else if (w.id === 'bell') {
       const act = h < 0.4 ? 1 - h / 0.4 : 0;
       if (danbi) { if (act > 0) { out.rot += Math.sin(h * 40) * 0.035 * act; out.dy -= Math.sin(Math.min(1, h / 0.12) * Math.PI) * 2.5; } continue; }   // her staff already has the bells
@@ -284,6 +290,7 @@ function gearPoses(q, ph, arm) {
     const a0 = arm.a0 + idle, want = drv.armDir ?? (drv.lantern ? a0 : Math.atan2(drv.pose.y - arm.sy, drv.pose.x - arm.sx));
     const ad = a0 + angDiff(want, a0) * drv.hold, hx = arm.sx + Math.cos(ad) * arm.L, hy = arm.sy + Math.sin(ad) * arm.L;
     drv.pose = { ...drv.pose, x: lerp(drv.pose.x, hx, drv.hold), y: lerp(drv.pose.y, hy, drv.hold) };
+    if (drv.smear && drv.smear.screen) Object.assign(drv.smear, { cx: arm.sx, cy: arm.sy, r0: drv.smear.thin ? arm.L + drv.L * 0.55 : arm.L * 0.6, r1: arm.L + drv.L * 1.02 });   // a thin band near the tip for the baton
     if (drv.lantern) drv.pose.back = false;
     out.arm = { d: ad - arm.a0, back: arm.borrow || (drv.hold > 0.5 && drv.pose.back) };
     for (const it of out.list) if (it !== drv && it.hold > 0.01 && it.lantern) it.pose = it.rest;   // the lantern waits at the hip while the hand is busy
@@ -295,16 +302,16 @@ function drawGear(list, ox, oy, lean, back) {
   for (const it of list) {
     const p = it.pose, S = it.S, img = it.img;
     if (back && it.smear) {   // motion smear: an additive wedge from the swing start to the club, behind the body
-      const sm = it.smear, n = 12, r0 = it.L * 0.25, r1 = it.L * 1.08, cx = p.x - Math.cos(sm.a1) * 0, cy = p.y;
+      const sm = it.smear, n = 12, r0 = sm.r0 ?? it.L * 0.25, r1 = sm.r1 ?? it.L * 1.08, cx = sm.cx ?? p.x, cy = sm.cy ?? p.y, ys = sm.screen ? 1 : 0.5;
       ctx.globalCompositeOperation = 'lighter';
       for (let i = 0; i < n; i++) {
         const t0 = i / n, t1 = (i + 1) / n, b0 = sm.a0 + (sm.a1 - sm.a0) * t0, b1 = sm.a0 + (sm.a1 - sm.a0) * t1;
         ctx.fillStyle = `rgba(${S.col},${0.6 * sm.al * Math.pow(t1, 1.4)})`; ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(b0) * r0, cy + Math.sin(b0) * r0 * 0.5); ctx.lineTo(cx + Math.cos(b0) * r1, cy + Math.sin(b0) * r1 * 0.5);
-        ctx.lineTo(cx + Math.cos(b1) * r1, cy + Math.sin(b1) * r1 * 0.5); ctx.lineTo(cx + Math.cos(b1) * r0, cy + Math.sin(b1) * r0 * 0.5); ctx.fill();
+        ctx.moveTo(cx + Math.cos(b0) * r0, cy + Math.sin(b0) * r0 * ys); ctx.lineTo(cx + Math.cos(b0) * r1, cy + Math.sin(b0) * r1 * ys);
+        ctx.lineTo(cx + Math.cos(b1) * r1, cy + Math.sin(b1) * r1 * ys); ctx.lineTo(cx + Math.cos(b1) * r0, cy + Math.sin(b1) * r0 * ys); ctx.fill();
       }
       ctx.strokeStyle = `rgba(255,252,236,${0.85 * sm.al})`; ctx.lineWidth = 1.6; ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(sm.a1) * r0, cy + Math.sin(sm.a1) * r0 * 0.5); ctx.lineTo(cx + Math.cos(sm.a1) * r1, cy + Math.sin(sm.a1) * r1 * 0.5); ctx.stroke();
+      ctx.moveTo(cx + Math.cos(sm.a1) * r0, cy + Math.sin(sm.a1) * r0 * ys); ctx.lineTo(cx + Math.cos(sm.a1) * r1, cy + Math.sin(sm.a1) * r1 * ys); ctx.stroke();
       ctx.globalCompositeOperation = 'source-over';
     }
     if (p.back !== back || it.alpha <= 0) continue;
@@ -401,7 +408,7 @@ function render() {
   for (const z of zones) {
     if (!z.pool) continue;
     const q = clamp(z.t / z.warn, 0, 1), fade = z.fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : 1, R = z.r * (0.35 + 0.8 * easeOut3(q));
-    ctx.globalAlpha = 0.7 * q * fade; dI(GL.shadow, z.x - R, z.y - R * 0.55, R * 2, R * 1.1);
+    ctx.globalAlpha = 0.7 * q * fade; dI(GL.shadow, z.x - R, z.y + FEET - R * 0.55, R * 2, R * 1.1);
   }
   for (const h of hazards) {   // 물귀신 water pools: slow you while you stand in them
     const a = Math.min(1, h.t / 0.3, (h.life - h.t) / 0.6), w = Math.sin(G.t * 3 + h.x) * 2;
@@ -506,6 +513,11 @@ function render() {
     ctx.globalAlpha = 1; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   if (PG.on) { pgDrawWorld(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+  { // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear
+    const hz = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)');
+    ctx.fillStyle = hz; ctx.fillRect(0, 0, W, H * 0.55);
+  }
   if (P.light <= GREED) {
     const pulse = 0.5 + Math.sin(G.t * 3) * 0.15;
     const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.hypot(W, H) / 2);
@@ -736,7 +748,8 @@ function drawGlows() {
   ctx.globalCompositeOperation = 'source-over';
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
-function drawZones() {   // attack warnings on the floor, under every character
+function drawZones() {   // attack warnings on the floor, under every character, at foot level
+  ctx.save(); ctx.translate(0, FEET);
   // danger zones: tinted floor that fills toward the strike, rim flickers in the last quarter
   for (const z of zones) {
     const k = Math.min(1, z.t / z.warn), fired = z.fired, fa = fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : Math.min(1, z.t / 0.08), late = !fired && k > 0.75 ? 0.5 + 0.5 * Math.sin(G.t * 42) : 0, c = z.col;
@@ -754,7 +767,7 @@ function drawZones() {   // attack warnings on the floor, under every character
       ctx.restore();
     }
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 1; ctx.restore();
 }
 function drawBeam() {   // 이무기's water beam runs along the floor, under the characters
   if (G.beam) {
@@ -788,37 +801,37 @@ function drawFxList() {   // every effect sits on the floor, under the character
     }
     if (f.k === 'sigil') {   // magic circle on the ground: snaps open, turns, fades
       const img = FX[f.a || 'circle'] && FX[f.a || 'circle'][0]; if (!img) continue;
-      const x = f.follow ? P.x : f.x, y = f.follow ? P.y + 10 : f.y, r0 = f.r0 ?? f.r * 0.6, r = r0 + (f.r - r0) * easeOut3(Math.min(1, k * 3));
+      const x = f.follow ? P.x : f.x, y = f.follow ? P.y + FEET : f.y, r0 = f.r0 ?? f.r * 0.6, r = r0 + (f.r - r0) * easeOut3(Math.min(1, k * 3));
       ctx.globalAlpha = (f.al ?? 0.9) * Math.min(1, k * 10) * (k > 0.55 ? (1 - k) / 0.45 : 1);
       ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.62); ctx.rotate((f.rot || 0) + (REDUCED ? 0 : f.t * (f.spin ?? 1.2))); dI(img, -r, -r, r * 2, r * 2); ctx.restore();
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring' && FX.ring && FX.ring[0]) {   // bell: generated sound-wave ring, sharp edge at the hit radius
       const r = f.r || 16, fa = 1 - k, z = r * 2.06;
-      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y - z * 0.31, z, z * 0.62);   // a ground ripple: squashed to the floor
-      if (k < 0.25) { ctx.globalAlpha = (0.25 - k) * 3; const c = 50; dI(GL.gold, P.x - c / 2, P.y - 12 - c / 2, c, c); }
+      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y + FEET - z * 0.31, z, z * 0.62);   // a ground ripple: squashed to the floor
+      if (k < 0.25) { ctx.globalAlpha = (0.25 - k) * 3; const c = 50; dI(GL.gold, P.x - c / 2, P.y + FEET - c * 0.31, c, c * 0.62); }
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring') {
       const r = f.r || 16, fa = 1 - k, c = f.evo ? '255,214,120' : '240,226,180';
-      ctx.beginPath(); ctx.ellipse(P.x, P.y, r, r * 0.62, 0, 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, r, r * 0.62, 0, 0, TAU);
       ctx.strokeStyle = `rgba(${c},${0.12 * fa})`; ctx.lineWidth = 22; ctx.stroke();       // wake
       ctx.strokeStyle = `rgba(${c},${0.35 * fa})`; ctx.lineWidth = 7; ctx.stroke();        // body
       ctx.strokeStyle = `rgba(255,250,232,${0.95 * fa})`; ctx.lineWidth = 2.2; ctx.stroke();   // hot edge
       if (f.evo) {   // rotating glyph ticks on the evolved bell
         ctx.strokeStyle = `rgba(255,230,160,${0.8 * fa})`; ctx.lineWidth = 2.5; ctx.beginPath();
-        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + Math.sin(a) * (r - 9) * 0.62); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + Math.sin(a) * (r + 9) * 0.62); }
+        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + FEET + Math.sin(a) * (r - 9) * 0.62); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + FEET + Math.sin(a) * (r + 9) * 0.62); }
         ctx.stroke();
       }
     } else if (f.k === 'swing') {
-      ctx.save(); ctx.translate(P.x, P.y); ctx.scale(1, 0.62); ctx.translate(-P.x, -P.y);
+      ctx.save(); ctx.translate(P.x, P.y + FEET); ctx.scale(1, 0.62); ctx.translate(-P.x, -P.y);
       const g = ctx.createRadialGradient(P.x, P.y, f.r * 0.3, P.x, P.y, f.r);
       g.addColorStop(0, 'rgba(79,163,122,0)'); g.addColorStop(0.75, `rgba(120,210,160,${0.35 * (1 - k)})`); g.addColorStop(1, `rgba(200,255,220,${0.6 * (1 - k)})`);
       ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.closePath(); ctx.fill();
       ctx.strokeStyle = `rgba(230,255,240,${0.9 * (1 - k)})`; ctx.lineWidth = 3 * (1 - k) + 0.5; ctx.beginPath(); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.stroke(); ctx.restore();
     } else if (f.k === 'slam') {
       const r = f.r * (0.3 + 0.7 * easeOut3(k)), fa = 1 - k;
-      ctx.beginPath(); ctx.ellipse(P.x, P.y, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU);
       ctx.fillStyle = `rgba(217,173,69,${0.14 * fa})`; ctx.fill();
       ctx.strokeStyle = `rgba(240,200,110,${0.32 * fa})`; ctx.lineWidth = 8 * fa + 1; ctx.stroke();
       ctx.strokeStyle = `rgba(255,246,214,${0.8 * fa})`; ctx.lineWidth = 2.2 * fa + 0.5; ctx.stroke();
@@ -861,9 +874,9 @@ function drawFxList() {   // every effect sits on the floor, under the character
     } else if (f.k === 'puff') {
       ctx.strokeStyle = `rgba(170,200,255,${0.4 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(f.x, f.y, 6 + k * f.r, (6 + k * f.r) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'lightburst') {
-      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(P.x, P.y, 30 + k * 260, (30 + k * 260) * 0.62, 0, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, 30 + k * 260, (30 + k * 260) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'ohaeng') {
-      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; const rr = Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26); ctx.beginPath(); ctx.ellipse(P.x, P.y, rr, rr * 0.62, 0, 0, TAU); ctx.stroke(); });
+      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; const rr = Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26); ctx.beginPath(); ctx.ellipse(P.x, P.y + FEET, rr, rr * 0.62, 0, 0, TAU); ctx.stroke(); });
       ctx.globalAlpha = 1;
     }
   }
