@@ -2420,21 +2420,29 @@ function drawDeform(e, img, p) {
   const sp = Math.hypot(e.mvx || 0, e.mvy || 0);
   if (e.type === 'gseun') {
     const drag = -(e.rd || 0) * 11 * e.scale, A1 = 4.6 * e.scale, A2 = 2 * e.scale, N = 30;   // the hem trails the drift (smoothed) and keeps rippling
+    let r0 = -1, r1 = 0;   // rows that don't move (above the waist) go out as one piece
     for (let j = 0; j < N; j++) {
       const y0 = Math.floor(Hs * j / N), y1 = Math.floor(Hs * (j + 1) / N), v = (y0 + y1) / 2 / Hs, wv = Math.pow(clamp((v - 0.26) / 0.74, 0, 1), 1.6);
+      if (wv === 0) { if (r0 < 0) r0 = y0; r1 = y1; continue; }
+      if (r0 >= 0) { ctx.drawImage(at, ax, ay + r0, Ws, r1 - r0 + 1, -p.w / 2, -p.h + r0 * ky, p.w, (r1 - r0 + 1) * ky); r0 = -1; }
       const dx = wv * (A1 * Math.sin(t * 2.1 - v * 7 + b) + A2 * Math.sin(t * 3.7 + v * 12 + b * 2) + drag);
       ctx.drawImage(at, ax, ay + y0, Ws, y1 - y0 + 1, -p.w / 2 + dx / p.sx, -p.h + y0 * ky, p.w, (y1 - y0 + 1) * ky);
     }
+    if (r0 >= 0) ctx.drawImage(at, ax, ay + r0, Ws, r1 - r0 + 1, -p.w / 2, -p.h + r0 * ky, p.w, (r1 - r0 + 1) * ky);
     return;
   }
   // 구미호: tails are on the image's left (the fox faces right); the 'howl' pose fans them on both sides
   const run = clamp((sp - 25) / 70, 0, 1), both = e.pose === 'p3', N = 34, A = (5 - 1.5 * run) * (e.type === 'clone' ? 0.9 : 1), f = 2.2 + 5 * run;   // a slow wide swish at rest, a quick flutter at a run
+  let r0 = -1, r1 = 0;   // columns that don't move (the body and head) go out as one piece instead of a dozen strips
   for (let j = 0; j < N; j++) {
     const x0 = Math.floor(Ws * j / N), x1 = Math.floor(Ws * (j + 1) / N), u = (x0 + x1) / 2 / Ws;
     const root = both ? Math.abs(u - 0.5) * 2 : 1 - u, wv = Math.pow(clamp((root - 0.42) / 0.58, 0, 1), 1.4);
+    if (wv === 0) { if (r0 < 0) r0 = x0; r1 = x1; continue; }
+    if (r0 >= 0) { ctx.drawImage(at, ax + r0, ay, r1 - r0 + 1, Hs, -p.w / 2 + r0 * kx, -p.h, (r1 - r0 + 1) * kx, p.h); r0 = -1; }
     const dy = wv * (A * Math.sin(t * f - root * 5.5 + b) + A * 0.4 * Math.sin(t * f * 1.7 + root * 9 + b));
     ctx.drawImage(at, ax + x0, ay, x1 - x0 + 1, Hs, -p.w / 2 + x0 * kx, -p.h + dy / p.sy, (x1 - x0 + 1) * kx, p.h);
   }
+  if (r0 >= 0) ctx.drawImage(at, ax + r0, ay, r1 - r0 + 1, Hs, -p.w / 2 + r0 * kx, -p.h, (r1 - r0 + 1) * kx, p.h);
 }
 function drawBoss(e) {
   const a0 = e.alpha || 1, k = e.prevPose !== undefined && (e.poseT ?? 9) < 0.12 ? (e.poseT || 0) / 0.12 : 1;
