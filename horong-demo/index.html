@@ -789,6 +789,7 @@ function applyArtScale() {
   if (!ART.ok) return;
   const d = clamp(DPR * ZOOM, 0.6, 2);
   if (Math.abs(d - ART.d) < 0.04) return;
+  if (d < ART.d && d >= ART.d / 2 - 0.01) return;   // a lower resolution (auto quality stepping down) keeps the sharper sprites: re-cutting and re-packing them all stalled a frame for ~50ms, and drawing them up to 2× smaller looks the same
   ART.d = d;
   const A = {};
   for (const n in ART.src) if (!n.startsWith('i_') && !n.startsWith('fx_')) A[n] = scaledArt(ART.src[n], d);
