@@ -20,11 +20,13 @@ function buildFx(src) {
   FXSRC.pillar_j = FXSRC.pillar.map(c => tint(c, '#6dffb0', 0.75));   // 산삼 heal
   FXSRC.fire_p = FXSRC.fire.map(c => tint(c, '#ff5fb4', 0.7));         // 구미호 foxfire
   FXSRC.slash_p = FXSRC.slash.map(c => tint(c, '#ff7ab8', 0.75));      // 구미호 claw swipe
+  FXSRC.pillar_o = FXSRC.pillar.map(c => tint(c, '#ff8a3a', 0.75));    // 불가살이 쇳물
 }
-const FLOAT = new Set(['egg', 'water', 'wisp', 'saja', 'gseun']);
+const FLOAT = new Set(['egg', 'water', 'wisp', 'saja', 'gseun', 'sonkaksi', 'grim', 'crow']);
 function loadImg(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
 async function loadArt() {
   const [atlas, tile] = await Promise.all([loadImg('assets/sprites-__ATLAS_VER__.png'), loadImg('assets/ground.jpg')]);
+  loadImg('assets/ground2.jpg').then(t2 => { groundPat2 = ctx.createPattern(t2, 'repeat'); if (groundPat2 && groundPat2.setTransform && window.DOMMatrix) groundPat2.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0])); }, () => {});   // 2탄 floor, not needed to start
   const src = {};
   for (const n in ATLAS.frames) {
     const [x, y, w, h] = ATLAS.frames[n], c = document.createElement('canvas');
@@ -47,7 +49,7 @@ function scaledArt(c, d) {
 }
 function applyArtScale() {
   if (!ART.ok) return;
-  const d = clamp(DPR * ZOOM, 0.6, 2);
+  const d = clamp(Math.min(DPR, RES.art) * ZOOM, 0.6, 2);
   if (Math.abs(d - ART.d) < 0.04) return;
   ART.d = d;
   const A = {};
@@ -55,8 +57,8 @@ function applyArtScale() {
   for (const who of ['yeoni', 'danbi']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot
   SPR.player = SPR.yeoni;
   for (const k in FXSRC) FX[k] = FXSRC[k].slice();   // effects keep source resolution: they are drawn at many sizes
-  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae']) SPR[k] = A[k];
-  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3']) SPRF[k] = whiteOf(SPR[k]);
+  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae', 'stonelamp', 'sansin', 'spring', 'pagoda', 'offering', 'herbs', 'lotus', 'tbell', 'sonkaksi', 'grim', 'yagwang', 'crow', 'mangtae', 'totem', 'jangsan', 'jangsan_p1', 'jangsan_p2', 'jangsan_p3', 'dueok', 'dueok_p1', 'dueok_p2', 'dueok_p3', 'bulga', 'bulga_p1', 'bulga_p2', 'bulga_p3']) SPR[k] = A[k];
+  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'sonkaksi', 'grim', 'yagwang', 'crow', 'mangtae', 'totem', 'jangsan', 'jangsan_p1', 'jangsan_p2', 'jangsan_p3', 'dueok', 'dueok_p1', 'dueok_p2', 'dueok_p3', 'bulga', 'bulga_p1', 'bulga_p2', 'bulga_p3']) SPRF[k] = whiteOf(SPR[k]);
   const off = (ART.meta && ART.meta.emisOff) || {};
   for (const n in A) if (n.endsWith('_e')) {
     const k = n.slice(0, -2), c = A[n], o = off[k] || [0, 0];
