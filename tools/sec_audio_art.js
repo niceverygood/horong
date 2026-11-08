@@ -106,8 +106,9 @@ function buildInk() {
 
 /* ---------- audio ---------- */
 let AC = null, muted = false, sfxBus = null, bgm = null; const sfxLast = {}, BUF = {};
-const SFX_FILE = { hit: 'hit', pick: 'gem', oil: 'oil', jar: 'jar', level: 'levelup', bell: 'bell', swing: 'swing', slam: 'slam', shoot: 'shoot', hurt: 'hurt', chest: 'chest', boss: 'boss', dark: 'dark', win: 'rooster', lose: 'lose', evolve: 'evolve', beam: 'beam', card: 'card', charm: 'charm', bossdie: 'bossdie', magnet: 'magnet', heal: 'heal' };
-const SFX_VOL = { hit: 0.3, pick: 0.36, oil: 0.6, jar: 0.8, level: 0.7, bell: 0.4, swing: 0.3, slam: 0.5, shoot: 0.26, hurt: 0.7, chest: 0.8, boss: 0.9, dark: 0.7, win: 0.9, lose: 0.8, evolve: 0.85, beam: 0.65, card: 0.5, charm: 0.6, bossdie: 0.8, magnet: 0.85, heal: 0.6 };
+const SFX_FILE = { hit: 'hit', pick: 'gem', oil: 'oil', jar: 'jar', level: 'levelup', bell: 'bell', swing: 'swing', slam: 'slam', shoot: 'shoot', hurt: 'hurt', chest: 'chest', boss: 'boss', dark: 'dark', win: 'rooster', lose: 'lose', evolve: 'evolve', beam: 'beam', card: 'card', charm: 'charm', bossdie: 'bossdie', magnet: 'magnet', heal: 'heal',
+  kill: 'kill', gembig: 'gem', drumroll: 'drumroll', tick: 'tick', gong: 'gong', stamp: 'stamp', yut: 'yut', kkwaeng: 'kkwaeng' };   // 연참·상자 공개·노름판 (국악 타악기)
+const SFX_VOL = { hit: 0.3, pick: 0.36, oil: 0.6, jar: 0.8, level: 0.7, bell: 0.4, swing: 0.3, slam: 0.5, shoot: 0.26, hurt: 0.7, chest: 0.8, boss: 0.9, dark: 0.7, win: 0.9, lose: 0.8, evolve: 0.85, beam: 0.65, card: 0.5, charm: 0.6, bossdie: 0.8, magnet: 0.85, heal: 0.6, kill: 0.2, gembig: 0.5, drumroll: 0.7, tick: 0.55, gong: 0.75, stamp: 0.9, yut: 0.7, kkwaeng: 0.45 };
 function audioOn() {
   if (!AC) {
     try { AC = new (window.AudioContext || window.webkitAudioContext)(); sfxBus = AC.createGain(); sfxBus.gain.value = 0.85; sfxBus.connect(AC.destination); loadSfx(); }
@@ -142,16 +143,19 @@ function tone(freq, dur, type, vol, slide = 0, delay = 0) {
 }
 function sfx(n, v = 0) {
   if (!AC || muted) return;
-  const lim = { hit: 0.05, pick: 0.055, shoot: 0.09, bell: 0.1, swing: 0.1, slam: 0.12, oil: 0.08, bossdie: 0.2, card: 0.05, hurt: 0.12 }[n] || 0;
+  const lim = { hit: 0.05, pick: 0.055, shoot: 0.09, bell: 0.1, swing: 0.1, slam: 0.12, oil: 0.08, bossdie: 0.2, card: 0.05, hurt: 0.12, kill: 0.07, gembig: 0.12, tick: 0.03, kkwaeng: 0.15, gong: 0.4 }[n] || 0;
   const now = AC.currentTime; if (lim && sfxLast[n] && now - sfxLast[n] < lim) return; sfxLast[n] = now;
   if (BUF[n]) {
     let rate = 1;
     if (n === 'pick') rate = 1 + Math.min(v, 24) * 0.035;
     else if (n === 'hit' || n === 'swing' || n === 'shoot' || n === 'slam') rate = rnd(0.92, 1.08);
+    else if (n === 'kill') rate = 0.9 + Math.min(v, 300) / 300 * 0.5 + rnd(-0.03, 0.03);   // the soul pop climbs with the 연참
+    else if (n === 'tick') rate = 1 + Math.min(v, 6) * 0.09;   // each chest slot stops a step higher
+    else if (n === 'gembig') rate = 1.9;
     try { playBuf(n, rate, 1); } catch (e) {}
     return;
   }
-  const alias = { jar: 'oil', evolve: 'chest', bossdie: 'slam', charm: 'hurt', card: 'pick', beam: 'slam' };
+  const alias = { jar: 'oil', evolve: 'chest', bossdie: 'slam', charm: 'hurt', card: 'pick', beam: 'slam', kill: 'pick', gembig: 'pick', drumroll: 'boss', tick: 'hit', gong: 'win', stamp: 'slam', yut: 'card', kkwaeng: 'bell' };
   if (alias[n]) n = alias[n];
   try {
     switch (n) {
