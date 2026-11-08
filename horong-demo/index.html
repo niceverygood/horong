@@ -1068,10 +1068,11 @@ function spawnParade() {
 }
 
 /* ---------- spatial grid ---------- */
-const CELL = 64; const grid = new Map();
+const CELL = 64; const grid = new Map(); let gridAge = 0;
 const gkey = (cx, cy) => (cx + 32768) * 65536 + (cy + 32768);
-function buildGrid() {
-  grid.clear();
+function buildGrid() {   // cell arrays are emptied and refilled instead of made anew every frame (less garbage to collect)
+  if (++gridAge > 300) { grid.clear(); gridAge = 0; }   // every 5s, drop the cells the crowd has left behind
+  else for (const a of grid.values()) a.length = 0;
   for (const e of enemies) {
     if (e.dead || e.type === 'dark') continue;
     const k = gkey(Math.floor(e.x / CELL), Math.floor(e.y / CELL));
