@@ -1275,7 +1275,8 @@ function spawnParade() {
 
 /* ---------- spatial grid ---------- */
 const CELL = 64; const grid = new Map(); let gridAge = 0;
-const gkey = (cx, cy) => (cx + 32768) * 65536 + (cy + 32768);
+// cell key: stays a small integer (< 2^30, ±16384 cells = ±1M px), so a lookup boxes nothing (the old key, ~2^31, was a heap number every call)
+const gkey = (cx, cy) => (cx + 16384) * 32768 + (cy + 16384);
 function buildGrid() {   // cell arrays are emptied and refilled instead of made anew every frame (less garbage to collect)
   if (++gridAge > 300) { grid.clear(); gridAge = 0; }   // every 5s, drop the cells the crowd has left behind
   else for (const a of grid.values()) a.length = 0;
@@ -2588,7 +2589,12 @@ const SKC = { sleeve: '220,232,255', reach: '178,110,255', sack: '214,170,100', 
 const SKN = { wail: '원한의 곡소리', sleeve: '소매 휘감기', murk: '어둠 웅덩이', sstep: '그림자 걸음', reach: '그림자 손', ybite: '물어뜯기', shoe: '짚신 던지기', steal: '엽전 훔치기', dive: '급강하', feather: '깃털 날리기', flock: '떼 부르기', cane: '지팡이 내려찍기', sack: '망태 씌우기', imps: '졸개 풀기', tsmash: '내려찍기', shout: '호령', snap: '물어뜯기', toss: '돌 던지기', call: '떼 부르기', dash: '돌진', roll: '굴러오기', blink: '뒤로 나타나기', spit: '물대포', puddle: '물웅덩이', grab: '끌어당기기', hop: '뛰어들기', smash: '내려찍기', club: '방망이 부메랑', tal: '부적 던지기', seal: '결계 부적', step: '그림자 걸음', fire: '화염구', burst: '자폭', orbit: '맴돌다 덮치기' };
 const skOn = (type, k) => { const L = MOBSK[type]; if (L) for (const s of L) if (s[0] === k) return PG.on || G.t >= s[1]; return false; };   // a loop, not find(): no closure per call
 // is skill k off cooldown and does the dice say go (was a closure made per mob per frame)
-function skReady(e, c, dt, k) { return skOn(e.type, k) && (c[k] ?? G.t + rnd(0.5, 3)) <= G.t && Math.random() < dt * (PG.on ? 1.6 : 0.8); }
+// Cooldowns: e.skc = [next use of skill 0, 1, 2, set up?]. An array of plain numbers reads without making a box per read
+// (it was an object keyed by skill name, one shape per mob type, read for every mob every frame).
+function skReady(e, c, dt, k) {
+  const S = MOBSK[e.type]; let i = 0; while (i < S.length && S[i][0] !== k) i++;
+  return i < S.length && (PG.on || G.t >= S[i][1]) && c[i] <= G.t && Math.random() < dt * (PG.on ? 1.6 : 0.8);
+}
 let skActive = 0, hazards = [];
 function skName(e, k) {   // the first time each skill shows up in a run, name it over the mob
   const seen = G.skSeen || (G.skSeen = new Set());
@@ -2597,8 +2603,8 @@ function skName(e, k) {   // the first time each skill shows up in a run, name i
 function startSkill(e, k, forced) {
   const dx = P.x - e.x, dy = P.y - e.y, d = Math.hypot(dx, dy) || 1, n = k, lab = `${ED[e.type].name}의 ${SKN[n] || n}`, sc = SKC[n];
   k = SKB[n] || n;
-  e.sk = { k, n, t: 0, a: Math.atan2(dy, dx) }; e.skc = e.skc || {};
-  const S = MOBSK[e.type].find(x => x[0] === n); if (S) e.skc[n] = G.t + rnd(S[2], S[3]);
+  e.sk = { k, n, t: 0, a: Math.atan2(dy, dx) }; const c = e.skc || (e.skc = [NaN, NaN, NaN, 0]);
+  const L = MOBSK[e.type], i = L.findIndex(x => x[0] === n); if (i >= 0) c[i] = G.t + rnd(L[i][2], L[i][3]);
   skName(e, n); e.fx = dx < 0 ? -1 : 1;
   if (k === 'grab') e.sk.z = zone({ sh: 'l', x: e.x, y: e.y - 10, a: e.sk.a, len: Math.min(220, d + 30), w: 30, warn: 0.5, col: sc || AQUA });
   if (k === 'smash') zone({ sh: 'c', x: e.x + e.fx * 22, y: e.y, r: 64, warn: 0.5, dmg: 10 * (1 + dT() / 900), label: lab, short: SKN[n], col: sc || REDC, onFire: z => { fx({ k: 'fb', a: 'slam', x: z.x, y: z.y + 4, s: 150, dur: 0.45 }); chips(z.x, z.y, '#8a6a4a', 7); shock(z.x, z.y, 80, '#ffb070', 0.3, 4); G.shake = Math.max(G.shake, 2.5); sfx('slam'); } });
@@ -2613,8 +2619,8 @@ function mobSkill(e, dt, d, mult) {
   const A = e.sk, dx = P.x - e.x, dy = P.y - e.y;
   if (!A) {
     if (!MOBSK[e.type] || e.ring || e.stun > 0 || !inView(e.x, e.y, 20) || (!PG.on && skActive >= 3 + G.t / 120) || (PG.on && !PG.mobAtk)) return false;
-    const c = e.skc || (e.skc = {}), L = e.inLight;
-    if (c.init === undefined) { c.init = 1; for (const s of MOBSK[e.type]) c[s[0]] = G.t + rnd(1, s[3] || 3); }
+    const c = e.skc || (e.skc = [NaN, NaN, NaN, 0]), L = e.inLight;
+    if (!c[3]) { c[3] = 1; const S = MOBSK[e.type]; for (let i = 0; i < S.length; i++) c[i] = G.t + rnd(1, S[i][3] || 3); }
     const T = e.type;
     if (T === 'japgwi') { if (d < 62 && skReady(e, c, dt, 'snap')) startSkill(e, 'snap'); else if (d > 110 && d < 280 && L && skReady(e, c, dt, 'toss')) startSkill(e, 'toss'); else if (skReady(e, c, dt, 'call')) { let n = 0; queryCircle(e.x, e.y, 180, o => { if (o.type === 'japgwi') n++; }); if (n >= 4) startSkill(e, 'call'); } }
     else if (T === 'egg') { if (e.st === 'walk' && d > 80 && d < 320 && skReady(e, c, dt, 'roll')) startSkill(e, 'roll'); else if (e.st === 'walk' && d < 260 && skReady(e, c, dt, 'blink')) startSkill(e, 'blink'); }
@@ -3588,10 +3594,13 @@ function drawPose(img, p) {
   ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * sy, s * c * sy, s * p.x + WM[1], s * p.y + WM[2]);
   dI(img, -p.w / 2, p.oy ?? -p.h, p.w, p.h);
 }
+// Eye glows are drawn upright at the spot the rotated body puts them: a soft blob tilted by the few degrees of the
+// walk wobble looks the same, and a rotated draw costs ~3x a scaled one on a software canvas (hundreds a frame late on).
 function drawEmis(em, p) {
   const k = p.w / SW(p.base), s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot), sy = p.sy * upK(p.y);
-  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * sy, s * c * sy, s * p.x + WM[1], s * p.y + WM[2]);
-  dI(em, -p.w / 2 + (em._ox || 0) * k, (p.oy ?? -p.h) + (em._oy || 0) * k, SW(em) * k, SH(em) * k);
+  const ew = SW(em) * k, eh = SH(em) * k, lx = -p.w / 2 + (em._ox || 0) * k + ew / 2, ly = (p.oy ?? -p.h) + (em._oy || 0) * k + eh / 2;
+  ctx.setTransform(s * p.sx, 0, 0, s * sy, s * (p.x + c * p.sx * lx - n * sy * ly) + WM[1], s * (p.y + n * p.sx * lx + c * sy * ly) + WM[2]);
+  dI(em, -ew / 2, -eh / 2, ew, eh);
 }
 function drawImugi(e, emissive) {
   const segImg = SPR.seg, sw = SW(segImg), sh = SH(segImg);
@@ -3764,7 +3773,7 @@ function render() {
   ctx.globalCompositeOperation = 'lighter';
   const wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
   wg.addColorStop(0, 'rgba(242,169,59,0.16)'); wg.addColorStop(0.6, 'rgba(242,140,40,0.07)'); wg.addColorStop(1, 'rgba(242,169,59,0)');
-  ctx.fillStyle = wg; ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+  ctx.fillStyle = wg; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill();   // the glow is zero past R: fill the circle, not its square
   const [ldx, ldy] = lanternOff();
   const lx = cx + ldx * ZOOM, ly = cy + ldy * ZOOM, gsz = (40 + Math.sin(G.t * 11) * 3) * ZOOM;
   ctx.globalAlpha = 0.95; dI(GL.amber, lx - gsz / 2, ly - gsz / 2, gsz, gsz); ctx.globalAlpha = 1;
@@ -3965,7 +3974,7 @@ function drawGlows() {
     if (e.dead || e.inLight || e.parent || e.type === 'dark' || !inView(e.x, e.y, 60)) continue;
     if (e.type === 'imugi') { if (EMIS.imugi) { worldT(); drawImugi(e, true); } continue; }
     if (ART.ok) {
-      if (ED[e.type].ghost) { ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], enemyPose(e, undefined, POSE)); ctx.globalAlpha = 1; continue; }
+      if (ED[e.type].ghost) { const q = enemyPose(e, undefined, POSE); if (Math.abs(q.rot) < 0.15) q.rot = 0; ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], q); ctx.globalAlpha = 1; continue; }   // faint ghost: the few-degree float wobble is dropped (a rotated draw costs ~3x), a roll is kept
       if (e.pose) { ctx.globalAlpha = 0.22; const q = enemyPose(e, undefined, POSE); drawPose(q.base, q); ctx.globalAlpha = 1; continue; }   // action pose: faint silhouette, no baked eye glow
       const em = EMIS[e.spr]; if (!em) continue;
       if (Math.sin(G.t * 0.7 + e.bob * 3) > 0.97) continue;
