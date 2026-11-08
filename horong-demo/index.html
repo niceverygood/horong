@@ -171,6 +171,51 @@ body.pg-on #btn-pause,body.pg-on #btn-mute{display:none}
 @keyframes coinfly{from{transform:translate(-50%,-50%) scale(.6);opacity:1}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1);opacity:0}}
 @media (max-width:560px){.cslot{width:96px;height:124px;padding-top:10px}.cslot b{font-size:13px}.chest-box{width:130px;height:130px}#chest-gain{font-size:26px}}
 @media (prefers-reduced-motion: reduce){#chest-img,.chest-rays,.cslot .strip,.cslot.stop{animation:none}}
+/* 부적 등급: 청 (+2) · 금 (+3, 체력 회복). Cards flip in one after another; a rare one glows in its slot first and turns last */
+.card-wrap{position:relative}
+.card-wrap.flip .card{animation:cardflip .22s ease-out backwards;animation-delay:var(--fd,0s)}
+.card .rank{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:2px 10px;font:700 12.5px/1.2 var(--font-display)}
+.rar-b .card{box-shadow:inset 0 0 0 3px var(--bujeok),inset 0 0 0 5px #3b6fe0,0 0 0 2px #9cc0ff,0 0 22px 4px rgba(90,150,255,.55)}
+.rar-b .rank{background:#2e5fc8;color:#e8f0ff;box-shadow:0 0 0 2px #0d1d44}
+.rar-g .card{background:linear-gradient(115deg,#f3df9e 0%,#f3df9e 38%,#fff6d6 46%,#f3df9e 54%,#ecd38a 100%);box-shadow:inset 0 0 0 3px #f3df9e,inset 0 0 0 5px #c8901e,0 0 0 2px #ffe6a0,0 0 34px 8px rgba(255,200,90,.75)}
+.rar-g .rank{background:linear-gradient(180deg,#ffe9a8,#e8a93a);color:#3a1d04;box-shadow:0 0 0 2px #5a3306,0 0 14px rgba(255,210,110,.8)}
+.rar-b.flip::before,.rar-g.flip::before{content:'';position:absolute;left:0;right:0;top:0;height:178px;pointer-events:none;border-radius:2px;animation:preglow .5s ease-out both;animation-delay:calc(var(--fd,0s) - .25s)}
+.rar-b.flip::before{box-shadow:0 0 26px 6px rgba(90,150,255,.8)}
+.rar-g.flip::before{box-shadow:0 0 34px 10px rgba(255,200,90,.9)}
+#levelup.gold{box-shadow:inset 0 0 0 3px rgba(255,214,120,.55),inset 0 0 140px 30px rgba(255,190,80,.38)}
+@keyframes cardflip{from{transform:perspective(600px) rotateY(90deg);opacity:.2}to{transform:perspective(600px) rotateY(0);opacity:1}}
+@keyframes preglow{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+/* 결산: numbers count up, records get a 新 seal, damage by weapon, and the next goals with what this run added */
+#over .panel{width:min(900px,100%)}
+#btn-again{padding-inline:30px;font-size:16px}
+.stat{position:relative}
+.stat .seal{position:relative;display:inline-block;vertical-align:middle;margin:-6px 0 0 8px;width:28px;height:28px;background:var(--bujeok-red);color:#ffe9d0;font:700 16px/28px var(--font-display);text-align:center;border-radius:3px;font-style:normal;box-shadow:0 0 0 2px #2a0d07,0 0 0 4px rgba(184,69,47,.35);animation:sealin .25s ease-out both}
+.over-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px}
+.over-grid:empty{display:none}
+.ocol{display:grid;gap:9px;align-content:start}
+.oh{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--hanji-dim)}
+.wrow{display:grid;grid-template-columns:24px minmax(0,1.3fr) minmax(50px,1fr) 108px;gap:8px;align-items:center;font-size:13px}
+.wrow img,.wrow .noicon{width:24px;height:24px;object-fit:contain}
+.wn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wn em{font-style:normal;margin-left:6px;padding:1px 6px;background:var(--amber);color:var(--amber-ink);font-size:11.5px;font-weight:700}
+.wb{height:9px;background:rgba(239,230,210,.08)}
+.wb i{display:block;height:100%;width:var(--w);background:rgba(242,169,59,.45);animation:wgrow .7s ease-out both;animation-delay:var(--d,0s)}
+.wrow.top .wb i{background:var(--amber)}
+.wv{font-variant-numeric:tabular-nums;color:var(--hanji-dim);white-space:nowrap;text-align:right}
+.wrow.top .wv{color:#ffd27a}
+.goal{display:grid;gap:5px}
+.gh{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--hanji-dim)}
+.gh b{color:var(--hanji)}
+.gv{color:#ffd27a;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gb{position:relative;height:8px;background:rgba(239,230,210,.08)}
+.gb i{position:absolute;top:0;bottom:0;left:0}
+.gb .old{background:rgba(88,179,156,.55)}
+.gb .new{background:#7fe0c4;box-shadow:0 0 8px rgba(127,224,196,.8);animation:wgrow .8s ease-out .5s both}
+.gn{font-size:12px;color:#7fe0c4}
+@keyframes wgrow{from{width:0}}
+@keyframes sealin{from{transform:rotate(-12deg) scale(2.2);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:1}}
+@media (max-width:720px){.over-grid{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){.card-wrap.flip .card,.rar-b.flip::before,.rar-g.flip::before,.wb i,.gb .new,.stat .seal{animation:none}}
 </style>
 
 <canvas id="game" aria-label="호롱 백귀야행 게임 화면"></canvas>
@@ -265,6 +310,7 @@ body.pg-on #btn-pause,body.pg-on #btn-mute{display:none}
     <div class="brand"><span id="over-label" class="label">결과</span><h2 id="over-title">호롱불이 꺼졌다</h2></div>
     <p id="over-lede" class="lede"></p>
     <div id="over-stats" class="stats"></div>
+    <div id="over-detail" class="over-grid"></div>
     <div class="row">
       <button id="btn-again" class="btn primary" type="button">다시 나서기</button>
       <button id="btn-over-shop" class="btn" type="button">주막</button>
@@ -396,6 +442,7 @@ const ED = {
   egg: { name: '달걀귀신', hp: 16, spd: 42, dmg: 9, r: 11, xp: 2, el: '토', ai: 'egg', eyes: [], ghost: true },
   water: { name: '물귀신', hp: 28, spd: 40, dmg: 7, r: 12, xp: 3, el: '토', eyes: [[3, -12]], eye: 'b' },
   dokkaebi: { name: '붉은 도깨비', hp: 22, spd: 56, dmg: 9, r: 11, xp: 3, el: '토', eyes: [[-4, -6], [4, -6]], eye: 'w' },
+  goldgob: { name: '금빛 도깨비', spr: 'goldgob', hp: 90, spd: 122, dmg: 0, r: 12, xp: 10, el: '금', ai: 'goldgob', eyes: [[-4, -6], [4, -6]], eye: 'w' },
   saja: { name: '갓 쓴 귀신', hp: 40, spd: 36, dmg: 11, r: 12, xp: 4, el: '토', eyes: [[-3, -14], [3, -14]], eye: 'w' },
   wisp: { name: '도깨비불', hp: 6, spd: 88, dmg: 5, r: 8, xp: 1, el: '화', eyes: [[0, -4]], eye: 'b' },
   gseun: { name: '그슨대', hp: 450, spd: 34, dmg: 14, r: 24, xp: 40, el: '토', ai: 'gseun', elite: true, eyes: [[-6, -46], [6, -46]], eye: 'w' },
@@ -875,6 +922,11 @@ function applyArtScale() {
     const k = n.slice(0, -2), c = A[n], o = off[k] || [0, 0];
     c._ox = o[0] / 2; c._oy = o[1] / 2; EMIS[k] = c;   // offset of the cropped glow inside the full sprite, world units
   }
+  // 금빛 도깨비: the red goblin recoloured gold (hue and saturation from gold, shading kept), same flash and eye glow
+  if (SPR.dokkaebi) { const c = SPR.dokkaebi, o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const g = o.getContext('2d');
+    g.drawImage(c, 0, 0); g.globalCompositeOperation = 'color'; g.fillStyle = '#e8b43a'; g.fillRect(0, 0, o.width, o.height);
+    g.globalCompositeOperation = 'destination-in'; g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,226,140,0.2)'; g.fillRect(0, 0, o.width, o.height);
+    o._s = c._s; SPR.goldgob = o; SPRF.goldgob = SPRF.dokkaebi; if (EMIS.dokkaebi) EMIS.goldgob = EMIS.dokkaebi; }
   FIRE = [0, 1, 2, 3].map(i => A['fire' + i]); FOX = [0, 1, 2, 3].map(i => A['fox' + i]);
   packAtlas();
 }
@@ -1056,7 +1108,7 @@ function addPassive(id) { P.passives.push({ id, lv: 1 }); recalc(); }
 
 function newRun(charId, pg) {
   const ch = CHARS.find(c => c.id === charId); lastChar = charId; PG.on = !!pg; PG.deaths = 0; resize();
-  P = { x: 0, y: 0, r: 11, char: ch, spr: ch.id === 'danbi' ? 'danbi' : 'player', hp: 100, maxHp: 0, light: 100, level: 1, xp: 0, xpNext: xpFor(1),
+  P = { x: 0, y: 0, r: 11, char: ch, dmgBy: {}, killBy: {}, spr: ch.id === 'danbi' ? 'danbi' : 'player', hp: 100, maxHp: 0, light: 100, level: 1, xp: 0, xpNext: xpFor(1),
     weapons: [], passives: [], banned: new Set(), rerolls: 3, bans: 2, coins: 0, kills: 0, iframe: 0, slowT: 0, charmT: 0,
     face: { x: 1, y: 0 }, fx: 1, fs: 1, d: 0, dw: 0, side: 1, dT: 0, vx: 0, vy: 0, spd01: 0, moving: false, pending: 0, revive: meta.up.revive > 0 ? 1 : 0, greedSeen: false, darkSeen: false };
   recalc(); P.hp = P.maxHp;
@@ -1207,7 +1259,9 @@ function hurtEnemy(e, base, w, opt) {
   if (P.moveT > 2 && pLv('shoes')) d *= 1 + 0.04 * pLv('shoes');
   let crit = false; if (Math.random() < (w ? CRIT : 0) + 0.05 * pLv('redink')) { d *= 2; crit = true; }   // 치명타: weapon hits 5%, 붉은 인주 +5%/Lv on anything
   d = Math.max(1, Math.round(d));
-  e.hp -= d; e.flash = 0.08; if (PG.on && PG.immortal) e.hp = Math.max(1, e.hp);
+  const hp0 = e.hp; e.hp -= d; e.flash = 0.08; if (PG.on && PG.immortal) e.hp = Math.max(1, e.hp);
+  { const by = P.dmgBy || (P.dmgBy = {}), key = w && WEAPONS[w.id] ? w.id : 'etc'; by[key] = (by[key] || 0) + Math.min(d, Math.max(0, hp0)); }   // 결산: damage by weapon
+  if (e.type === 'goldgob' && (e.coinT || 0) < G.t) { e.coinT = G.t + 0.25; drops.push({ k: 'coin', x: e.x + rnd(-12, 12), y: e.y + rnd(-8, 8), v: 1 }); }   // every hit knocks a coin loose
   if (e.boss) e.ghostHit = G.t;   // the boss bar keeps the lost chunk pale for a moment
   const hy = e.y - e.r * 0.8 * e.scale, hcol = w && WEAPONS[w.id] ? EL_COLOR[WEAPONS[w.id].el] : '#fff0d0';
   { const tk = w && WEAPONS[w.id] ? EL_TINT[WEAPONS[w.id].el] : null, big = d >= 30 || e.big;
@@ -1224,6 +1278,7 @@ function killEnemy(e, w) {
   if (e.segs) e.segs.forEach(s => { s.dead = true; burst(s.x, s.y, '#2f6a70', 6); });
   if (e.silent) return;
   P.kills++; onKill(e);
+  { const by = P.killBy || (P.killBy = {}), key = w && WEAPONS[w.id] ? w.id : 'etc'; by[key] = (by[key] || 0) + 1; }
   if (e.xp > 0) dropGem(e.x, e.y, e.xp);
   if (e.elite || e.boss) G.hitstop = 0.12;
   if (Math.random() < e.oil) { drops.push({ k: 'oil', x: e.x + rnd(-6, 6), y: e.y + rnd(-6, 6), life: 30 }); if (e.ai === 'parade') G.paradeOil = (G.paradeOil || 0) + 1; }
@@ -1237,6 +1292,14 @@ function killEnemy(e, w) {
     if (e.big && effects.length < 140) fx({ k: 'fb', a: 'hit', x: e.x, y: cy, s: 150, dur: 0.24, rot: rnd(0, TAU) });
     if (e.big || parts.length < 300) sparks(e.x, cy, kc, e.big ? 22 : 3, e.big ? 160 : 90, e.big ? 420 : 230, -30);
     if (e.big) { soul(e.x, cy, true); shock(e.x, cy, 150, '#ffe2a0', 0.5, 7); } }
+  if (e.type === 'goldgob') {   // 금빛 도깨비 caught: the sack bursts (the run's first one always holds a chest)
+    const n = Math.round(rnd(20, 40)), chest = e.first || Math.random() < 0.3;
+    for (let i = 0; i < n; i++) drops.push({ k: 'coin', x: e.x + rnd(-55, 55), y: e.y + rnd(-40, 40), v: 1 });
+    if (chest) drops.push({ k: 'chest', x: e.x, y: e.y, tier: 'elite', src: '금빛 도깨비' });
+    banner('금빛 도깨비를 잡았다!', `엽전 ${n}냥${chest ? ' · 보물상자' : ''}`); sfx('chest'); screenFlash('255,214,120', 0.22, 0.3); G.shake = Math.max(G.shake, 5);
+    fx({ k: 'rays', x: e.x, y: e.y - 20, r: 220, n: 12, col: '255,214,120', dur: 0.9, rot: rnd(0, TAU) }); sparks(e.x, e.y - 16, '#ffd36a', 24, 120, 360, -80);
+    P.gobCaught = (P.gobCaught || 0) + 1;
+  }
   if (e.elite || e.boss) {
     drops.push({ k: 'chest', x: e.x, y: e.y, tier: !e.boss ? 'elite' : e.type === STAGES[stg()].boss ? 'final' : 'mid', src: `${ED[e.type].name} 퇴치` });
     dropItem('magnet', e.x + 34, e.y + 8); if (e.boss || Math.random() < 0.5) dropItem('ginseng', e.x - 34, e.y + 8);   // sweep the spilled coins
@@ -1496,6 +1559,11 @@ function buildOptions0(n) {
   if (!out.length) out.push({ kind: 'heal' }, { kind: 'coin' });
   return out;
 }
+function lvLine(o, max) {   // 'Lv 5 → 7 (+2)' on a rare card; levels past the cap are paid out in 엽전
+  const k = o.rar === 'g' ? 3 : o.rar === 'b' ? 2 : 1, heal = o.rar === 'g' ? ' · 체력 회복' : '';
+  if (o.lv === 0) return (k > 1 ? `새로 얻음 · Lv ${k}` : '새로 얻음') + heal;
+  return `Lv ${o.lv} → ${Math.min(max, o.lv + k)}${k > 1 ? ` (+${k})` : ''}` + heal;
+}
 function optInfo(o) {
   if (o.kind === 't') { const D = WEAPONS[o.id], T2 = TRAITS[o.id][o.tr]; return { tag: '특성', color: '#e6d39a', name: `${D.name} · ${T2[1]}`, lv: '둘 중 하나를 고르세요', desc: T2[2], extra: '한 번 고르면 이번 판 동안 유지됩니다' }; }
   if (o.kind === 'heal') return { tag: '보상', color: '#c8463a', name: '주먹밥', lv: '체력 +30', desc: '든든하게 먹고 다시 걷습니다.' };
@@ -1511,23 +1579,31 @@ function optInfo(o) {
     if (!extra && D.evo && o.lv >= 6) extra = `Lv 8 + ${PASSIVES[D.evo.passive].name} → 보물상자에서 ${D.evo.name}`;
     if (!extra && BEATS[D.el] === '토') extra = `${ELN[D.el]} 기운은 장터의 흙 요괴에게 강함 (피해 +50%)`;
     if (!extra && BEATS['토'] === D.el) extra = `${ELN[D.el]} 기운은 흙 요괴에게 약함 (피해 −20%)`;
-    return { tag: `${ELN[D.el]} 기운`, color: EL_COLOR[D.el], name: D.name, lv: o.lv === 0 ? '새로 얻음' : `Lv ${o.lv} → ${o.lv + 1}`, desc: D.desc[o.lv], extra };
+    return { tag: `${ELN[D.el]} 기운`, color: EL_COLOR[D.el], name: D.name, lv: lvLine(o, 8), desc: D.desc[o.lv], extra };
   }
   const D = PASSIVES[o.id]; let extra = '';
   for (const wid in WEAPONS) { const W2 = WEAPONS[wid]; if (W2.evo && W2.evo.passive === o.id && P.weapons.find(w => w.id === wid && !w.evo)) extra = `${W2.name} 진화 재료 (${W2.evo.name})`; }
-  return { tag: '패시브', color: '#a39a86', name: D.name, lv: o.lv === 0 ? '새로 얻음' : `Lv ${o.lv} → ${o.lv + 1}`, desc: D.desc, extra };
+  return { tag: '패시브', color: '#a39a86', name: D.name, lv: lvLine(o, 5), desc: D.desc, extra };
 }
 function openLevelUp() { G.state = 'levelup'; renderCards(); showOnly('levelup'); sfx('level'); fx({ k: 'fb', a: 'pillar', follow: true, oy: 14, anchor: 'b', s: 240, dur: 0.95 }); fx({ k: 'sigil', follow: true, r: 64, r0: 30, dur: 1.1, spin: 1.6, al: 0.85 }); shock(P.x, P.y - 8, 120, '#ffd27a', 0.45, 5); sparks(P.x, P.y - 20, '#ffe2a0', 16, 80, 240, -140); }
 function renderCards() {
   G.opts = buildOptions(P.choices);
+  { // 부적 등급: at most one rare card per level-up. More cards on the table (단비) and 복주머니 make it likelier.
+    // 청 10% · 금 3%: at the planned 15% · 4% the bot's median run went from 342s to 548s (+15 levels); this keeps it at the 1차 level.
+    const elig = G.opts.map((o, i) => o.kind === 'w' || o.kind === 'p' ? i : -1).filter(i => i >= 0), per = P.choices / 3, lk = pLv('pouch');
+    const pg = (0.03 + 0.01 * lk) * per, pb = (0.10 + 0.03 * lk) * per, r = Math.random();
+    if (elig.length && r < pg + pb) G.opts[pick(elig)].rar = r < pg ? 'g' : 'b';
+  }
   $('#lv-title').textContent = `레벨 ${P.level - P.pending + 1}`;
   $('#lv-meta').textContent = `무기 칸 ${P.weapons.length}/${WSLOTS} · 패시브 칸 ${P.passives.length}/${PSLOTS} · 가진 기운 ${[...P.elements].map(e => ELN[e]).join('·') || '없음'}`;
   const box = $('#cards'); box.textContent = '';
   G.opts.forEach((o, i) => {
-    const info = optInfo(o), wrap = document.createElement('div'); wrap.className = 'card-wrap';
+    const info = optInfo(o), wrap = document.createElement('div'); wrap.className = 'card-wrap' + (o.rar ? ' rar-' + o.rar : '') + (REDUCED ? '' : ' flip');
+    wrap.style.setProperty('--fd', `${(i * 0.08 + (o.rar ? 0.25 : 0)).toFixed(2)}s`);
     const b = document.createElement('button'); b.type = 'button'; b.className = 'card';
     const add = (cls, txt, tag = 'span') => { const s = document.createElement(tag); s.className = cls; s.textContent = txt; b.appendChild(s); return s; };
     add('card-key', String(i + 1));
+    if (o.rar) add('rank', o.rar === 'g' ? '금 부적 · 전설' : '청 부적 · 희귀');
     add('chip', info.tag).style.setProperty('--el', info.color);
     if (ICONURL[o.id]) { const im = document.createElement('img'); im.className = 'card-icon'; im.src = ICONURL[o.id]; im.alt = ''; b.appendChild(im); }
     add('card-name', info.name); add('card-lv', info.lv); add('card-desc', info.desc);
@@ -1542,14 +1618,23 @@ function renderCards() {
     box.appendChild(wrap);
   });
   const rr = $('#btn-reroll'); rr.textContent = `다시 뽑기 (${P.rerolls})`; rr.disabled = P.rerolls <= 0;
+  $('#levelup').classList.toggle('gold', G.opts.some(o => o.rar === 'g'));
+  { const ri = G.opts.findIndex(o => o.rar), o = G.opts[ri]; if (o) setTimeout(() => { if (G.state === 'levelup' && G.opts.includes(o)) sfx(o.rar === 'g' ? 'gong' : 'kkwaeng'); }, (ri * 0.08 + 0.25) * 1000); }
   const first = box.querySelector('.card'); if (first) first.focus({ preventScroll: true });
 }
 function choose(i) {
   const o = G.opts && G.opts[i]; if (!o || G.state !== 'levelup') return;
   sfx('card');
   if (o.kind === 't') { const w = P.weapons.find(x => x.id === o.id); if (w) { w.trait = TRAITS[o.id][o.tr][0]; banner(`특성 · ${TRAITS[o.id][o.tr][1]}`, TRAITS[o.id][o.tr][2]); } }
-  else if (o.kind === 'w') { const w = P.weapons.find(x => x.id === o.id); if (w) w.lv++; else addWeapon(o.id); }
-  else if (o.kind === 'p') { const p = P.passives.find(x => x.id === o.id); if (p) p.lv++; else addPassive(o.id); }
+  else if (o.kind === 'w' || o.kind === 'p') {   // 청 부적 +2, 금 부적 +3 and a full heal
+    const k = o.rar === 'g' ? 3 : o.rar === 'b' ? 2 : 1, max = o.kind === 'w' ? 8 : 5, list = o.kind === 'w' ? P.weapons : P.passives;
+    let it = list.find(x => x.id === o.id), add = k;
+    if (!it) { if (o.kind === 'w') addWeapon(o.id); else addPassive(o.id); it = list.find(x => x.id === o.id); add = k - 1; }
+    const to = Math.min(max, it.lv + add), spill = it.lv + add - to; it.lv = to;
+    if (spill > 0) { P.coins += spill * 5; addText(P.x, P.y - 60, `엽전 +${spill * 5}`, '#ffd27a'); }
+    if (o.rar === 'g') { const h = Math.round(P.maxHp - P.hp); P.hp = P.maxHp; if (h > 0) healFx(true, h); }
+    if (o.rar) addText(P.x, P.y - 84, o.rar === 'g' ? '금 부적 +3' : '청 부적 +2', o.rar === 'g' ? '#ffe08a' : '#9cc0ff', { crit: true, sz: 0.8, life: 1.1 });
+  }
   else if (o.kind === 'heal') P.hp = Math.min(P.maxHp, P.hp + 30);
   else if (o.kind === 'coin') P.coins += 10;
   const before = P.links.length, done = P.ohaeng; recalc();
@@ -1635,6 +1720,26 @@ function kcReward(i) {
   else drops.push({ k: 'chest', x: P.x + 44, y: P.y + 12, tier: 'elite', src: '연참 1,000' });
   G.kc.step = { i, t: 0 };
   sfx(i >= 2 ? 'kkwaeng' : 'card'); if (i !== 2) addText(P.x, P.y - 60, `연참 ${fmtN(n)} · ${label}`, '#ffd27a', { life: 1.1 });   // 신명 has its own cut-in
+}
+// 금빛 도깨비: one at 1:00 for sure, then a 40% chance every 2 minutes. 15s to catch it.
+function goldgobTick() {
+  if (G.gobNext === undefined) G.gobNext = 60;
+  if (G.t < G.gobNext) return;
+  G.gobNext += 120; const first = !P.gobFirst;
+  if (first || Math.random() < 0.4) spawnGoldgob(first);
+}
+function spawnGoldgob(first) {
+  P.gobFirst = true;
+  const a = rnd(0, TAU), d = rnd(260, 340);
+  const e = makeEnemy('goldgob', P.x + Math.cos(a) * d, P.y + Math.sin(a) * d * 0.8, { normal: false, life: 15, spill: 8, first: !!first, oil: 0, spd: ED.goldgob.spd * rnd(0.95, 1.05) });
+  banner('금빛 도깨비가 나타났다', `15초 안에 잡으면 엽전이 쏟아집니다${first ? ' · 첫 마리는 보물상자' : ''}`); sfx('kkwaeng');
+  fx({ k: 'fb', a: 'hit_gold', x: e.x, y: e.y - 16, s: 110, dur: 0.3, rot: rnd(0, TAU) }); sparks(e.x, e.y - 14, '#ffe2a0', 14, 80, 240, -60);
+  return e;
+}
+function goldgobVanish(e) {
+  e.dead = true; e.silent = true; burst(e.x, e.y, '#ffd36a', 18);
+  fx({ k: 'fb', a: 'hit_gold', x: e.x, y: e.y - 16, s: 120, dur: 0.3, rot: rnd(0, TAU) });
+  addText(e.x, e.y - 40, '뚝딱! 달아났다', '#ffd36a', { crit: true, sz: 0.75, life: 1.1 }); sfx('card');
 }
 function ringBreak(byKill) {   // 포위 돌파: the wall was broken or slipped
   banner('포위 돌파!', byKill ? '포위진을 무너뜨렸습니다 · 엽전 12냥' : '포위를 뚫고 나왔습니다 · 엽전 12냥');
@@ -2475,6 +2580,7 @@ function updateSpawns(dt) {
   let normals = 0; for (const e of enemies) if (e.normal && !e.dead) normals++;
   const target = targetCount(G.t);
   if (!PG.on && normals < target) { G.spawnAcc += dt * Math.min(45, 6 + (target - normals) * 0.9); while (G.spawnAcc >= 1 && normals < target) { spawnNormal(); normals++; G.spawnAcc -= 1; } }
+  if (!PG.on) goldgobTick();
   if (G.paradeT > 0) {
     if (!G.paradeOn) { G.paradeOn = true; G.paradeK = 0; G.paradeOil = 0; }
     G.paradeT -= dt; G.paradeSpawn -= dt; if (G.paradeSpawn <= 0) { G.paradeSpawn = 5; spawnParade(); }
@@ -2543,6 +2649,14 @@ function updateEnemy(e, dt, LR, far) {
       else if (e.st === 'dash') { e.x += e.vx * mult * dt; e.y += e.vy * mult * dt; if (e.stT <= 0) { e.st = 'rest'; e.stT = 0.5; } }
       else if (e.stT <= 0) { e.st = 'walk'; e.stT = rnd(2.5, 3.5); }
       break;
+    case 'goldgob': {   // runs from you with small jinks, dawdles when far ahead so it stays catchable, and drops 엽전 as it goes
+      e.life -= dt; if (e.life <= 0) { goldgobVanish(e); break; }
+      e.jkT = (e.jkT || 0) - dt; if (e.jkT <= 0) { e.jkT = rnd(0.8, 1.6); e.jk = rnd(-0.9, 0.9); }
+      const ux = -dx / d, uy = -dy / d, jc = Math.cos(e.jk || 0), js = Math.sin(e.jk || 0), vx = ux * jc - uy * js, vy = ux * js + uy * jc;
+      const sp = e.spd * mult * (d > 520 ? 0.35 : d < 150 ? 1.12 : 1);
+      e.x += vx * sp * dt; e.y += vy * sp * dt; e.wk = (e.wk || 0) + sp * dt; e.fx = vx < 0 ? -1 : 1;
+      e.dropT = (e.dropT ?? 0.6) - dt; if (e.dropT <= 0 && e.spill > 0 && d < 700) { e.dropT = 0.8; e.spill--; drops.push({ k: 'coin', x: e.x + rnd(-6, 6), y: e.y + rnd(-4, 4), v: 1 }); }
+      break; }
     case 'parade': e.x += e.vx * dt; e.y += e.vy * dt; e.fx = e.vx < 0 ? -1 : 1; e.life -= dt; if (e.life <= 0) { e.dead = true; e.silent = true; } break;
     case 'gseun': gseunAI(e, dt, d, mult); break;
     case 'gumiho': gumihoAI(e, dt, d, mult); if ((e.type === 'gumiho' || e.type === 'jangsan') && !e.cloned && e.hp < e.maxHp * 0.5) gumihoSplit(e); break;
@@ -2746,7 +2860,7 @@ function update(dt) {
   if (P.pending > 0 && G.state === 'play') { if (PG.on) P.pending = 0; else openLevelUp(); }   // a chest opened this frame shows first
 }
 function touch(e) {
-  if (P.iframe > 0) return;
+  if (P.iframe > 0 || e.type === 'goldgob') return;   // the gold goblin only runs
   if (e.act && (e.act.k === 'pounce' || e.act.k === 'lunge')) return;   // a dash hits once, with its finishing strike, not again on the way through
   if (e.sk && e.sk.ghost) return;   // fading in or out of a blink
   const out = !e.inLight && e.type !== 'dark';
@@ -2783,6 +2897,7 @@ function collect(d) {
 }
 function stageClear() {   // 1탄 끝: the night market is safe; the same run goes on up the mountain path
   G.state = 'clear'; G.endT = 0; sfx('win'); music(false);
+  meta.clear1 = (meta.clear1 || 0) + 1; meta.best1 = Math.max(meta.best1 || 0, Math.floor(G.t)); saveMeta();   // 결산 goals: 1탄 cleared
   let chests = 0;
   let best = null; const rank = { elite: 1, mid: 2, final: 3 };
   for (const d of drops) { if (d.k === 'gem') gainXp(d.v); else if (d.k === 'coin') P.coins += d.v; else if (d.k === 'chest') { chests++; if (!best || rank[d.tier] > rank[best.tier]) best = d; } }   // the spoils come along
@@ -2808,16 +2923,60 @@ function winRun() {
 }
 function endRun(win) {
   G.state = 'over'; joy = null; music(false);
-  const bonus = win ? 50 : 0, earned = P.coins + bonus;
-  meta.coins += earned; meta.best = Math.max(meta.best || 0, Math.floor((G.prevT || 0) + G.t)); if (win) meta.wins = (meta.wins || 0) + 1; saveMeta();
+  const bonus = win ? 50 : 0, earned = P.coins + bonus, T = Math.floor((G.prevT || 0) + G.t), chain = (G.kc && G.kc.best) || 0, sg = stg();
+  const prev = { t: meta.best || 0, lv: meta.bestLv || 0, kills: meta.bestKills || 0, chain: meta.bestChain || 0, b1: meta.best1 || 0, b2: meta.best2 || 0 };
+  meta.coins += earned; meta.best = Math.max(prev.t, T); meta.bestLv = Math.max(prev.lv, P.level); meta.bestKills = Math.max(prev.kills, P.kills); meta.bestChain = Math.max(prev.chain, chain);
+  if (sg === 1) meta.best1 = Math.max(prev.b1, Math.floor(G.t)); else meta.best2 = Math.max(prev.b2, Math.floor(G.t));
+  if (win) meta.wins = (meta.wins || 0) + 1; saveMeta();
   if (!win) sfx('lose');
-  $('#over-label').textContent = `${win ? '승리' : '패배'} · ${stg()}탄 ${STAGES[stg()].name}`;
+  $('#over-label').textContent = `${win ? '승리' : '패배'} · ${sg}탄 ${STAGES[sg].name}`;
   $('#over-title').textContent = win ? '첫닭이 울었다' : '호롱불이 꺼졌다';
-  $('#over-lede').textContent = win ? '이무기와 불가살이를 쓰러뜨리고 새벽을 맞았습니다. 정식판에서는 대숲, 삼도천, 도깨비 불가마가 이어집니다.' : `${P.lastHit || '요괴'}에게 쓰러졌습니다. 엽전은 남았으니 주막에서 강화하고 다시 나서 보세요.`;
-  const stats = [['버틴 시간', mmss((G.prevT || 0) + G.t)], ['레벨', P.level], ['처치', P.kills.toLocaleString('ko-KR')], ['엽전', `+${earned}냥`]];
+  $('#over-lede').textContent = win ? '이무기와 불가살이를 쓰러뜨리고 새벽을 맞았습니다. 정식판에서는 대숲, 삼도천, 도깨비 불가마가 이어집니다.' : `${P.lastHit || '요괴'}에게 쓰러졌습니다. ${nearMiss()}`;
+  const stats = [['버틴 시간', T, mmss, prev.t], ['레벨', P.level, String, prev.lv], ['처치', P.kills, fmtN, prev.kills], ['최고 연참', chain, fmtN, prev.chain], ['엽전', earned, v => `+${fmtN(v)}냥`, -1]];
   const box = $('#over-stats'); box.textContent = '';
-  for (const [k, v] of stats) { const s = document.createElement('div'); s.className = 'stat'; const b = document.createElement('b'); b.textContent = v; s.append(b, k); box.appendChild(s); }
-  showOnly('over'); $('#btn-pause').hidden = true;
+  const cells = stats.map(([k, v, f, pv]) => { const s = document.createElement('div'); s.className = 'stat'; const b = document.createElement('b'); b.textContent = f(0); s.append(b, k); box.appendChild(s); return { s, b, v, f, rec: pv > 0 && v > pv }; });
+  $('#over-detail').innerHTML = overDetail(prev, earned, chain);
+  showOnly('over'); $('#btn-pause').hidden = true; $('#btn-again').focus({ preventScroll: true });
+  countUp(cells);
+}
+// 결산 count-up: each number rolls up in turn with a tick; a beaten record lands a 新 seal. A click on the panel skips to the end.
+const OVER = { cells: null, skip: false };
+function countUp(cells) {
+  OVER.cells = cells; OVER.skip = !!REDUCED; const t0 = performance.now(), dur = 0.42;
+  const finish = (c, j, snd) => { if (c.fin) return; c.fin = true; c.b.textContent = c.f(c.v);
+    if (c.rec) { const sl = document.createElement('i'); sl.className = 'seal'; sl.textContent = '新'; c.b.appendChild(sl); }   // right beside its number
+    if (snd) sfx(c.rec ? 'stamp' : j === cells.length - 1 ? 'pick' : 'tick', c.rec ? 0 : j * 2); };
+  const loop = now => {
+    if (OVER.cells !== cells) return;
+    if (OVER.skip) { cells.forEach((c, j) => finish(c, j, false)); return; }
+    const el = (now - t0) / 1000;
+    cells.forEach((c, j) => { const k = clamp((el - 0.25 - j * dur) / dur, 0, 1); if (k >= 1) finish(c, j, true); else if (k > 0) c.b.textContent = c.f(Math.round(c.v * (1 - Math.pow(1 - k, 3)))); });
+    if (cells.some(c => !c.fin)) requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+function nearMiss() {   // how close it was: the time left to the stage boss, or the boss's health left
+  const SG = STAGES[stg()], bn = ED[SG.boss].name, b = G.bosses.find(q => q.type === SG.boss && !q.dead);
+  if (b) return `${bn}의 체력이 ${Math.max(1, Math.round(b.hp / b.maxHp * 100))}% 남아 있었습니다.`;
+  if (G.t < SG.at) { const s = Math.ceil(SG.at - G.t); return `${bn}까지 ${s < 60 ? s + '초' : Math.floor(s / 60) + '분 ' + (s % 60) + '초'} 남았습니다.`; }
+  return '엽전은 남았으니 주막에서 강화하고 다시 나서 보세요.';
+}
+function overDetail(prev, earned, chain) {
+  const by = P.dmgBy || {}, tot = Object.values(by).reduce((a, b) => a + b, 0);
+  const rows = Object.entries(by).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6), top = rows.length ? rows[0][1] : 1;
+  const wHTML = rows.map(([id, v], i) => {
+    const D = WEAPONS[id], w = P.weapons.find(x => x.id === id), name = D ? (w && w.evo ? D.evo.name : D.name) : '기타 · 오행·화상 등';
+    return `<div class="wrow${i === 0 ? ' top' : ''}">${ICONURL[id] ? `<img src="${ICONURL[id]}" alt="">` : '<span class="noicon"></span>'}<span class="wn">${name}${i === 0 && D ? '<em>이번 판의 주인</em>' : ''}</span><span class="wb"><i style="--w:${(v / top * 100).toFixed(1)}%;--d:${(0.3 + i * 0.08).toFixed(2)}s"></i></span><span class="wv">${fmtN(v)} · ${Math.round(v / (tot || 1) * 100)}%</span></div>`;
+  }).join('');
+  const goals = [], g = (name, cond, now, o, n, note) => goals.push(`<div class="goal"><div class="gh"><span><b>${name}</b> · ${cond}</span><span class="gv">${now}</span></div><div class="gb"><i class="old" style="width:${(clamp(o, 0, 1) * 100).toFixed(1)}%"></i><i class="new" style="left:${(clamp(o, 0, 1) * 100).toFixed(1)}%;width:${(Math.max(0, clamp(n, 0, 1) - clamp(o, 0, 1)) * 100).toFixed(1)}%"></i></div><div class="gn">${note}</div></div>`);
+  if (!(meta.clear1 > 0)) { const b1 = meta.best1 || 0; g('1탄 클리어', '9:00에 깨어나는 이무기 퇴치', `${mmss(b1)} / 09:00`, prev.b1 / 540, b1 / 540, b1 > prev.b1 && prev.b1 > 0 ? `최고 기록 ${mmss(prev.b1)}에서 늘었습니다` : `${mmss(Math.max(0, 540 - b1))} 더 버티면 이무기가 깨어납니다`); }
+  else if (!(meta.wins > 0)) { const b2 = meta.best2 || 0; g('첫 승리', '2탄 9:00 불가살이 퇴치', `${mmss(b2)} / 09:00`, prev.b2 / 540, b2 / 540, b2 > prev.b2 && prev.b2 > 0 ? `최고 기록 ${mmss(prev.b2)}에서 늘었습니다` : '안개 산길 끝에서 불가살이가 기다립니다'); }
+  let buy = null; for (const s of SHOP) { const lv = meta.up[s.id] || 0; if (lv >= s.max) continue; const c = shopCost(s, lv); if (!buy || c < buy.c) buy = { s, lv, c }; }
+  if (buy) { const have = meta.coins; g(`주막 · ${buy.s.name} Lv ${buy.lv + 1}`, buy.s.desc, `${fmtN(Math.min(have, buy.c))} / ${fmtN(buy.c)}냥`, (have - earned) / buy.c, have / buy.c, have >= buy.c ? '지금 살 수 있습니다 · 주막으로' : `${fmtN(buy.c - have)}냥 남음`); }
+  if (P.kills < prev.kills) g('처치 기록', `판 최고 ${fmtN(prev.kills)}`, `${fmtN(P.kills)} / ${fmtN(prev.kills)}`, 0, P.kills / prev.kills, `${fmtN(prev.kills - P.kills)}마리 모자랐습니다`);
+  else if (chain < prev.chain) g('연참 기록', `판 최고 ${fmtN(prev.chain)}`, `${fmtN(chain)} / ${fmtN(prev.chain)}`, 0, chain / prev.chain, `${fmtN(prev.chain - chain)} 모자랐습니다`);
+  return (rows.length ? `<div class="ocol"><div class="oh"><span>이번 판의 무기 · 준 피해</span><span>합계 ${fmtN(tot)}</span></div>${wHTML}</div>` : '')
+    + (goals.length ? `<div class="ocol"><div class="oh"><span>다음 목표 · 이번 판에 찬 만큼 밝게</span></div>${goals.join('')}</div>` : '');
 }
 
 /* ---------- render ---------- */
@@ -3615,6 +3774,8 @@ function drawGlows() {
     }
   }
   worldT();
+  // 금빛 도깨비: a gold aura that shows even in the dark, so it can be chased
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead && inView(e.x, e.y, 60)) { ctx.globalAlpha = (e.inLight ? 0.22 : 0.55) + 0.15 * Math.sin(G.t * 7); dI(GL.sun, e.x - 42, e.y - 62, 84, 84); ctx.globalAlpha = 1; }   // fainter in the light, where its body shows
   // 달걀귀신 돌진 예고
   for (const e of enemies) if (e.type === 'egg' && e.st === 'wind' && !e.dead) { ctx.globalAlpha = 0.75; dI(GL.gold, e.x - 22, e.y - 34, 44, 44); }
   ctx.globalAlpha = 1;
@@ -3995,6 +4156,7 @@ function drawHUD() {
   let nj = null, nd = 1e9; for (const j of jars) { const d = Math.hypot(j.x - P.x, j.y - P.y); if (d < nd) { nd = d; nj = j; } }
   if (nj) edgeArrow(nj.x, nj.y, '#f2a93b', `기름 ${Math.round(nd / M)}m`);
   for (const d of drops) if (d.k === 'chest') { edgeArrow(d.x, d.y, '#e0607e', '보물상자'); break; }
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead) { edgeArrow(e.x, e.y, '#ffd36a', '금 도깨비'); gobRing(e); }
   for (const d of drops) if (d.k === 'magnet' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#9fd0ff', '지남철'); break; }
   for (const d of drops) if (d.k === 'ginseng' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#7fe0a0', '산삼'); break; }
   for (const b of G.bosses) edgeArrow(b.x, b.y, '#c8463a', ED[b.type].name);
@@ -4104,6 +4266,15 @@ function drawPentagon(cx, cy) {
   if (!P.ohaeng) txt('눌러서 설명', cx + 32, cy + 12, 10.5, '#7d7564');
   G.pentaHit = [cx, cy];   // tap target for the 오행 guide
 }
+// the time left to catch a gold goblin, as a ring over its head
+function gobRing(e) {
+  const [sx, sy] = toScreen(e.x, e.y - 58); if (sx < 0 || sx > W || sy < 0 || sy > H) return;
+  const k = clamp(e.life / 15, 0, 1), r = 15, warn = e.life < 4;
+  ctx.fillStyle = 'rgba(26,18,6,0.85)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(239,230,210,0.18)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = warn ? '#ff8a5a' : '#ffd27a'; ctx.beginPath(); ctx.arc(sx, sy, r, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke();
+  txt(String(Math.ceil(e.life)), sx, sy + 5, 13, warn ? '#ffb38a' : '#ffe2a0', 'center', FD, 700);
+}
 function edgeArrow(wx, wy, col, label) {
   const [sx, sy] = toScreen(wx, wy);
   if (sx > 20 && sx < W - 20 && sy > 20 && sy < H - 20) return;
@@ -4187,6 +4358,7 @@ $('#btn-oh-title').addEventListener('click', () => openOhaeng('title'));
 $('#btn-reroll').addEventListener('click', reroll);
 $('#btn-skip').addEventListener('click', () => { if (G.state === 'levelup') afterPick(); });
 $('#chest').addEventListener('click', () => chestAdvance());
+$('#over').addEventListener('click', e => { if (!e.target.closest('button')) OVER.skip = true; });   // skip the count-up
 $('#btn-resume').addEventListener('click', resumeGame);
 $('#btn-quit').addEventListener('click', toHome);
 $('#btn-again').addEventListener('click', () => { audioOn(); newRun(lastChar); });
@@ -4432,7 +4604,7 @@ function pgBuild() {
   { const l = el('label', 'pg-chk'), c = el('input'); c.type = 'checkbox'; c.dataset.flag = 'keep'; c.addEventListener('change', () => { PG.keep = c.checked; if (PG.keep) for (const t of PG_MOBS) PG.target[t] = pgCount(t)[1]; c.blur(); }); l.append(c, ' 수량 유지 (쓰러지면 다시 채움)'); s.appendChild(l); }
   s2 = sec('몹 기술 · 하나씩 시키기');
   for (const t of PG_MOBS) { r = row(s2, ED[t].name); r.classList.add('wrap'); for (const [k] of MOBSK[t]) r.appendChild(btn(SKN[k], () => pgMobSkill(t, k))); }
-  r = row(s, '무리'); r.classList.add('wrap'); r.append(btn('포위진', () => { spawnRing(); G.warnT = 1.6; }), btn('백귀야행', () => { G.paradeT = 16; G.paradeSpawn = 0; }), btn('모두 쓰러뜨리기', () => pgKill(null)), btn('모두 지우기', pgClear));
+  r = row(s, '무리'); r.classList.add('wrap'); r.append(btn('포위진', () => { spawnRing(); G.warnT = 1.6; }), btn('금빛 도깨비', () => spawnGoldgob(false)), btn('백귀야행', () => { G.paradeT = 16; G.paradeSpawn = 0; }), btn('모두 쓰러뜨리기', () => pgKill(null)), btn('모두 지우기', pgClear));
   // bosses
   s = sec('보스 · 기술 하나씩');
   for (const t in PG_BOSS) {
@@ -4531,7 +4703,7 @@ function start(data) {
   try { window.claude?.hot?.snapshot?.(() => ({ meta })); } catch (e) {}
   requestAnimationFrame(t => { last = t; frame(t); });
 }
-window.HORONG = { persp: on => { PERSP.on = !!on; }, pf: PFT, set dpr(v) { DPR_CAP = v; resize(); }, set rs(v) { RES.lv = v; resize(); }, get rs() { return RS; }, res: RES, get G() { return G; }, get pois() { return poiList; }, get P() { return P; }, get enemies() { return enemies; }, get jars() { return jars; }, get drops() { return drops; }, get eprojs() { return eprojs; }, get obs() { return obsList; }, get zones() { return zones; }, solve: (o, r) => solve(o, r), spawn: (t, x, y, o) => makeEnemy(t, x, y, o || {}), fx: o => fx(o), spawnRing: () => spawnRing(), MOVE, gainXp: v => gainXp(v), addWeapon: id => addWeapon(id), addPassive: id => addPassive(id), spawnBoss: t => spawnBoss(t), kill: e => killEnemy(e, null), tick: ms => { tick(last + ms); last = Math.min(last, performance.now()); }, recalc: () => recalc(), openChest: o => openChest(o), chestClose: () => closeChest(), chestAdvance: () => chestAdvance(), step: dt => { if (G && G.state === 'play') update(dt); render(); }, setZoom: z => { ZOOM = z; VW = W / 2 / ZOOM; VH = H / 2 / ZOOM; applyArtScale(); }, upd: dt => update(dt), draw: () => render(), parts: () => ({ fx: effects.length, parts: parts.length, texts: texts.length, drops: drops.length, projs: projs.length, puddles: puddles.length }) };
+window.HORONG = { persp: on => { PERSP.on = !!on; }, pf: PFT, set dpr(v) { DPR_CAP = v; resize(); }, set rs(v) { RES.lv = v; resize(); }, get rs() { return RS; }, res: RES, get G() { return G; }, get pois() { return poiList; }, get P() { return P; }, get enemies() { return enemies; }, get jars() { return jars; }, get drops() { return drops; }, get eprojs() { return eprojs; }, get obs() { return obsList; }, get zones() { return zones; }, solve: (o, r) => solve(o, r), spawn: (t, x, y, o) => makeEnemy(t, x, y, o || {}), fx: o => fx(o), spawnRing: () => spawnRing(), MOVE, gainXp: v => gainXp(v), addWeapon: id => addWeapon(id), addPassive: id => addPassive(id), spawnBoss: t => spawnBoss(t), kill: e => killEnemy(e, null), tick: ms => { tick(last + ms); last = Math.min(last, performance.now()); }, recalc: () => recalc(), openChest: o => openChest(o), spawnGold: f => spawnGoldgob(f), endRun: w => endRun(!!w), chestClose: () => closeChest(), chestAdvance: () => chestAdvance(), step: dt => { if (G && G.state === 'play') update(dt); render(); }, setZoom: z => { ZOOM = z; VW = W / 2 / ZOOM; VH = H / 2 / ZOOM; applyArtScale(); }, upd: dt => update(dt), draw: () => render(), parts: () => ({ fx: effects.length, parts: parts.length, texts: texts.length, drops: drops.length, projs: projs.length, puddles: puddles.length }) };
 if (window.claude?.hot?.ready) window.claude.hot.ready(start); else start(window.claude?.hot?.data ?? {});
 })();
 </script>

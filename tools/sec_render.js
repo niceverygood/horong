@@ -793,6 +793,8 @@ function drawGlows() {
     }
   }
   worldT();
+  // 금빛 도깨비: a gold aura that shows even in the dark, so it can be chased
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead && inView(e.x, e.y, 60)) { ctx.globalAlpha = (e.inLight ? 0.22 : 0.55) + 0.15 * Math.sin(G.t * 7); dI(GL.sun, e.x - 42, e.y - 62, 84, 84); ctx.globalAlpha = 1; }   // fainter in the light, where its body shows
   // 달걀귀신 돌진 예고
   for (const e of enemies) if (e.type === 'egg' && e.st === 'wind' && !e.dead) { ctx.globalAlpha = 0.75; dI(GL.gold, e.x - 22, e.y - 34, 44, 44); }
   ctx.globalAlpha = 1;
@@ -1173,6 +1175,7 @@ function drawHUD() {
   let nj = null, nd = 1e9; for (const j of jars) { const d = Math.hypot(j.x - P.x, j.y - P.y); if (d < nd) { nd = d; nj = j; } }
   if (nj) edgeArrow(nj.x, nj.y, '#f2a93b', `기름 ${Math.round(nd / M)}m`);
   for (const d of drops) if (d.k === 'chest') { edgeArrow(d.x, d.y, '#e0607e', '보물상자'); break; }
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead) { edgeArrow(e.x, e.y, '#ffd36a', '금 도깨비'); gobRing(e); }
   for (const d of drops) if (d.k === 'magnet' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#9fd0ff', '지남철'); break; }
   for (const d of drops) if (d.k === 'ginseng' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#7fe0a0', '산삼'); break; }
   for (const b of G.bosses) edgeArrow(b.x, b.y, '#c8463a', ED[b.type].name);
@@ -1281,6 +1284,15 @@ function drawPentagon(cx, cy) {
   else txt(P.links.length ? `기운 ${P.links.length}줄 이어짐` : '무기의 기운', cx + 32, cy - 2, 11, P.links.length ? '#f2a93b' : '#a39a86');
   if (!P.ohaeng) txt('눌러서 설명', cx + 32, cy + 12, 10.5, '#7d7564');
   G.pentaHit = [cx, cy];   // tap target for the 오행 guide
+}
+// the time left to catch a gold goblin, as a ring over its head
+function gobRing(e) {
+  const [sx, sy] = toScreen(e.x, e.y - 58); if (sx < 0 || sx > W || sy < 0 || sy > H) return;
+  const k = clamp(e.life / 15, 0, 1), r = 15, warn = e.life < 4;
+  ctx.fillStyle = 'rgba(26,18,6,0.85)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(239,230,210,0.18)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = warn ? '#ff8a5a' : '#ffd27a'; ctx.beginPath(); ctx.arc(sx, sy, r, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke();
+  txt(String(Math.ceil(e.life)), sx, sy + 5, 13, warn ? '#ffb38a' : '#ffe2a0', 'center', FD, 700);
 }
 function edgeArrow(wx, wy, col, label) {
   const [sx, sy] = toScreen(wx, wy);

@@ -68,6 +68,11 @@ function applyArtScale() {
     const k = n.slice(0, -2), c = A[n], o = off[k] || [0, 0];
     c._ox = o[0] / 2; c._oy = o[1] / 2; EMIS[k] = c;   // offset of the cropped glow inside the full sprite, world units
   }
+  // 금빛 도깨비: the red goblin recoloured gold (hue and saturation from gold, shading kept), same flash and eye glow
+  if (SPR.dokkaebi) { const c = SPR.dokkaebi, o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const g = o.getContext('2d');
+    g.drawImage(c, 0, 0); g.globalCompositeOperation = 'color'; g.fillStyle = '#e8b43a'; g.fillRect(0, 0, o.width, o.height);
+    g.globalCompositeOperation = 'destination-in'; g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,226,140,0.2)'; g.fillRect(0, 0, o.width, o.height);
+    o._s = c._s; SPR.goldgob = o; SPRF.goldgob = SPRF.dokkaebi; if (EMIS.dokkaebi) EMIS.goldgob = EMIS.dokkaebi; }
   FIRE = [0, 1, 2, 3].map(i => A['fire' + i]); FOX = [0, 1, 2, 3].map(i => A['fox' + i]);
   packAtlas();
 }
