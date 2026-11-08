@@ -408,10 +408,13 @@ function drawPose(img, p) {
   ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * sy, s * c * sy, s * p.x + WM[1], s * p.y + WM[2]);
   dI(img, -p.w / 2, p.oy ?? -p.h, p.w, p.h);
 }
+// Eye glows are drawn upright at the spot the rotated body puts them: a soft blob tilted by the few degrees of the
+// walk wobble looks the same, and a rotated draw costs ~3x a scaled one on a software canvas (hundreds a frame late on).
 function drawEmis(em, p) {
   const k = p.w / SW(p.base), s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot), sy = p.sy * upK(p.y);
-  ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * sy, s * c * sy, s * p.x + WM[1], s * p.y + WM[2]);
-  dI(em, -p.w / 2 + (em._ox || 0) * k, (p.oy ?? -p.h) + (em._oy || 0) * k, SW(em) * k, SH(em) * k);
+  const ew = SW(em) * k, eh = SH(em) * k, lx = -p.w / 2 + (em._ox || 0) * k + ew / 2, ly = (p.oy ?? -p.h) + (em._oy || 0) * k + eh / 2;
+  ctx.setTransform(s * p.sx, 0, 0, s * sy, s * (p.x + c * p.sx * lx - n * sy * ly) + WM[1], s * (p.y + n * p.sx * lx + c * sy * ly) + WM[2]);
+  dI(em, -ew / 2, -eh / 2, ew, eh);
 }
 function drawImugi(e, emissive) {
   const segImg = SPR.seg, sw = SW(segImg), sh = SH(segImg);
@@ -584,7 +587,7 @@ function render() {
   ctx.globalCompositeOperation = 'lighter';
   const wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
   wg.addColorStop(0, 'rgba(242,169,59,0.16)'); wg.addColorStop(0.6, 'rgba(242,140,40,0.07)'); wg.addColorStop(1, 'rgba(242,169,59,0)');
-  ctx.fillStyle = wg; ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+  ctx.fillStyle = wg; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill();   // the glow is zero past R: fill the circle, not its square
   const [ldx, ldy] = lanternOff();
   const lx = cx + ldx * ZOOM, ly = cy + ldy * ZOOM, gsz = (40 + Math.sin(G.t * 11) * 3) * ZOOM;
   ctx.globalAlpha = 0.95; dI(GL.amber, lx - gsz / 2, ly - gsz / 2, gsz, gsz); ctx.globalAlpha = 1;
@@ -754,7 +757,7 @@ function drawGlows() {
     if (e.dead || e.inLight || e.parent || e.type === 'dark' || !inView(e.x, e.y, 60)) continue;
     if (e.type === 'imugi') { if (EMIS.imugi) { worldT(); drawImugi(e, true); } continue; }
     if (ART.ok) {
-      if (ED[e.type].ghost) { ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], enemyPose(e, undefined, POSE)); ctx.globalAlpha = 1; continue; }
+      if (ED[e.type].ghost) { const q = enemyPose(e, undefined, POSE); if (Math.abs(q.rot) < 0.15) q.rot = 0; ctx.globalAlpha = 0.14; drawPose(SPR[e.spr], q); ctx.globalAlpha = 1; continue; }   // faint ghost: the few-degree float wobble is dropped (a rotated draw costs ~3x), a roll is kept
       if (e.pose) { ctx.globalAlpha = 0.22; const q = enemyPose(e, undefined, POSE); drawPose(q.base, q); ctx.globalAlpha = 1; continue; }   // action pose: faint silhouette, no baked eye glow
       const em = EMIS[e.spr]; if (!em) continue;
       if (Math.sin(G.t * 0.7 + e.bob * 3) > 0.97) continue;
