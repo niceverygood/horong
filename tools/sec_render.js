@@ -36,16 +36,24 @@ function playerView() {
   const o = OCT[P.d || 0], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
   return { name, frames: fr && fr[0] ? fr : SPR[P.spr], flip: o[1] || P.side || 1, ax: fr && ART.meta.ax ? ART.meta.ax[name] || 0 : 0 };
 }
-// Walk cycle order per view: the generated sheets aren't always contact-pass-contact-pass, so some views
-// replay a frame to get feet apart / together / apart / together. Positions 0 and 2 are the contact poses.
-const CYC = { yeoni: [0, 2, 1, 2], yeoni_se: [0, 1, 3, 2], danbi_se: [0, 1, 2, 1], danbi_ne: [0, 1, 2, 1] };
-// One pose per frame, shared by the body, its shadow and the lantern glow so they never drift apart.
+// Cut-out walk rig: each view keeps ONE drawing (META.rig picks it and finds the skirt hem and the gap between
+// the feet). The feet below the hem are two pieces that step (stance slides back, swing lifts and comes forward),
+// the skirt swings as strips under the waist, and the body dips on each contact. Nothing swaps between drawings,
+// so there is no flicker, at any frame rate.
+const RIGMODE = { '': 'side', '_se': 'dfront', '_s': 'front', '_ne': 'dback', '_n': 'back' };
+const STEP_K = 1.25;   // walk phase (rad) per walk unit (P.walk += px / 15): ≈ 4 steps/s at base speed
+function footPhase(u) {   // unit stride profile: stance slides front→back linearly, swing comes back→front with a lift
+  if (u < 0.5) return [1 - 4 * u, 0];
+  const k = (u - 0.5) * 2, e = k * k * (3 - 2 * k);
+  return [-1 + 2 * e, Math.sin(Math.PI * k)];
+}
 function walkPose() {
-  const v = playerView(), c = CYC[v.name] || [0, 1, 2, 3], w = P.walk || 0, i = Math.floor(w), fr = w - i, sp = Math.min(1, P.spd01 || 0);
-  const k = clamp((fr - 0.35) / 0.65, 0, 1), f = k * k * (3 - 2 * k);                 // hold each drawing, then dissolve into the next
-  const bob = (1 - Math.cos(Math.PI * (w - 0.2))) * 0.5 * 1.5 * sp;                     // smooth: lowest on contact, highest passing
-  const sway = (P.d === 2 || P.d === 6 ? 1 : (P.d || 0) % 2 ? 0.55 : 0) * Math.sin(Math.PI / 2 * (w - 0.2)) * 0.9 * sp;   // weight shift, front/back views
-  return (P._pose = { v, a: c[i & 3], b: c[(i + 1) & 3], f, bob, sway, sp });
+  const v = playerView(), sp = Math.min(1, P.spd01 || 0), th = (P.walk || 0) * STEP_K, u1 = ((th / TAU) % 1 + 1) % 1;
+  const R = ART.ok && ART.meta.rig ? ART.meta.rig[v.name] : null, mode = RIGMODE[v.name.replace(/^(yeoni|danbi)/, '')] || 'side';
+  const bob = (1 - Math.cos(4 * Math.PI * u1)) * 0.5 * 1.3 * sp;                       // up while the feet pass, down on contact
+  const sway = (mode === 'front' || mode === 'back' ? 0.9 : mode === 'side' ? 0 : 0.5) * Math.sin(TAU * u1) * sp;   // weight over the stance foot
+  const base = R ? R.base : 0;
+  return (P._pose = { v, a: base, b: base, f: 0, bob, sway, sp, th, u1, R, mode });
 }
 function lanternOff() {
   const q = P._pose, v = playerView(), L = ART.ok && ART.meta.lampF ? ART.meta.lampF[v.name] : null;
@@ -66,20 +74,52 @@ function blendFrames(a, b, f) {
 }
 function drawPlayer() {
   worldT();
-  const q = walkPose(), v = q.v, frames = v.frames, A = frames[q.a] || frames[0], B = frames[q.b] || A;
+  const q = walkPose(), v = q.v, frames = v.frames, A = frames[q.a] || frames[0];
   if (P.iframe > 0 && Math.floor(G.t * 20) % 2) return;
   const pw = SW(A), ph = SH(A), breathe = 1 + Math.sin(G.t * 2.4) * 0.018 * (1 - q.sp), gb = gearPoses(q, ph);
   const lean = clamp((P.vx || 0) / 150, -1.2, 1.2) * 0.05 + gb.rot, tk = 1 - 0.035 * (P.turnK || 0), sx = (2 - tk) * gb.sx, sy = breathe * tk * gb.sy;
-  const src = blendFrames(A, B, q.f), sh = src.height, cut = Math.round(sh * 0.56), hy = cut / sh * ph, x0 = -pw / 2 - v.ax;
-  const sk = clamp(P.hem || 0, -3, 3) * v.flip / (sx * (ph - hy));   // skirt shear: 0 at the hips, P.hem world px at the hem
-  const ox = P.x + q.sway + gb.dx, oy = P.y + 12 - q.bob + gb.dy;
+  const x0 = -pw / 2 - v.ax, ox = P.x + q.sway + gb.dx, oy = P.y + 12 - q.bob + gb.dy;
   if (gb.list.length) drawGear(gb.list, ox, oy, lean, true);
   ctx.save(); ctx.translate(ox, oy); ctx.rotate(lean); ctx.scale(v.flip * sx, sy);
-  ctx.drawImage(src, 0, 0, src.width, cut, x0, -ph, pw, hy);
-  ctx.translate(0, hy - ph); ctx.transform(1, 0, sk, 1, 0, 0);
-  ctx.drawImage(src, 0, cut - 1, src.width, sh - cut + 1, x0, -ph / sh, pw, (sh - cut + 1) / sh * ph);   // 1-row overlap hides the seam
+  if (q.R && A.at) drawRig(A, q, pw, ph, x0, v.flip);
+  else dI(A, x0, -ph, pw, ph);
   ctx.restore();
   if (gb.list.length) drawGear(gb.list, ox, oy, lean, false);
+}
+function drawRig(img, q, pw, ph, x0, flip) {
+  const R = q.R, name = q.v.name, body = SPR[name + '_body'], foot = SPR[name + '_foot'];
+  if (!body || !foot || !body.at) { dI(img, x0, -ph, pw, ph); return; }
+  const Wd = body.width, Hd = body.height, kx = pw / Wd, ky = ph / Hd, wr = pw / R.w, hr = ph / R.h;   // world px per atlas px / per rig px
+  const at = body.at, ax = body.sx, ay = body.sy, sp = q.sp, u = q.u1;
+  const cut = (sy0, sh, dx) => ctx.drawImage(at, ax, ay + sy0, Wd, sh, x0 + dx, -ph + sy0 * ky, pw, sh * ky);
+  // feet: the one foot sprite, twice. Side views: feet cross over (far one darker, drawn first); front/back: mirrored pair.
+  const fw = SW(foot), fh = SH(foot), gy = -ph + R.gy * hr, fc = x0 + R.fc * wr;
+  const side = q.mode === 'side' || q.mode === 'dfront' || q.mode === 'dback';
+  const dep = q.mode === 'front' ? 1 : q.mode === 'back' ? -1 : q.mode === 'dfront' ? 0.45 : q.mode === 'dback' ? -0.45 : 0;
+  const stride = side ? clamp(R.sep * wr * 0.5, 3.5, 7) * (q.mode === 'side' ? 1 : 0.75) : 0, gap = side ? 0 : Math.max(3, R.fw * wr * 0.42);
+  const plant = q.bob * 0.7;   // the feet stay on the ground while the body dips and rises
+  const F = [0, 1].map(i => { const [pos, lift] = footPhase((u + (i ? 0 : 0.5)) % 1); return { i, pos, lift }; });
+  if (side) F.sort((a, b) => a.i - b.i);   // piece 0 = far foot
+  for (const f of F) {
+    const s0 = f.pos * sp, x = side ? fc + s0 * stride : fc + (f.i ? gap : -gap), y = gy + plant - f.lift * 1.7 * sp + s0 * 0.9 * dep;
+    const mirror = !side && f.i === 0, far = side && f.i === 0;
+    ctx.save(); ctx.translate(x, y);
+    if (mirror) ctx.scale(-1, 1);
+    if (far) ctx.filter = 'brightness(0.72)';
+    dI(foot, -fw / 2, -fh, fw, fh);
+    ctx.restore();
+  }
+  // body above the waist in one piece; the skirt below it in strips that swing out toward the hem
+  const hip = Math.round(Hd * 0.5);
+  cut(0, hip + 1, 0);
+  const front = q.mode === 'front' || q.mode === 'back';
+  const kick = side ? Math.sin(4 * Math.PI * u - 0.5) * 0.7 + Math.sin(TAU * u - 0.7) * 0.3 : Math.sin(TAU * u - 0.7) * 0.9;   // world px at the hem
+  const trail = clamp(P.hem || 0, -3, 3) * flip;
+  const n = Math.max(8, Math.round((Hd - hip) / 2));
+  for (let j = 0; j < n; j++) {
+    const y0 = hip + Math.floor((Hd - hip) * j / n), y1 = hip + Math.floor((Hd - hip) * (j + 1) / n), t = ((y0 + y1) / 2 - hip) / (Hd - hip), w = Math.pow(t, 1.7);
+    cut(y0, y1 - y0 + 1, (kick * sp * (front ? 1.2 : 1) + trail) * w);
+  }
 }
 /* ---------- held gear ----------
    Weapons that are things (clubs, bell, brush, talisman; a lantern for 단비) are worn on the body and come to the
@@ -104,7 +144,7 @@ function gearPoses(q, ph) {
   const out = { list: [], dx: 0, dy: 0, rot: 0, sx: 1, sy: 1 };
   if (!P.weapons || !P.weapons.length || !ART.ok) return out;
   const s = P.side || 1, north = P.d >= 5 && P.d <= 7, fa0 = Math.atan2(P.face.y, P.face.x), danbi = P.spr === 'danbi';
-  const swing = Math.sin(Math.PI * ((P.walk || 0) - 0.2)) * q.sp;   // hip items swing with the stride
+  const swing = Math.sin(q.th || 0) * q.sp;   // hip items swing with the stride
   for (const w of P.weapons) {
     const S = GEAR[w.id]; if (!S || (w.id === 'hollong' && !danbi)) continue;
     const img = ICON[w.id]; if (!img) continue;

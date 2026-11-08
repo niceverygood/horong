@@ -189,6 +189,133 @@ def bright_point(im, test):
     return [round((cx - im.width / 2) / 2, 1), round((cy - im.height) / 2, 1)]
 
 
+def rig_params(frames):
+    """Cut-out walk rig: pick the drawing whose feet are closest together, find the skirt hem (the lowest
+    row still at least half the widest row) and the column between the two feet below it. The runtime keeps
+    that one drawing and animates the feet, skirt and body itself, so nothing flickers between drawings."""
+    best = None
+    for i, f in enumerate(frames):
+        a = f.split()[3].load()
+        W, H = f.size
+        widths = [sum(1 for x in range(W) if a[x, y] > 100) for y in range(H)]
+        mx = max(widths)
+        hem = next(y for y in range(H - 1, -1, -1) if widths[y] >= 0.5 * mx)
+        cols = [sum(1 for y in range(hem + 1, H) if a[x, y] > 100) for x in range(W)]
+        xs = [x for x in range(W) if cols[x] > 0]
+        if not xs:
+            continue
+        x0, x1 = xs[0], xs[-1]
+        lo, hi = x0 + (x1 - x0) * 0.2, x1 - (x1 - x0) * 0.2
+        mid = (x0 + x1) / 2
+        split = min((x for x in range(W) if lo <= x <= hi), key=lambda x: (cols[x], abs(x - mid)), default=int(mid))
+        cand = (x1 - x0, i, hem, split, W, H, x0, x1)
+        if best is None or cand < best:
+            best = cand
+    spread, i, hem, split, W, H, x0, x1 = best
+    return {'base': i, 'hem': hem, 'split': split, 'w': W, 'h': H, 'fx': [x0, x1]}
+
+
+def split_feet(f, rp, who, front=False):
+    """Lift the feet out of the rig's base drawing by material: 연이 wears saturated brown sandals under a pale
+    cream skirt, 단비 white socks under a strong red one. Seeds below the hem grow upward through foot-coloured
+    pixels (a back foot tucked under a slanted hem), then take one ring of dark outline. Both feet leave the body;
+    the largest becomes the one foot sprite the runtime draws twice."""
+    import colorsys
+    W, H = f.size
+    px = f.load()
+    hem = rp['hem']
+
+    def hsv(c):
+        return colorsys.rgb_to_hsv(c[0] / 255, c[1] / 255, c[2] / 255)
+
+    def is_foot(c):
+        if c[3] < 40:
+            return False
+        h, s_, v = hsv(c)
+        if who == 'yeoni':
+            return s_ > 0.32 and 0.02 < h < 0.16 and v > 0.12
+        return s_ < 0.26 and v > 0.18   # white socks and their grey outline; the skirt is saturated red
+    top = max(0, hem - 18)
+    stack = [(x, y) for y in range(hem - 7, H) for x in range(W) if is_foot(px[x, y])]
+    mask = set(stack)
+    while stack:
+        x, y = stack.pop()
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < W and top <= ny < H and (nx, ny) not in mask and is_foot(px[nx, ny]):
+                mask.add((nx, ny))
+                stack.append((nx, ny))
+    ring = set()
+    for (x, y) in mask:   # the dark outline around the foot
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y + 1)):
+            if 0 <= nx < W and 0 <= ny < H and (nx, ny) not in mask:
+                c = px[nx, ny]
+                h, s_, v = hsv(c)
+                if c[3] >= 40 and v < 0.42 and (who == 'yeoni' or s_ < 0.5):
+                    ring.add((nx, ny))
+    mask |= ring
+    comps, seen = [], set()
+    for p0 in sorted(mask):
+        if p0 in seen:
+            continue
+        comp, st = [], [p0]
+        seen.add(p0)
+        while st:
+            x, y = st.pop()
+            comp.append((x, y))
+            for q in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1), (x - 1, y + 1)):
+                if q in mask and q not in seen:
+                    seen.add(q)
+                    st.append(q)
+        comps.append(comp)
+    comps = [c for c in comps if len(c) >= 8]
+    comps.sort(key=len, reverse=True)
+    print('feet', who, rp['base'], 'mask', len(mask), 'comps', [len(c) for c in comps][:4])
+    body = f.copy()
+    bp = body.load()
+    for c in comps:
+        for (x, y) in c:
+            bp[x, y] = (0, 0, 0, 0)
+    # loose islands left under the skirt (toe tips, sock outline) go too
+    seen2 = set()
+    for y0 in range(top, H):
+        for x0 in range(W):
+            if (x0, y0) in seen2 or bp[x0, y0][3] < 20:
+                continue
+            isl, st = [], [(x0, y0)]
+            seen2.add((x0, y0))
+            while st:
+                x, y = st.pop()
+                isl.append((x, y))
+                for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1), (x - 1, y + 1)):
+                    if 0 <= nx < W and top <= ny < H and (nx, ny) not in seen2 and bp[nx, ny][3] >= 20:
+                        seen2.add((nx, ny))
+                        st.append((nx, ny))
+            if len(isl) < 40 and min(y for _, y in isl) > hem - 12:
+                for (x, y) in isl:
+                    bp[x, y] = (0, 0, 0, 0)
+    main = comps[0]
+    allx = [x for c in comps[:2] for x, _ in c]
+    xs = [x for x, _ in main]
+    if front and max(xs) - min(xs) > 12:   # front/back: both feet touch; keep the bigger one, the runtime mirrors it
+        lo, hi = min(xs), max(xs)
+        cnt = {x: 0 for x in range(lo, hi + 1)}
+        for x, _ in main:
+            cnt[x] += 1
+        mid = min(range(lo + (hi - lo) // 4, hi - (hi - lo) // 4 + 1), key=lambda x: (cnt[x], abs(x - (lo + hi) / 2)))
+        a_, b_ = [p for p in main if p[0] < mid], [p for p in main if p[0] >= mid]
+        main = a_ if len(a_) >= len(b_) else b_
+        xs = [x for x, _ in main]
+    ys = [y for _, y in main]
+    bb = (min(xs), min(ys), max(xs) + 1, max(ys) + 1)
+    foot = Image.new('RGBA', (bb[2] - bb[0], bb[3] - bb[1]), (0, 0, 0, 0))
+    fpx = foot.load()
+    for (x, y) in main:
+        fpx[x - bb[0], y - bb[1]] = px[x, y]
+    cx = [sum(x for x, _ in c) / len(c) for c in comps[:2]]
+    sep = abs(cx[0] - cx[1]) if len(cx) > 1 else 0
+    return body, foot, {'fo': [bb[0], bb[1]], 'fc': round(sum(allx) / len(allx), 1), 'sep': round(sep, 1), 'gy': max(ys) + 1, 'fw': bb[2] - bb[0], 'n': len(comps)}
+
+
 S = {}      # name -> image (2x world size)
 META = {}
 
@@ -220,6 +347,14 @@ for who in ('yeoni', 'danbi'):
         META['ax'][who + d] = torso_x(f0)
         META['lamp'][who + d] = bright_point(f0, lamp_test[who])
         META['lampF'][who + d] = [bright_point(S[f'{who}{d}{i}'], lamp_test[who]) for i in range(4)]   # the lantern swings between drawings
+        rp = rig_params(frames)
+        body, foot, info = split_feet(frames[rp['base']], rp, who, d in ('_s', '_n'))
+        S[f'{who}{d}_body'] = body
+        S[f'{who}{d}_foot'] = foot
+        rp.update(info)
+        META.setdefault('rig', {})[who + d] = rp
+
+
 
 # --- VFX flipbooks (black background -> luminance alpha, drawn additively) -----------
 for name, cols, rows, box in (('fx_hit', 4, 2, 192), ('fx_fire', 4, 2, 224), ('fx_slash', 4, 2, 224),
