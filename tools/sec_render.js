@@ -9,6 +9,23 @@ const camX = () => P.x + (G.cox || 0), camY = () => P.y + (G.coy || 0);
 // screen shrink toward a vanishing point (×0.85 at the top edge, ×1.15 at the bottom). Gameplay stays in world space.
 const FLAT = document.createElement('canvas'), FCTX = FLAT.getContext('2d');
 FLAT.id = 'world'; FLAT.setAttribute('aria-hidden', 'true'); cvs.before(FLAT);   // the world has its own canvas under the HUD canvas
+// Screen tints (greed blue, hurt / low-health red, warning red) are CSS layers between the world and the HUD canvas.
+// The compositor blends them (on the GPU on most devices); as canvas gradients each one filled every device pixel on
+// the main thread, every frame (~8ms apiece at DPR 2 on a software canvas). Same gradient as before: clear inside
+// k·min(W, H), full colour at the corners; a frame only sets the opacity.
+const TINT = {};
+for (const [k, rgb, r0] of [['greed', '40,70,190', 32], ['red', '200,40,30', 30], ['warn', '190,20,40', 28]]) {
+  const d = document.createElement('div'); d.className = 'tint'; d.setAttribute('aria-hidden', 'true');
+  d.style.background = `radial-gradient(circle farthest-corner at 50% 50%, rgba(${rgb},0) ${r0}vmin, rgba(${rgb},1) 100%)`;
+  cvs.before(d); TINT[k] = { el: d, a: '0' };
+}
+function tint(k, a) { const t = TINT[k], v = a > 0.001 ? a.toFixed(3) : '0'; if (t.a !== v) { t.a = v; t.el.style.opacity = v; } }
+function tintsOff() { tint('greed', 0); tint('red', 0); tint('warn', 0); haze(false); }
+// The night haze over the far part of the floor is a CSS gradient on the world plane (placed and tilted with the
+// world canvas in placeWorld): no longer a stretched draw over half the world canvas every frame.
+const HAZE = document.createElement('div'); HAZE.className = 'haze'; HAZE.setAttribute('aria-hidden', 'true'); FLAT.after(HAZE);
+let hazeOn = false;
+function haze(on) { if (hazeOn !== on) { hazeOn = on; HAZE.style.display = on ? 'block' : 'none'; } }
 const PERSP = { on: true, b: 0, mx: 0, my: 0, flat: false };
 const persp = v => 1 / (1 - PERSP.b * v);   // scale of a flat row v (CSS px from the screen centre, + = down)
 function screenT() { const d = PERSP.flat ? RS : DPR; ctx.setTransform(d, 0, 0, d, PERSP.flat ? d * PERSP.mx : 0, PERSP.flat ? d * PERSP.my : 0); }
@@ -24,17 +41,20 @@ function placeWorld(mx, my) {
   if (FLAT.width !== fw || FLAT.height !== fh) { FLAT.width = fw; FLAT.height = fh; }
   const key = W + '|' + H + '|' + mx + '|' + my + '|' + PERSP.on;
   if (FLAT._key === key) return;
-  FLAT._key = key; const st = FLAT.style;
-  st.left = -mx + 'px'; st.top = -my + 'px'; st.width = (W + 2 * mx) + 'px'; st.height = (H + my) + 'px';
-  st.transformOrigin = (W / 2 + mx) + 'px ' + (H / 2 + my) + 'px';
-  st.transform = PERSP.on ? 'matrix3d(1,0,0,0,0,1,0,' + (-PERSP.b) + ',0,0,1,0,0,0,0,1)' : 'none';
+  FLAT._key = key;
+  for (const st of [FLAT.style, HAZE.style]) {
+    st.left = -mx + 'px'; st.top = -my + 'px'; st.width = (W + 2 * mx) + 'px'; st.height = (H + my) + 'px';
+    st.transformOrigin = (W / 2 + mx) + 'px ' + (H / 2 + my) + 'px';
+    st.transform = PERSP.on ? 'matrix3d(1,0,0,0,0,1,0,' + (-PERSP.b) + ',0,0,1,0,0,0,0,1)' : 'none';
+  }
+  HAZE.style.background = `linear-gradient(rgba(8,10,20,0.42) 0px, rgba(8,10,20,0) ${my + H * 0.55}px)`;   // was drawn from the top edge to 55% down the screen
 }
 const easeOut3 = k => 1 - Math.pow(1 - k, 3);
 // out: a scratch object to fill instead of a new one (the hot draw loops call this for every enemy, every frame)
 function enemyPose(e, pose, out) {
   const pz = pose === undefined ? e.pose : pose, ps = pz ? SPR[e.spr + '_' + pz] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
   const w = SW(base) * e.scale * k, h = SH(base) * e.scale * k;
-  let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
+  let x = Number.isNaN(e.rx) ? e.x : e.rx, y = (Number.isNaN(e.ry) ? e.y : e.ry) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
   const vx = e.mvx || 0, sp = Math.hypot(vx, e.mvy || 0);
   if (e.type === 'gseun') {   // a slow hover that breathes and leans into the drift
     y += Math.sin(G.t * 1.6 + e.bob) * 4 - 4;
@@ -432,13 +452,16 @@ function drawGround(tile) {   // the opaque floor covers the whole world canvas,
   worldT();
 }
 const PFT = { on: false, t: 0, acc: {}, n: 0 };
-function PF(k) { if (!PFT.on) return; const n = performance.now(); PFT.acc[k] = (PFT.acc[k] || 0) + n - PFT.t; PFT.t = n; }
+function PF(k) { if (!PFT.on) return; if (PFT.flush) ctx.getImageData(0, 0, 1, 1); const n = performance.now(); PFT.acc[k] = (PFT.acc[k] || 0) + n - PFT.t; PFT.t = n; }   // flush: charge each phase its own raster (dev only)
+// y-sort comparator: returns -1/0/1, not a fractional difference (a fraction comes back from sort() boxed, one
+// garbage number per comparison: ~6000 a frame with 600 enemies on screen)
+const byK = (a, b) => a._k < b._k ? -1 : a._k > b._k ? 1 : 0;
 function render() {
   if (PFT.on) { PFT.t = performance.now(); PFT.n++; }
   ctx = MCTX; PERSP.flat = false;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, cvs.width, cvs.height);   // HUD canvas: transparent over the world canvas
-  if (!P) return;
+  if (!P) { tintsOff(); return; }
   { const sh = G.shake > 0 && !REDUCED ? G.shake : 0, tt = performance.now() / 1000;   // 9~15Hz layered sines instead of white noise
     G.shx = sh * (Math.sin(tt * 57) * 0.65 + Math.sin(tt * 91 + 1.7) * 0.35); G.shy = sh * (Math.sin(tt * 63 + 0.6) * 0.65 + Math.sin(tt * 83 + 2.9) * 0.35); }
   const mx = PERSP.on ? Math.ceil(W * 0.1) : 0, my = PERSP.on ? Math.ceil(H * 0.1) : 0;   // the flat view reaches a little past the screen: the far rows shrink in
@@ -511,7 +534,7 @@ function render() {
   ctx.globalAlpha = 0.45;
   for (const e of enemies) {
     if (e.dead || (!e.inLight && !e.big) || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 90)) continue;
-    const r = e.r * e.scale, ex = e.rx ?? e.x, ey = e.ry ?? e.y;
+    const r = e.r * e.scale, ex = Number.isNaN(e.rx) ? e.x : e.rx, ey = Number.isNaN(e.ry) ? e.y : e.ry;
     if (e.type === 'dueok' || e.type === 'bulga') { const sw = (e.type === 'bulga' ? 175 : 115) * e.scale, sh = (e.type === 'bulga' ? 34 : 26) * e.scale; ctx.globalAlpha = 0.6; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.55, sw, sh); ctx.globalAlpha = 0.45; continue; }
     if (e.type === 'gumiho' || e.type === 'clone' || e.type === 'jangsan' || e.type === 'jclone') { const sw = 150 * e.scale, sh = 28 * e.scale; ctx.globalAlpha = 0.55 * (e.alpha || 1); dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.6, sw, sh); ctx.globalAlpha = 0.45; continue; }   // a long shadow under the whole body grounds the fox
     if (e.type === 'gseun') { const sw = 90 * e.scale, sh = 22 * e.scale; ctx.globalAlpha = 0.5; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.5, sw, sh); ctx.globalAlpha = 0.45; continue; }
@@ -524,10 +547,10 @@ function render() {
   for (const e of enemies) {
     if (e.dead || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 120)) continue;
     if (!e.big && !e.inLight && ART.ok && Math.abs(e.x - P.x) + Math.abs(e.y - P.y) > LRd * 1.25) continue;
-    e._k = (e.ry ?? e.y) + e.r * 0.75; DL.push(e);
+    e._k = (Number.isNaN(e.ry) ? e.y : e.ry) + e.r * 0.75; DL.push(e);
   }
   P._k = P.y + 12; DL.push(P);
-  DL.sort((a, b) => a._k - b._k);
+  DL.sort(byK);
   PF('sort');
   drawUnder();
   PF('drawUnder');
@@ -569,7 +592,7 @@ function render() {
   if (G.state !== 'title') drawGlows();
   PF('glows');
   ctx.globalCompositeOperation = 'source-over';
-  if (G.state === 'title') { ctx = MCTX; PERSP.flat = false; screenT(); drawVignette(); return; }
+  if (G.state === 'title') { tintsOff(); ctx = MCTX; PERSP.flat = false; screenT(); drawVignette(); return; }
   { // bosses stay readable outside the lantern light: their wind-ups and strikes are the thing you dodge
     worldT(); let any = false;
     for (const e of enemies) {
@@ -617,35 +640,14 @@ function render() {
   PF('lateWorld');
   if (PG.on) { pgDrawWorld(); screenT(); }
   PF('pg');
-  { // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear
-    screenT();
-    if (!hazeStrip) {   // the vertical gradient drawn once into a 1px-wide strip; stretching it is far cheaper than a gradient fill
-      const c = document.createElement('canvas'); c.width = 1; c.height = 128; const g = c.getContext('2d'), hz = g.createLinearGradient(0, 0, 0, 128);
-      hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)'); g.fillStyle = hz; g.fillRect(0, 0, 1, 128); hazeStrip = c;
-    }
-    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.drawImage(hazeStrip, -mx, -my, W + 2 * mx, my + H * 0.55); ctx.imageSmoothingEnabled = sm;
-  }
+  haze(true);   // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear (CSS layer)
   ctx = MCTX; PERSP.flat = false; screenT();   // world done (the GPU tilts it); screen tints and the HUD go on the top canvas
   PF('warp');
-  if (P.light <= GREED) {
-    const pulse = 0.5 + Math.sin(G.t * 3) * 0.15;
-    const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.hypot(W, H) / 2);
-    vg.addColorStop(0, 'rgba(40,70,190,0)'); vg.addColorStop(1, `rgba(40,70,190,${0.32 * pulse})`);
-    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-  }
+  tint('greed', P.light <= GREED ? 0.32 * (0.5 + Math.sin(G.t * 3) * 0.15) : 0);
   if (P.charmT > 0) { ctx.fillStyle = `rgba(255,110,180,${0.12 + Math.sin(G.t * 20) * 0.04})`; ctx.fillRect(0, 0, W, H); }
   const lowHp = P.hp / P.maxHp < 0.3, hurt = (G.hurtT || 0) / 0.35;
-  if (hurt > 0 || lowHp) {
-    const a = Math.max(hurt * 0.4, lowHp ? 0.16 + Math.sin(G.t * 6) * 0.08 : 0);
-    const rg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) / 2);
-    rg.addColorStop(0, 'rgba(200,40,30,0)'); rg.addColorStop(1, `rgba(200,40,30,${a})`);
-    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
-  }
-  if (G.warnT > 0 && !REDUCED) {
-    const a = Math.abs(Math.sin(G.warnT / 1.6 * Math.PI * 2)) * 0.42 * Math.min(1, G.warnT * 2);
-    const wg2 = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.28, W / 2, H / 2, Math.hypot(W, H) / 2);
-    wg2.addColorStop(0, 'rgba(190,20,40,0)'); wg2.addColorStop(1, `rgba(190,20,40,${a})`); ctx.fillStyle = wg2; ctx.fillRect(0, 0, W, H);
-  }
+  tint('red', hurt > 0 || lowHp ? Math.max(hurt * 0.4, lowHp ? 0.16 + Math.sin(G.t * 6) * 0.08 : 0) : 0);
+  tint('warn', G.warnT > 0 && !REDUCED ? Math.abs(Math.sin(G.warnT / 1.6 * Math.PI * 2)) * 0.42 * Math.min(1, G.warnT * 2) : 0);
   if (G.flash) {
     const k = G.flash.t / G.flash.dur; ctx.globalCompositeOperation = 'lighter';
     ctx.fillStyle = `rgba(${G.flash.col},${G.flash.a * (1 - k) * (1 - k)})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
@@ -682,7 +684,7 @@ function render() {
 // Night outside the lantern: a light hole drawn once (clear inside 55% of the radius, 0.95 dark at the rim), placed on
 // whole device pixels of the world canvas, with plain dark rectangles around it. Same picture as one radial gradient
 // over the whole view, at a fraction of the cost: only the lit square is sampled, the rest is a flat fill.
-let nightHole = null, hazeStrip = null;
+let nightHole = null;
 const SPK = new Map();   // spark colour → three fade batches, reused every frame
 function drawNight(cx, cy, r) {
   if (!nightHole) {
@@ -820,7 +822,7 @@ function drawGlows() {
       ctx.stroke(); }
     }
   }
-  for (const e of enemies) if (e.type === 'wisp' && e.shotCd !== undefined && e.shotCd < 0.5 && !e.dead && inView(e.x, e.y, 30)) {
+  for (const e of enemies) if (e.type === 'wisp' && e.shotCd < 0.5 && !e.dead && inView(e.x, e.y, 30)) {
     const c = 1 - e.shotCd / 0.5, z = 14 + c * 30; ctx.globalAlpha = 0.45 + c * 0.5; dI(GL.fire, e.x - z / 2, e.y - 10 - z / 2, z, z);
   }
   ctx.globalAlpha = 1;

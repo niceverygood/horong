@@ -27,6 +27,8 @@ html,body{height:100%}
 body{margin:0;background:var(--night);color:var(--hanji);font-family:var(--font-body);font-size:15px;line-height:1.55;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:transparent}
 #world{position:fixed;left:0;top:0;display:block;pointer-events:none;background:#0b0d16}
+.tint{position:fixed;inset:0;pointer-events:none;opacity:0;will-change:opacity}
+.haze{position:fixed;left:0;top:0;display:none;pointer-events:none}
 .overlay{position:fixed;inset:0;z-index:10;display:flex;overflow-y:auto;touch-action:pan-y;background:radial-gradient(ellipse at 50% 42%,rgba(11,13,22,.28),rgba(6,7,12,.9) 72%);padding-block:max(20px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .panel{margin:auto;width:min(700px,100%);display:grid;gap:18px;background:linear-gradient(180deg,rgba(19,23,38,.96),rgba(11,13,22,.96));border:1px solid var(--line);border-radius:4px;padding:28px clamp(18px,4vw,34px)}
 .brand{display:grid;gap:2px}
@@ -724,7 +726,7 @@ function chunkProps(cx, cy) {
     if (Math.abs(x) < 110 && Math.abs(y) < 110) continue;
     if (p.some(o => Math.abs(o.x - x) < 150 && Math.abs(o.y - y) < 90)) continue;   // keep lanes between props
     const f = FOOT[t], b = BREAK[t];
-    p.push({ t, x, y, prop: true, box: [x + f[0], y + f[1], x + f[2], y + f[3]], _k: y + (f[1] + f[3]) / 2, hp: b ? b.hp : 0 });
+    p.push(propObj(t, undefined, x, y, undefined, [x + f[0], y + f[1], x + f[2], y + f[3]], y + (f[1] + f[3]) / 2, b ? b.hp : 0));
   }
   if (r() < 0.34 && Math.hypot(cx * CH + CH / 2, cy * CH + CH / 2) > 420) {   // at most one landmark per chunk
     const roll = r() * 100, t = roll < 14 ? 'shrine' : roll < 28 ? 'well' : roll < 46 ? 'bonfire' : roll < 68 ? 'cairn' : roll < 78 ? 'mat' : roll < 86 ? 'peddler' : 'sotdae';
@@ -743,9 +745,14 @@ const POI2 = { shrine: 'sansin', well: 'spring', cairn: 'pagoda', mat: 'offering
 const BREAK = { jars: { hp: 3, oil: 0.5, coins: 3, col: '#c08458' }, cart: { hp: 3, oil: 0.2, coins: 2, col: '#b48a5a' }, cairn: { hp: 6, oil: 0.3, coins: 9, col: '#8a867c' } };
 const SOLID = new Set(['japgwi', 'dokkaebi', 'yagwang', 'mangtae', 'totem']);   // goblins have bodies; ghosts drift through walls
 const OCELL = 64; let obsGrid = new Map(), obsKey = '', obsList = [], poiList = [];
+// Props and landmarks share one shape: the render, sort and collision loops read them every frame.
+function propObj(t, spr, x, y, poi, box, k, hp) {
+  return { t, spr, x, y, prop: true, poi, box, _k: k, hp, used: undefined, pray: undefined, readyAt: undefined, armed: undefined, buys: undefined, broken: undefined, hitAt: undefined, spin: undefined };
+}
 function makePoi(t, x, y) {
   const spr = stg() === 2 ? POI2[t] : undefined, f = FOOT[spr] || FOOT[t], b = BREAK[t];
-  return { t, spr, x, y, prop: true, poi: true, box: f ? [x + f[0], y + f[1], x + f[2], y + f[3]] : null, _k: y + (f ? (f[1] + f[3]) / 2 : -40), hp: b ? b.hp : 0, used: false, pray: 0, readyAt: 0, armed: true, buys: 0 };
+  const o = propObj(t, spr, x, y, true, f ? [x + f[0], y + f[1], x + f[2], y + f[3]] : null, y + (f ? (f[1] + f[3]) / 2 : -40), b ? b.hp : 0);
+  o.used = false; o.pray = 0; o.readyAt = 0; o.armed = true; o.buys = 0; return o;
 }
 function refreshObstacles(force) {
   const cx = Math.floor(P.x / CH), cy = Math.floor(P.y / CH), key = cx + ',' + cy;
@@ -1192,7 +1199,18 @@ function makeEnemy(type, x, y, extra) {
   const e = { id: ++EID, type, spr: d.spr || type, x, y, r: d.r, hp: d.hp * hpS, maxHp: d.hp * hpS, spd: d.spd * rnd(0.92, 1.08) * ((d.boss || d.elite || d.big) ? 1 : Math.min(lateSpd(t), stg() === 2 ? 1.45 : 9)),
     dmg: d.dmg * ((d.boss || d.elite) ? 1 : (1 + t / 60 * 0.12) * (stg() === 2 ? 1.35 : 1)), xp: d.xp, el: d.el, ai: d.ai || 'chase', hc: {}, kx: 0, ky: 0,
     flash: 0, stun: 0, slow: 0, burn: 0, burnTick: 0, st: 'walk', stT: rnd(1, 3), scale: 1, elite: !!d.elite, boss: !!d.boss,
-    big: !!(d.boss || d.elite || d.big), invuln: !!d.invuln, dead: false, inLight: false, fx: 1, bob: Math.random() * TAU, oil: 0.04 };
+    big: !!(d.boss || d.elite || d.big), invuln: !!d.invuln, dead: false, inLight: false, fx: 1, bob: Math.random() * TAU, oil: 0.04,
+    // Every field any enemy picks up later is declared here, in one order, so all enemies share one hidden class.
+    // With a hundred shapes the hot loops went megamorphic: every number read or written made a garbage box.
+    // Numbers written every frame start as numbers (NaN stands for "not set yet" where code asked `=== undefined`).
+    normal: false, lead: undefined, rx: NaN, ry: NaN, mvx: NaN, mvy: NaN, wk: 0, fs: undefined, turnT: 0, slideT: 0, side: undefined, _k: 0,
+    silent: undefined, alpha: undefined, life: 0, ring: undefined, cx: undefined, cy: undefined, vx: undefined, vy: undefined,
+    sk: undefined, skc: undefined, atk: undefined, atkT: 0, atkCd: NaN, thCd: NaN, shotCd: NaN, lvx: undefined, lvy: undefined,
+    rageT: undefined, wardT: 0, flareT: undefined, loot: undefined, parent: undefined, grow: undefined, fade: undefined, pgQ: undefined,
+    act: undefined, pose: undefined, prevPose: undefined, poseT: undefined, cd: undefined, ghT: undefined, dashCd: undefined, orbCd: undefined,
+    cloned: undefined, leaveT: undefined, rd: undefined, lastFx: undefined, blinkCd: undefined, orb: undefined, running: undefined,
+    mad: undefined, stepN: undefined, armorT: undefined, ang: undefined, trail: undefined, segs: undefined, beamCd: undefined, slT: undefined,
+    cs: undefined, seq: undefined };
   e.normal = !e.big; if (e.normal && e.ai === 'chase') e.lead = Math.random() < 0.35 ? rnd(0.25, 0.6) : 0;
   if (extra) Object.assign(e, extra);
   enemies.push(e); return e;
@@ -2053,11 +2071,19 @@ function closeChest() {
 }
 function burst(x, y, col, n, up = 0) {
   if (REDUCED) n = Math.ceil(n / 3);
-  for (let i = 0; i < n; i++) { const a = rnd(0, TAU), s = rnd(30, 120); parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s + up, life: rnd(0.3, 0.6), max: 0.6, col, size: rnd(2, 3.5) }); }
+  for (let i = 0; i < n; i++) { const a = rnd(0, TAU), s = rnd(30, 120); parts.push(new Part({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s + up, life: rnd(0.3, 0.6), max: 0.6, col, size: rnd(2, 3.5) })); }
   if (parts.length > PMAX) parts.splice(0, parts.length - PMAX);
 }
 const PMAX = REDUCED ? 160 : 360;
-function addPart(p) { if (parts.length >= PMAX) parts.splice(0, 24); parts.push(p); }
+// Particles share one shape (40 call sites used to make 40): the particle loops stay monomorphic and write numbers in place.
+// Missing fields get the value the loops already assumed (drag ?? 6.3, no gravity).
+class Part {
+  constructor(o) {
+    this.k = o.k; this.x = o.x; this.y = o.y; this.vx = o.vx; this.vy = o.vy; this.life = o.life; this.max = o.max; this.size = o.size;
+    this.drag = o.drag ?? 6.3; this.g = o.g || 0; this.floor = o.floor || 0; this.rot = o.rot || 0; this.ph = o.ph || 0; this.col = o.col; this.gl = o.gl;
+  }
+}
+function addPart(p) { if (parts.length >= PMAX) parts.splice(0, 24); parts.push(new Part(p)); }
 function fx(o) { if (effects.length < 160) effects.push({ t: 0, ...o }); }   // a big crowd dying at once must not stack hundreds of additive sprites
 // Layer 2: streak sparks (fast burst, heavy drag)
 function sparks(x, y, col, n, s0 = 110, s1 = 300, up = 0) {
@@ -2525,7 +2551,7 @@ function imugiAI(e, dt, dx, dy, d) {
 
 // 붉은 도깨비: crouches (club up), then hops at where you're going. 갓 쓴 귀신 (after 4 min): throws a talisman with lead.
 function dokkaebiAI(e, dt, d, mult, chase) {
-  e.atkCd = (e.atkCd ?? rnd(1, 3)) - dt;
+  e.atkCd = (Number.isNaN(e.atkCd) ? rnd(1, 3) : e.atkCd) - dt;
   if (e.atk === 'wind') { e.atkT -= dt; if (e.atkT <= 0) { const [a] = aimAt(e.x, e.y, 300, 0.55); e.atk = 'lunge'; e.atkT = 0.2; e.lvx = Math.cos(a) * 300; e.lvy = Math.sin(a) * 300; e.fx = e.lvx < 0 ? -1 : 1; } return; }
   if (e.atk === 'lunge') { e.atkT -= dt; e.x += e.lvx * dt * (e.stun > 0 ? 0 : 1); e.y += e.lvy * dt * (e.stun > 0 ? 0 : 1); if (e.atkT <= 0) { e.atk = 'rest'; e.atkT = 0.3; } return; }
   if (e.atk === 'rest') { e.atkT -= dt; if (e.atkT <= 0) e.atk = null; return; }
@@ -2536,7 +2562,7 @@ function sajaThrow(e, dt, d) {
   if (e.ring) return;
   if (e.atk === 'wind') { e.atkT -= dt; if (e.atkT <= 0) { e.atk = null; const [a] = aimAt(e.x, e.y - 14, 200, 0.8); if (eprojs.length < 50) eprojs.push({ k: 'tal', x: e.x, y: e.y - 14, vx: Math.cos(a) * 200, vy: Math.sin(a) * 200, life: 2.6, dmg: 6 * (1 + dT() / 900) }); } return; }
   if (PG.on ? !PG.mobAtk : G.t < 240) return;
-  e.thCd = (e.thCd ?? rnd(2, 6)) - dt;
+  e.thCd = (Number.isNaN(e.thCd) ? rnd(2, 6) : e.thCd) - dt;
   if (e.thCd <= 0 && d > 140 && d < 380 && e.inLight) { e.thCd = rnd(7, 11); let n = 0; for (const q of eprojs) if (q.k === 'tal') n++; if (n < 5) { e.atk = 'wind'; e.atkT = 0.45; } }
 }
 /* ---------- mob skills: three each, telegraphed, unlocked as the night goes on ----------
@@ -2560,7 +2586,9 @@ const MOBSK = {
 const SKB = { wail: 'seal', sleeve: 'grab', murk: 'puddle', sstep: 'step', reach: 'grab', ybite: 'snap', shoe: 'toss', dive: 'orbit', feather: 'toss', flock: 'call', cane: 'smash', sack: 'grab', tsmash: 'smash', shout: 'call' };
 const SKC = { sleeve: '220,232,255', reach: '178,110,255', sack: '214,170,100', wail: '200,220,255', cane: '214,170,100', tsmash: '230,120,80' };
 const SKN = { wail: '원한의 곡소리', sleeve: '소매 휘감기', murk: '어둠 웅덩이', sstep: '그림자 걸음', reach: '그림자 손', ybite: '물어뜯기', shoe: '짚신 던지기', steal: '엽전 훔치기', dive: '급강하', feather: '깃털 날리기', flock: '떼 부르기', cane: '지팡이 내려찍기', sack: '망태 씌우기', imps: '졸개 풀기', tsmash: '내려찍기', shout: '호령', snap: '물어뜯기', toss: '돌 던지기', call: '떼 부르기', dash: '돌진', roll: '굴러오기', blink: '뒤로 나타나기', spit: '물대포', puddle: '물웅덩이', grab: '끌어당기기', hop: '뛰어들기', smash: '내려찍기', club: '방망이 부메랑', tal: '부적 던지기', seal: '결계 부적', step: '그림자 걸음', fire: '화염구', burst: '자폭', orbit: '맴돌다 덮치기' };
-const skOn = (type, k) => { const s = MOBSK[type] && MOBSK[type].find(x => x[0] === k); return !!s && (PG.on || G.t >= s[1]); };
+const skOn = (type, k) => { const L = MOBSK[type]; if (L) for (const s of L) if (s[0] === k) return PG.on || G.t >= s[1]; return false; };   // a loop, not find(): no closure per call
+// is skill k off cooldown and does the dice say go (was a closure made per mob per frame)
+function skReady(e, c, dt, k) { return skOn(e.type, k) && (c[k] ?? G.t + rnd(0.5, 3)) <= G.t && Math.random() < dt * (PG.on ? 1.6 : 0.8); }
 let skActive = 0, hazards = [];
 function skName(e, k) {   // the first time each skill shows up in a run, name it over the mob
   const seen = G.skSeen || (G.skSeen = new Set());
@@ -2585,21 +2613,21 @@ function mobSkill(e, dt, d, mult) {
   const A = e.sk, dx = P.x - e.x, dy = P.y - e.y;
   if (!A) {
     if (!MOBSK[e.type] || e.ring || e.stun > 0 || !inView(e.x, e.y, 20) || (!PG.on && skActive >= 3 + G.t / 120) || (PG.on && !PG.mobAtk)) return false;
-    const c = e.skc || (e.skc = {}), ok = k => skOn(e.type, k) && (c[k] ?? G.t + rnd(0.5, 3)) <= G.t && Math.random() < dt * (PG.on ? 1.6 : 0.8), L = e.inLight;
+    const c = e.skc || (e.skc = {}), L = e.inLight;
     if (c.init === undefined) { c.init = 1; for (const s of MOBSK[e.type]) c[s[0]] = G.t + rnd(1, s[3] || 3); }
     const T = e.type;
-    if (T === 'japgwi') { if (d < 62 && ok('snap')) startSkill(e, 'snap'); else if (d > 110 && d < 280 && L && ok('toss')) startSkill(e, 'toss'); else if (ok('call')) { let n = 0; queryCircle(e.x, e.y, 180, o => { if (o.type === 'japgwi') n++; }); if (n >= 4) startSkill(e, 'call'); } }
-    else if (T === 'egg') { if (e.st === 'walk' && d > 80 && d < 320 && ok('roll')) startSkill(e, 'roll'); else if (e.st === 'walk' && d < 260 && ok('blink')) startSkill(e, 'blink'); }
-    else if (T === 'water') { if (d > 100 && d < 300 && ok('spit')) startSkill(e, 'spit'); else if (d < 260 && ok('puddle')) startSkill(e, 'puddle'); else if (d > 60 && d < 170 && L && ok('grab')) startSkill(e, 'grab'); }
-    else if (T === 'dokkaebi') { if (!e.atk && d < 90 && ok('smash')) startSkill(e, 'smash'); else if (!e.atk && d > 130 && d < 320 && L && ok('club')) startSkill(e, 'club'); }
-    else if (T === 'saja') { if (!e.atk && d < 360 && L && ok('seal')) startSkill(e, 'seal'); else if (!e.atk && d > 140 && d < 400 && ok('step')) startSkill(e, 'step'); }
-    else if (T === 'wisp') { if (d < 70 && ok('burst')) startSkill(e, 'burst'); else if (d > 80 && d < 260 && ok('orbit')) startSkill(e, 'orbit'); }
-    else if (T === 'sonkaksi') { if (e.st === 'walk' && d < 340 && L && ok('wail')) startSkill(e, 'wail'); else if (e.st === 'walk' && d > 60 && d < 180 && ok('sleeve')) startSkill(e, 'sleeve'); }
-    else if (T === 'grim') { if (d < 240 && ok('murk')) startSkill(e, 'murk'); else if (d > 140 && d < 400 && ok('sstep')) startSkill(e, 'sstep'); else if (d > 60 && d < 180 && L && ok('reach')) startSkill(e, 'reach'); }
-    else if (T === 'yagwang') { if (d < 60 && ok('ybite')) startSkill(e, 'ybite'); else if (d > 110 && d < 300 && L && ok('shoe')) startSkill(e, 'shoe'); else if (d > 70 && d < 260 && !e.loot && ok('steal')) startSkill(e, 'steal'); }
-    else if (T === 'crow') { if (d > 80 && d < 260 && ok('dive')) startSkill(e, 'dive'); else if (d > 120 && d < 320 && L && ok('feather')) startSkill(e, 'feather'); else if (ok('flock')) { let c2 = 0; queryCircle(e.x, e.y, 180, o => { if (o.type === 'crow') c2++; }); if (c2 >= 3) startSkill(e, 'flock'); } }
-    else if (T === 'mangtae') { if (!e.atk && d < 90 && ok('cane')) startSkill(e, 'cane'); else if (d > 60 && d < 190 && L && ok('sack')) startSkill(e, 'sack'); else if (d < 380 && ok('imps')) startSkill(e, 'imps'); }
-    else if (T === 'totem') { if (!e.atk && d < 90 && ok('tsmash')) startSkill(e, 'tsmash'); else if (ok('shout')) { let c3 = 0; queryCircle(e.x, e.y, 200, o => { if (o.normal) c3++; }); if (c3 >= 5) startSkill(e, 'shout'); } }
+    if (T === 'japgwi') { if (d < 62 && skReady(e, c, dt, 'snap')) startSkill(e, 'snap'); else if (d > 110 && d < 280 && L && skReady(e, c, dt, 'toss')) startSkill(e, 'toss'); else if (skReady(e, c, dt, 'call')) { let n = 0; queryCircle(e.x, e.y, 180, o => { if (o.type === 'japgwi') n++; }); if (n >= 4) startSkill(e, 'call'); } }
+    else if (T === 'egg') { if (e.st === 'walk' && d > 80 && d < 320 && skReady(e, c, dt, 'roll')) startSkill(e, 'roll'); else if (e.st === 'walk' && d < 260 && skReady(e, c, dt, 'blink')) startSkill(e, 'blink'); }
+    else if (T === 'water') { if (d > 100 && d < 300 && skReady(e, c, dt, 'spit')) startSkill(e, 'spit'); else if (d < 260 && skReady(e, c, dt, 'puddle')) startSkill(e, 'puddle'); else if (d > 60 && d < 170 && L && skReady(e, c, dt, 'grab')) startSkill(e, 'grab'); }
+    else if (T === 'dokkaebi') { if (!e.atk && d < 90 && skReady(e, c, dt, 'smash')) startSkill(e, 'smash'); else if (!e.atk && d > 130 && d < 320 && L && skReady(e, c, dt, 'club')) startSkill(e, 'club'); }
+    else if (T === 'saja') { if (!e.atk && d < 360 && L && skReady(e, c, dt, 'seal')) startSkill(e, 'seal'); else if (!e.atk && d > 140 && d < 400 && skReady(e, c, dt, 'step')) startSkill(e, 'step'); }
+    else if (T === 'wisp') { if (d < 70 && skReady(e, c, dt, 'burst')) startSkill(e, 'burst'); else if (d > 80 && d < 260 && skReady(e, c, dt, 'orbit')) startSkill(e, 'orbit'); }
+    else if (T === 'sonkaksi') { if (e.st === 'walk' && d < 340 && L && skReady(e, c, dt, 'wail')) startSkill(e, 'wail'); else if (e.st === 'walk' && d > 60 && d < 180 && skReady(e, c, dt, 'sleeve')) startSkill(e, 'sleeve'); }
+    else if (T === 'grim') { if (d < 240 && skReady(e, c, dt, 'murk')) startSkill(e, 'murk'); else if (d > 140 && d < 400 && skReady(e, c, dt, 'sstep')) startSkill(e, 'sstep'); else if (d > 60 && d < 180 && L && skReady(e, c, dt, 'reach')) startSkill(e, 'reach'); }
+    else if (T === 'yagwang') { if (d < 60 && skReady(e, c, dt, 'ybite')) startSkill(e, 'ybite'); else if (d > 110 && d < 300 && L && skReady(e, c, dt, 'shoe')) startSkill(e, 'shoe'); else if (d > 70 && d < 260 && !e.loot && skReady(e, c, dt, 'steal')) startSkill(e, 'steal'); }
+    else if (T === 'crow') { if (d > 80 && d < 260 && skReady(e, c, dt, 'dive')) startSkill(e, 'dive'); else if (d > 120 && d < 320 && L && skReady(e, c, dt, 'feather')) startSkill(e, 'feather'); else if (skReady(e, c, dt, 'flock')) { let c2 = 0; queryCircle(e.x, e.y, 180, o => { if (o.type === 'crow') c2++; }); if (c2 >= 3) startSkill(e, 'flock'); } }
+    else if (T === 'mangtae') { if (!e.atk && d < 90 && skReady(e, c, dt, 'cane')) startSkill(e, 'cane'); else if (d > 60 && d < 190 && L && skReady(e, c, dt, 'sack')) startSkill(e, 'sack'); else if (d < 380 && skReady(e, c, dt, 'imps')) startSkill(e, 'imps'); }
+    else if (T === 'totem') { if (!e.atk && d < 90 && skReady(e, c, dt, 'tsmash')) startSkill(e, 'tsmash'); else if (skReady(e, c, dt, 'shout')) { let c3 = 0; queryCircle(e.x, e.y, 200, o => { if (o.normal) c3++; }); if (c3 >= 5) startSkill(e, 'shout'); } }
     return !!e.sk && e.sk.k !== 'call' && e.sk.k !== 'seal' && e.sk.k !== 'imps';
   }
   skActive++; A.t += dt; const t = A.t, k = A.k;
@@ -2761,7 +2789,7 @@ function chase(s) {
   let ax = dx, ay = dy, ad = d;
   if (e.lead && d > 70) { const lt = Math.min(0.9, d / 260) * e.lead; ax += (G.pvx || 0) * lt; ay += (G.pvy || 0) * lt; ad = Math.hypot(ax, ay) || 1; }
   const tx = ax / ad * s, ty = ay / ad * s, k = MOVE.steer > 0 ? 1 - Math.exp(-dt / MOVE.steer) : 1;
-  if (e.mvx === undefined) { e.mvx = tx; e.mvy = ty; }
+  if (Number.isNaN(e.mvx)) { e.mvx = tx; e.mvy = ty; }
   e.mvx += (tx - e.mvx) * k; e.mvy += (ty - e.mvy) * k;
   e.x += e.mvx * dt; e.y += e.mvy * dt; e.wk = (e.wk || 0) + s * dt;
   if (e.mvx < -6) e.fx = -1; else if (e.mvx > 6) e.fx = 1;
@@ -2835,7 +2863,7 @@ function updateEnemy(e, dt, LR, far) {
       break;
   }
   if (e.type === 'wisp' && skOn('wisp', 'fire') && pgMob() && !e.ring && !e.sk) {
-    e.shotCd = (e.shotCd ?? rnd(1, 4)) - dt;
+    e.shotCd = (Number.isNaN(e.shotCd) ? rnd(1, 4) : e.shotCd) - dt;
     if (e.shotCd <= 0) {
       e.shotCd = rnd(3.5, 5);
       if (d < 360 && d > 70 && eprojs.length < 40) { const [a] = aimAt(e.x, e.y - 10, 175, rnd(0.7, 1.0)); eprojs.push({ k: 'fire', x: e.x, y: e.y - 10, vx: Math.cos(a) * 175, vy: Math.sin(a) * 175, life: 3, dmg: 9 * (1 + dT() / 60 * 0.12) }); fx({ k: 'flash', x: e.x, y: e.y - 10, r: 30, gl: 'fire', dur: 0.1 }); }
@@ -2855,7 +2883,7 @@ function settleEnemy(e, dt, ks) {
       e.x += t0 * (want - vt) * dt; e.y += t1 * (want - vt) * dt;
     } else if (e.slideT > 0) e.slideT -= dt;
   }
-  if (e.rx === undefined || e.big || Math.abs(e.rx - e.x) + Math.abs(e.ry - e.y) > 60) { e.rx = e.x; e.ry = e.y; }
+  if (Number.isNaN(e.rx) || e.big || Math.abs(e.rx - e.x) + Math.abs(e.ry - e.y) > 60) { e.rx = e.x; e.ry = e.y; }
   else { e.rx += (e.x - e.rx) * ks; e.ry += (e.y - e.ry) * ks; }
   if (e.fs !== e.fx) { if (e.fs !== undefined) e.turnT = 0.13; e.fs = e.fx; }   // instant turn, sold by a small hop
   if (e.turnT > 0) e.turnT -= dt;
@@ -3157,6 +3185,23 @@ const camX = () => P.x + (G.cox || 0), camY = () => P.y + (G.coy || 0);
 // screen shrink toward a vanishing point (×0.85 at the top edge, ×1.15 at the bottom). Gameplay stays in world space.
 const FLAT = document.createElement('canvas'), FCTX = FLAT.getContext('2d');
 FLAT.id = 'world'; FLAT.setAttribute('aria-hidden', 'true'); cvs.before(FLAT);   // the world has its own canvas under the HUD canvas
+// Screen tints (greed blue, hurt / low-health red, warning red) are CSS layers between the world and the HUD canvas.
+// The compositor blends them (on the GPU on most devices); as canvas gradients each one filled every device pixel on
+// the main thread, every frame (~8ms apiece at DPR 2 on a software canvas). Same gradient as before: clear inside
+// k·min(W, H), full colour at the corners; a frame only sets the opacity.
+const TINT = {};
+for (const [k, rgb, r0] of [['greed', '40,70,190', 32], ['red', '200,40,30', 30], ['warn', '190,20,40', 28]]) {
+  const d = document.createElement('div'); d.className = 'tint'; d.setAttribute('aria-hidden', 'true');
+  d.style.background = `radial-gradient(circle farthest-corner at 50% 50%, rgba(${rgb},0) ${r0}vmin, rgba(${rgb},1) 100%)`;
+  cvs.before(d); TINT[k] = { el: d, a: '0' };
+}
+function tint(k, a) { const t = TINT[k], v = a > 0.001 ? a.toFixed(3) : '0'; if (t.a !== v) { t.a = v; t.el.style.opacity = v; } }
+function tintsOff() { tint('greed', 0); tint('red', 0); tint('warn', 0); haze(false); }
+// The night haze over the far part of the floor is a CSS gradient on the world plane (placed and tilted with the
+// world canvas in placeWorld): no longer a stretched draw over half the world canvas every frame.
+const HAZE = document.createElement('div'); HAZE.className = 'haze'; HAZE.setAttribute('aria-hidden', 'true'); FLAT.after(HAZE);
+let hazeOn = false;
+function haze(on) { if (hazeOn !== on) { hazeOn = on; HAZE.style.display = on ? 'block' : 'none'; } }
 const PERSP = { on: true, b: 0, mx: 0, my: 0, flat: false };
 const persp = v => 1 / (1 - PERSP.b * v);   // scale of a flat row v (CSS px from the screen centre, + = down)
 function screenT() { const d = PERSP.flat ? RS : DPR; ctx.setTransform(d, 0, 0, d, PERSP.flat ? d * PERSP.mx : 0, PERSP.flat ? d * PERSP.my : 0); }
@@ -3172,17 +3217,20 @@ function placeWorld(mx, my) {
   if (FLAT.width !== fw || FLAT.height !== fh) { FLAT.width = fw; FLAT.height = fh; }
   const key = W + '|' + H + '|' + mx + '|' + my + '|' + PERSP.on;
   if (FLAT._key === key) return;
-  FLAT._key = key; const st = FLAT.style;
-  st.left = -mx + 'px'; st.top = -my + 'px'; st.width = (W + 2 * mx) + 'px'; st.height = (H + my) + 'px';
-  st.transformOrigin = (W / 2 + mx) + 'px ' + (H / 2 + my) + 'px';
-  st.transform = PERSP.on ? 'matrix3d(1,0,0,0,0,1,0,' + (-PERSP.b) + ',0,0,1,0,0,0,0,1)' : 'none';
+  FLAT._key = key;
+  for (const st of [FLAT.style, HAZE.style]) {
+    st.left = -mx + 'px'; st.top = -my + 'px'; st.width = (W + 2 * mx) + 'px'; st.height = (H + my) + 'px';
+    st.transformOrigin = (W / 2 + mx) + 'px ' + (H / 2 + my) + 'px';
+    st.transform = PERSP.on ? 'matrix3d(1,0,0,0,0,1,0,' + (-PERSP.b) + ',0,0,1,0,0,0,0,1)' : 'none';
+  }
+  HAZE.style.background = `linear-gradient(rgba(8,10,20,0.42) 0px, rgba(8,10,20,0) ${my + H * 0.55}px)`;   // was drawn from the top edge to 55% down the screen
 }
 const easeOut3 = k => 1 - Math.pow(1 - k, 3);
 // out: a scratch object to fill instead of a new one (the hot draw loops call this for every enemy, every frame)
 function enemyPose(e, pose, out) {
   const pz = pose === undefined ? e.pose : pose, ps = pz ? SPR[e.spr + '_' + pz] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
   const w = SW(base) * e.scale * k, h = SH(base) * e.scale * k;
-  let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
+  let x = Number.isNaN(e.rx) ? e.x : e.rx, y = (Number.isNaN(e.ry) ? e.y : e.ry) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
   const vx = e.mvx || 0, sp = Math.hypot(vx, e.mvy || 0);
   if (e.type === 'gseun') {   // a slow hover that breathes and leans into the drift
     y += Math.sin(G.t * 1.6 + e.bob) * 4 - 4;
@@ -3580,13 +3628,16 @@ function drawGround(tile) {   // the opaque floor covers the whole world canvas,
   worldT();
 }
 const PFT = { on: false, t: 0, acc: {}, n: 0 };
-function PF(k) { if (!PFT.on) return; const n = performance.now(); PFT.acc[k] = (PFT.acc[k] || 0) + n - PFT.t; PFT.t = n; }
+function PF(k) { if (!PFT.on) return; if (PFT.flush) ctx.getImageData(0, 0, 1, 1); const n = performance.now(); PFT.acc[k] = (PFT.acc[k] || 0) + n - PFT.t; PFT.t = n; }   // flush: charge each phase its own raster (dev only)
+// y-sort comparator: returns -1/0/1, not a fractional difference (a fraction comes back from sort() boxed, one
+// garbage number per comparison: ~6000 a frame with 600 enemies on screen)
+const byK = (a, b) => a._k < b._k ? -1 : a._k > b._k ? 1 : 0;
 function render() {
   if (PFT.on) { PFT.t = performance.now(); PFT.n++; }
   ctx = MCTX; PERSP.flat = false;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, cvs.width, cvs.height);   // HUD canvas: transparent over the world canvas
-  if (!P) return;
+  if (!P) { tintsOff(); return; }
   { const sh = G.shake > 0 && !REDUCED ? G.shake : 0, tt = performance.now() / 1000;   // 9~15Hz layered sines instead of white noise
     G.shx = sh * (Math.sin(tt * 57) * 0.65 + Math.sin(tt * 91 + 1.7) * 0.35); G.shy = sh * (Math.sin(tt * 63 + 0.6) * 0.65 + Math.sin(tt * 83 + 2.9) * 0.35); }
   const mx = PERSP.on ? Math.ceil(W * 0.1) : 0, my = PERSP.on ? Math.ceil(H * 0.1) : 0;   // the flat view reaches a little past the screen: the far rows shrink in
@@ -3659,7 +3710,7 @@ function render() {
   ctx.globalAlpha = 0.45;
   for (const e of enemies) {
     if (e.dead || (!e.inLight && !e.big) || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 90)) continue;
-    const r = e.r * e.scale, ex = e.rx ?? e.x, ey = e.ry ?? e.y;
+    const r = e.r * e.scale, ex = Number.isNaN(e.rx) ? e.x : e.rx, ey = Number.isNaN(e.ry) ? e.y : e.ry;
     if (e.type === 'dueok' || e.type === 'bulga') { const sw = (e.type === 'bulga' ? 175 : 115) * e.scale, sh = (e.type === 'bulga' ? 34 : 26) * e.scale; ctx.globalAlpha = 0.6; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.55, sw, sh); ctx.globalAlpha = 0.45; continue; }
     if (e.type === 'gumiho' || e.type === 'clone' || e.type === 'jangsan' || e.type === 'jclone') { const sw = 150 * e.scale, sh = 28 * e.scale; ctx.globalAlpha = 0.55 * (e.alpha || 1); dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.6, sw, sh); ctx.globalAlpha = 0.45; continue; }   // a long shadow under the whole body grounds the fox
     if (e.type === 'gseun') { const sw = 90 * e.scale, sh = 22 * e.scale; ctx.globalAlpha = 0.5; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.5, sw, sh); ctx.globalAlpha = 0.45; continue; }
@@ -3672,10 +3723,10 @@ function render() {
   for (const e of enemies) {
     if (e.dead || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 120)) continue;
     if (!e.big && !e.inLight && ART.ok && Math.abs(e.x - P.x) + Math.abs(e.y - P.y) > LRd * 1.25) continue;
-    e._k = (e.ry ?? e.y) + e.r * 0.75; DL.push(e);
+    e._k = (Number.isNaN(e.ry) ? e.y : e.ry) + e.r * 0.75; DL.push(e);
   }
   P._k = P.y + 12; DL.push(P);
-  DL.sort((a, b) => a._k - b._k);
+  DL.sort(byK);
   PF('sort');
   drawUnder();
   PF('drawUnder');
@@ -3717,7 +3768,7 @@ function render() {
   if (G.state !== 'title') drawGlows();
   PF('glows');
   ctx.globalCompositeOperation = 'source-over';
-  if (G.state === 'title') { ctx = MCTX; PERSP.flat = false; screenT(); drawVignette(); return; }
+  if (G.state === 'title') { tintsOff(); ctx = MCTX; PERSP.flat = false; screenT(); drawVignette(); return; }
   { // bosses stay readable outside the lantern light: their wind-ups and strikes are the thing you dodge
     worldT(); let any = false;
     for (const e of enemies) {
@@ -3765,35 +3816,14 @@ function render() {
   PF('lateWorld');
   if (PG.on) { pgDrawWorld(); screenT(); }
   PF('pg');
-  { // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear
-    screenT();
-    if (!hazeStrip) {   // the vertical gradient drawn once into a 1px-wide strip; stretching it is far cheaper than a gradient fill
-      const c = document.createElement('canvas'); c.width = 1; c.height = 128; const g = c.getContext('2d'), hz = g.createLinearGradient(0, 0, 0, 128);
-      hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)'); g.fillStyle = hz; g.fillRect(0, 0, 1, 128); hazeStrip = c;
-    }
-    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.drawImage(hazeStrip, -mx, -my, W + 2 * mx, my + H * 0.55); ctx.imageSmoothingEnabled = sm;
-  }
+  haze(true);   // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear (CSS layer)
   ctx = MCTX; PERSP.flat = false; screenT();   // world done (the GPU tilts it); screen tints and the HUD go on the top canvas
   PF('warp');
-  if (P.light <= GREED) {
-    const pulse = 0.5 + Math.sin(G.t * 3) * 0.15;
-    const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.hypot(W, H) / 2);
-    vg.addColorStop(0, 'rgba(40,70,190,0)'); vg.addColorStop(1, `rgba(40,70,190,${0.32 * pulse})`);
-    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-  }
+  tint('greed', P.light <= GREED ? 0.32 * (0.5 + Math.sin(G.t * 3) * 0.15) : 0);
   if (P.charmT > 0) { ctx.fillStyle = `rgba(255,110,180,${0.12 + Math.sin(G.t * 20) * 0.04})`; ctx.fillRect(0, 0, W, H); }
   const lowHp = P.hp / P.maxHp < 0.3, hurt = (G.hurtT || 0) / 0.35;
-  if (hurt > 0 || lowHp) {
-    const a = Math.max(hurt * 0.4, lowHp ? 0.16 + Math.sin(G.t * 6) * 0.08 : 0);
-    const rg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) / 2);
-    rg.addColorStop(0, 'rgba(200,40,30,0)'); rg.addColorStop(1, `rgba(200,40,30,${a})`);
-    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
-  }
-  if (G.warnT > 0 && !REDUCED) {
-    const a = Math.abs(Math.sin(G.warnT / 1.6 * Math.PI * 2)) * 0.42 * Math.min(1, G.warnT * 2);
-    const wg2 = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.28, W / 2, H / 2, Math.hypot(W, H) / 2);
-    wg2.addColorStop(0, 'rgba(190,20,40,0)'); wg2.addColorStop(1, `rgba(190,20,40,${a})`); ctx.fillStyle = wg2; ctx.fillRect(0, 0, W, H);
-  }
+  tint('red', hurt > 0 || lowHp ? Math.max(hurt * 0.4, lowHp ? 0.16 + Math.sin(G.t * 6) * 0.08 : 0) : 0);
+  tint('warn', G.warnT > 0 && !REDUCED ? Math.abs(Math.sin(G.warnT / 1.6 * Math.PI * 2)) * 0.42 * Math.min(1, G.warnT * 2) : 0);
   if (G.flash) {
     const k = G.flash.t / G.flash.dur; ctx.globalCompositeOperation = 'lighter';
     ctx.fillStyle = `rgba(${G.flash.col},${G.flash.a * (1 - k) * (1 - k)})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over';
@@ -3830,7 +3860,7 @@ function render() {
 // Night outside the lantern: a light hole drawn once (clear inside 55% of the radius, 0.95 dark at the rim), placed on
 // whole device pixels of the world canvas, with plain dark rectangles around it. Same picture as one radial gradient
 // over the whole view, at a fraction of the cost: only the lit square is sampled, the rest is a flat fill.
-let nightHole = null, hazeStrip = null;
+let nightHole = null;
 const SPK = new Map();   // spark colour → three fade batches, reused every frame
 function drawNight(cx, cy, r) {
   if (!nightHole) {
@@ -3968,7 +3998,7 @@ function drawGlows() {
       ctx.stroke(); }
     }
   }
-  for (const e of enemies) if (e.type === 'wisp' && e.shotCd !== undefined && e.shotCd < 0.5 && !e.dead && inView(e.x, e.y, 30)) {
+  for (const e of enemies) if (e.type === 'wisp' && e.shotCd < 0.5 && !e.dead && inView(e.x, e.y, 30)) {
     const c = 1 - e.shotCd / 0.5, z = 14 + c * 30; ctx.globalAlpha = 0.45 + c * 0.5; dI(GL.fire, e.x - z / 2, e.y - 10 - z / 2, z, z);
   }
   ctx.globalAlpha = 1;
