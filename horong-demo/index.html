@@ -3841,7 +3841,7 @@ function adaptRes(raw) {
   if (RES.mode !== 'auto' || !G || G.state !== 'play' || PG.on || document.hidden || raw > 250) { AR.iv.length = 0; AR.sum = 0; AR.settle = Math.max(AR.settle, 0.5); return; }
   if (AR.settle > 0) { AR.settle -= raw / 1000; return; }   // let a menu, a pause or a resolution change settle first
   AR.iv.push(raw); AR.sum = (AR.sum || 0) + raw;
-  if (AR.iv.length < 100 && !(AR.iv.length >= 40 && AR.sum >= 1500)) return;   // 100 frames, or 1.5s when slow: at 20fps waiting for 100 frames meant 5s of stutter first
+  if (AR.iv.length < 100 && !(AR.iv.length >= 40 && AR.sum >= (AR.trial ? 2500 : 1500))) return;   // 100 frames, or 1.5s when slow (at 20fps, waiting for 100 frames meant 5s of stutter first); judging a trial step gets a longer look, so a busy moment isn't mistaken for no gain
   AR.sum = 0;
   const s = AR.iv.sort((a, b) => a - b), n = Math.floor(s.length * 0.9); let sum = 0; for (let i = 0; i < n; i++) sum += s[i];
   const ms = sum / n, now = performance.now(); AR.iv.length = 0;   // typical frame time, the worst tenth (hitches) left out
