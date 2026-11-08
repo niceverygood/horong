@@ -1171,6 +1171,7 @@ function drawHUD() {
   const sy = H - sb - 14 - 30 - 6 - 40;
   P.weapons.forEach((w, i) => { const D = WEAPONS[w.id]; slot(lx0 + i * 44, sy, 40, ICON[w.id], D.glyph, w.evo ? '#f2a93b' : EL_COLOR[D.el], w.evo ? '진' : `${w.lv}`, w.evo); });
   P.passives.forEach((p, i) => slot(lx0 + i * 34, sy + 46, 30, ICON[p.id], PASSIVES[p.id].glyph, 'rgba(239,230,210,0.3)', `${p.lv}`, false));
+  drawBurst();
   // indicators
   let nj = null, nd = 1e9; for (const j of jars) { const d = Math.hypot(j.x - P.x, j.y - P.y); if (d < nd) { nd = d; nj = j; } }
   if (nj) edgeArrow(nj.x, nj.y, '#f2a93b', `기름 ${Math.round(nd / M)}m`);
@@ -1235,7 +1236,7 @@ function drawChain() {
 function drawStamp() {
   const S = G.stamp; if (!S) return;
   const k = S.n / 1000, word = (k < 10 ? ['', '', '이', '삼', '사', '오', '육', '칠', '팔', '구'].at(k) : String(k)) + '천';
-  const sc = S.t < 0.14 ? 1.8 - S.t / 0.14 * 0.8 : 1, a = S.t > 1.2 ? 1 - (S.t - 1.2) / 0.4 : 1, x = W / 2, y = H * 0.2, s = 64;
+  const sc = S.t < 0.14 ? 1.8 - S.t / 0.14 * 0.8 : 1, a = S.t > 1.2 ? 1 - (S.t - 1.2) / 0.4 : 1, x = W / 2, y = Math.max(SAFE.t + 108, H * 0.15), s = 64;   // above the banner band
   ctx.save(); ctx.globalAlpha = clamp(a, 0, 1); ctx.translate(x, y); ctx.scale(sc, sc); ctx.rotate(-0.08);
   ctx.fillStyle = '#b8452f'; ctx.fillRect(-s / 2, -s / 2, s, s); ctx.strokeStyle = '#ffe2c8'; ctx.lineWidth = 2; ctx.strokeRect(-s / 2 + 5, -s / 2 + 5, s - 10, s - 10);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `700 ${word.length > 1 ? 22 : 30}px ${FD}`; ctx.fillStyle = '#ffe9d0'; ctx.fillText(word, 0, 1); ctx.restore();
@@ -1284,6 +1285,21 @@ function drawPentagon(cx, cy) {
   else txt(P.links.length ? `기운 ${P.links.length}줄 이어짐` : '무기의 기운', cx + 32, cy - 2, 11, P.links.length ? '#f2a93b' : '#a39a86');
   if (!P.ohaeng) txt('눌러서 설명', cx + 32, cy + 12, 10.5, '#7d7564');
   G.pentaHit = [cx, cy];   // tap target for the 오행 guide
+}
+// 호롱 터뜨리기 button (bottom right): the ring fills as it charges; full with light to spare, it pulses. Tap or Space.
+function drawBurst() {
+  const r = W < 900 ? 28 : 34, cx = W - SAFE.r - r - 22, cy = H - SAFE.b - r - 34, k = clamp(P.burst || 0, 0, 1), full = k >= 1, lit = P.light >= BURST.cost, ready = full && lit, warn = G.burstWarn > 0;
+  G.burstHit = [cx, cy, r + 10];
+  const pulse = ready && !REDUCED ? 0.5 + 0.5 * Math.sin(G.t * 6) : 0;
+  if (ready && GL.sun) { ctx.globalAlpha = 0.3 + 0.35 * pulse + (warn ? 0.3 : 0); dI(GL.sun, cx - r * 2, cy - r * 2, r * 4, r * 4); ctx.globalAlpha = 1; }
+  ctx.fillStyle = 'rgba(20,12,4,0.86)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(239,230,210,0.14)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = warn ? (Math.sin(G.t * 30) > 0 ? '#fff0c0' : '#ff9a4a') : ready ? '#ffe9a8' : full ? '#a3786a' : '#f2a93b';
+  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke();
+  if (ICON.hollong) { ctx.globalAlpha = ready ? 1 : 0.5; const s = r * 1.25; dI(ICON.hollong, cx - s / 2, cy - s / 2 - 1, s, s); ctx.globalAlpha = 1; }
+  const label = warn ? '터진다!' : ready ? (meta.burstAuto !== false ? '자동 · Space' : 'Space') : full ? '빛 25 필요' : `${Math.floor(k * 100)}%`;
+  txt(label, cx, cy + r + 15, 11.5, warn || ready ? '#ffd27a' : full ? '#ff9a7a' : '#a39a86', 'center', FB, 700);
+  if (ready) txt('호롱 터뜨리기', cx, cy - r - 8, 11, '#ffd27a', 'center', FB, 700);
 }
 // the time left to catch a gold goblin, as a ring over its head
 function gobRing(e) {
