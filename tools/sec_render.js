@@ -153,7 +153,7 @@ function drawPlayer() {
   if (gb.list.length) drawGear(gb.list, ox, oy, lean, false);
 }
 function drawRig(img, q, pw, ph, x0, flip) {
-  const R = q.R, name = q.v.name, body = SPR[name + '_body'], foot = SPR[name + '_foot'];
+  const R = q.R, name = q.v.name, body = SPR[name + '_body'], foot = SPR[name + '_foot'], footD = SPR[name + '_footD'];
   if (!body || !foot || !body.at) { dI(img, x0, -ph, pw, ph); return; }
   const Wd = body.width, Hd = body.height, kx = pw / Wd, ky = ph / Hd, wr = pw / R.w, hr = ph / R.h;   // world px per atlas px / per rig px
   const at = body.at, ax = body.sx, ay = body.sy, sp = q.sp, u = q.u1;
@@ -171,8 +171,8 @@ function drawRig(img, q, pw, ph, x0, flip) {
     const mirror = !side && f.i === 0, far = side && f.i === 0;
     ctx.save(); ctx.translate(x, y);
     if (mirror) ctx.scale(-1, 1);
-    if (far) ctx.filter = 'brightness(0.72)';
-    dI(foot, -fw / 2, -fh, fw, fh);
+    if (far && !footD) ctx.filter = 'brightness(0.72)';   // footD is the same foot pre-darkened: a canvas filter costs an offscreen layer per draw
+    dI(far && footD ? footD : foot, -fw / 2, -fh, fw, fh);
     ctx.restore();
   }
   const AR = R.arm, armImg = AR && SPR[AR.src + '_arm'], drawArm = () => {   // the free arm, turned at the shoulder
@@ -373,18 +373,42 @@ function drawImugi(e, emissive) {
   else dI(img, -w / 2, -h / 2, w, h);
   ctx.restore();
 }
-function render() {
+// The floor tile resampled once to the on-screen pixel scale (2.5D tilt included), then laid as a few whole-pixel
+// copies. The scaled repeating pattern it replaces was filtered for every pixel of the screen, every frame, and was
+// the most expensive thing drawn (a repeat pattern is also a slower shader than a plain image copy on the GPU).
+let groundDev = null;
+function groundAt(s) {
+  if (!groundImg) return null;
+  if (groundDev && groundDev.s === s) return groundDev.c;
+  const tw = Math.round(groundImg.width * 0.5 * s), th = Math.round(groundImg.height * 0.5 * 0.62 * s);
+  groundDev = { s, c: null };
+  if (tw < 64 || th < 64 || tw > 2048 || th > 2048) return null;
+  const c = document.createElement('canvas'); c.width = tw; c.height = th;
+  const g = c.getContext('2d'), src = g.createPattern(groundImg, 'repeat');   // resample through a pattern so the tile edges wrap (no seam)
+  src.setTransform(new DOMMatrix([tw / groundImg.width, 0, 0, th / groundImg.height, 0, 0]));
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.fillStyle = src; g.fillRect(0, 0, tw, th);
+  return (groundDev.c = c);
+}
+function drawGround(tile) {   // the opaque floor covers the whole canvas, so it also clears it
+  const tw = tile.width, th = tile.height, cw = cvs.width, ch = cvs.height;
+  const x0 = (Math.round(WM[1]) % tw + tw) % tw, y0 = (Math.round(WM[2]) % th + th) % th;   // tile origin = world origin, on a whole pixel
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, cvs.width, cvs.height);
-  if (!P) return;
+  for (let y = y0 > 0 ? y0 - th : 0; y < ch; y += th) for (let x = x0 > 0 ? x0 - tw : 0; x < cw; x += tw) ctx.drawImage(tile, x, y);
+}
+function render() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
+  if (!P) { ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, cvs.width, cvs.height); return; }
   { const sh = G.shake > 0 && !REDUCED ? G.shake : 0, tt = performance.now() / 1000;   // 9~15Hz layered sines instead of white noise
     G.shx = sh * (Math.sin(tt * 57) * 0.65 + Math.sin(tt * 91 + 1.7) * 0.35); G.shy = sh * (Math.sin(tt * 63 + 0.6) * 0.65 + Math.sin(tt * 83 + 2.9) * 0.35); }
   const s = DPR * ZOOM;
   WM[0] = s; WM[1] = DPR * (W / 2 + G.shx) - camX() * s; WM[2] = DPR * (H / 2 + G.shy) - camY() * s;
+  const gp = ART.ok ? groundAt(s) : null;
+  if (gp) drawGround(gp);
+  else { ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, cvs.width, cvs.height); }
   worldT();
   ctx.imageSmoothingEnabled = ART.ok; ctx.imageSmoothingQuality = 'low';
   const LRd = lightR() * 1.12 + 30;
-  ctx.fillStyle = groundPat; ctx.fillRect(camX() - VW - 4, camY() - VH - 4, VW * 2 + 8, VH * 2 + 8);
+  if (!gp) { ctx.fillStyle = groundPat; ctx.fillRect(camX() - VW - 4, camY() - VH - 4, VW * 2 + 8, VH * 2 + 8); }
   // props: collect visible ones (drawn y-sorted below), remember lamps for the glow pass
   G.lamps = []; const DL = G.dl || (G.dl = []); DL.length = 0;
   for (let cx = Math.floor((P.x - VW - 140) / CH); cx <= Math.floor((P.x + VW + 140) / CH); cx++)
@@ -478,9 +502,7 @@ function render() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const cx = W / 2 + G.shx - (G.cox || 0) * ZOOM, cy = H / 2 + G.shy - (G.coy || 0) * ZOOM, R = lightR() * ZOOM;
   const flick = 1 + Math.sin(G.t * 9) * 0.012 + Math.sin(G.t * 23) * 0.008;
-  const gr = ctx.createRadialGradient(cx, cy, Math.max(1, R * 0.55 * flick), cx, cy, R * 1.02 * flick);   // sight ends where the light ends
-  gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.62, 'rgba(6,7,14,0.38)'); gr.addColorStop(1, 'rgba(4,5,10,0.95)');
-  ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+  drawNight(cx, cy, R * 1.02 * flick);   // sight ends where the light ends
   ctx.globalCompositeOperation = 'lighter';
   const wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
   wg.addColorStop(0, 'rgba(242,169,59,0.16)'); wg.addColorStop(0.6, 'rgba(242,140,40,0.07)'); wg.addColorStop(1, 'rgba(242,169,59,0)');
@@ -506,7 +528,7 @@ function render() {
       if (p.k === 'rock') { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); ctx.fillStyle = '#6a6056'; ctx.strokeStyle = '#1a1612'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-6, -3); ctx.lineTo(-1, -6); ctx.lineTo(6, -2); ctx.lineTo(5, 4); ctx.lineTo(-3, 6); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
       else if (p.k === 'club' && ICON.club) { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); dI(ICON.club, -15, -15, 30, 30); ctx.restore(); }
     }
-    if (any2) ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); void any2; }   // always back to screen space: the haze, text and HUD below are drawn in it
   if (G.sky && G.sky.length && SPR.skylantern) {   // 풍등 float above the dark: they are lights
     worldT(); const sp = SPR.skylantern, w = SW(sp), h = SH(sp);
     for (const l of G.sky) { if (!inView(l.x, l.y, 60)) continue; const a = Math.min(1, l.t / 1.5, (l.life - l.t) / 2); ctx.globalAlpha = 0.95 * a; dI(sp, l.x - w / 2 + Math.sin(G.t * 0.9 + l.ph) * 3, l.y - 40 - h / 2 + Math.sin(G.t * 1.5 + l.ph) * 4, w, h); }
@@ -514,9 +536,11 @@ function render() {
   }
   if (PG.on) { pgDrawWorld(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
   { // 2.5D depth: the far (upper) part of the view sinks into night haze, the near edge stays clear
-    const hz = ctx.createLinearGradient(0, 0, 0, H * 0.55);
-    hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)');
-    ctx.fillStyle = hz; ctx.fillRect(0, 0, W, H * 0.55);
+    if (!hazeStrip) {   // the vertical gradient drawn once into a 1px-wide strip; stretching it is far cheaper than a gradient fill
+      const c = document.createElement('canvas'); c.width = 1; c.height = 128; const g = c.getContext('2d'), hz = g.createLinearGradient(0, 0, 0, 128);
+      hz.addColorStop(0, 'rgba(8,10,20,0.42)'); hz.addColorStop(1, 'rgba(8,10,20,0)'); g.fillStyle = hz; g.fillRect(0, 0, 1, 128); hazeStrip = c;
+    }
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(hazeStrip, 0, 0, W, H * 0.55);
   }
   if (P.light <= GREED) {
     const pulse = 0.5 + Math.sin(G.t * 3) * 0.15;
@@ -551,6 +575,27 @@ function render() {
   }
   ctx.globalAlpha = 1;
   drawHUD();
+}
+// Night outside the lantern: a light hole drawn once (clear inside 55% of the radius, 0.95 dark at the rim), placed on
+// whole device pixels, with plain dark rectangles around it. Same picture as one radial gradient over the whole
+// screen, at a fraction of the cost: only the lit square is sampled, the rest is a flat fill.
+let nightHole = null, hazeStrip = null;
+function drawNight(cx, cy, r) {
+  if (!nightHole) {
+    const S = 512, h = S / 2, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(h, h, h * 0.55 / 1.02, h, h, h);
+    gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.62, 'rgba(6,7,14,0.38)'); gr.addColorStop(1, 'rgba(4,5,10,0.95)');
+    g.fillStyle = gr; g.fillRect(0, 0, S, S); nightHole = c;
+  }
+  const cw = cvs.width, ch = cvs.height, x0 = Math.round((cx - r) * DPR), y0 = Math.round((cy - r) * DPR), x1 = Math.round((cx + r) * DPR), y1 = Math.round((cy + r) * DPR);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (x1 > x0 && y1 > y0) { const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true; ctx.drawImage(nightHole, x0, y0, x1 - x0, y1 - y0); ctx.imageSmoothingEnabled = sm; }
+  const t = clamp(y0, 0, ch), b = clamp(y1, 0, ch), l = clamp(x0, 0, cw), rr = clamp(x1, 0, cw);
+  ctx.fillStyle = 'rgba(4,5,10,0.95)';
+  if (t > 0) ctx.fillRect(0, 0, cw, t);
+  if (b < ch) ctx.fillRect(0, b, cw, ch - b);
+  if (b > t) { if (l > 0) ctx.fillRect(0, t, l, b - t); if (rr < cw) ctx.fillRect(rr, t, cw - rr, b - t); }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 function drawDark(e) {
   const a = e.fade;
