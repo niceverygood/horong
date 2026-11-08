@@ -413,7 +413,7 @@ function render() {
     G.shx = sh * (Math.sin(tt * 57) * 0.65 + Math.sin(tt * 91 + 1.7) * 0.35); G.shy = sh * (Math.sin(tt * 63 + 0.6) * 0.65 + Math.sin(tt * 83 + 2.9) * 0.35); }
   const s = DPR * ZOOM;
   WM[0] = s; WM[1] = DPR * (W / 2 + G.shx) - camX() * s; WM[2] = DPR * (H / 2 + G.shy) - camY() * s;
-  const gp = ART.ok ? groundAt(s) : null;
+  const gp = ART.ok && performance.now() - RES.at > 250 ? groundAt(s) : null;   // mid-resize: the scaled pattern, not a new tile per frame
   if (gp) drawGround(gp);
   else { ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, cvs.width, cvs.height); }
   worldT();

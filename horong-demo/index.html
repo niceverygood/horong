@@ -261,7 +261,7 @@ const SAFE = { t: 0, r: 0, b: 0, l: 0 };
 // Render resolution. Most of a frame is spent filling pixels, so a slow device draws into a smaller backing canvas
 // (the CSS size stays and the browser scales it up). 'auto' steps down only while play runs slowly and keeps a step
 // only if it helps (see adaptRes); 'sharp' / 'light' pin the top / bottom step. Chosen on the pause screen.
-const RES = { lv: 0, mode: 'auto' };
+const RES = { lv: 0, mode: 'auto', at: 0, artT: 0 };
 let redraw = true;   // the canvas needs a fresh picture even if the world is frozen behind a menu (see tick)
 try { const m = localStorage.getItem('horong-quality'); if (m === 'sharp' || m === 'light') RES.mode = m; } catch (e) {}
 function resSteps() { const b = Math.min(window.devicePixelRatio || 1, 2); return [b, b * 0.75, b * 0.5].filter((d, i) => !i || d >= 0.74); }
@@ -274,7 +274,10 @@ function resize() {
   cvs.width = Math.round(W * DPR); cvs.height = Math.round(H * DPR);
   ZOOM = clamp(Math.min(W, H) / 640, 0.62, 1.3) * (PG.on ? PG.zoom : 1);
   VW = W / 2 / ZOOM; VH = H / 2 / ZOOM;
-  if (typeof applyArtScale === 'function') applyArtScale();
+  // Re-cutting every sprite for a new pixel density takes ~40ms: while a window is being dragged or a phone turned
+  // (a burst of resize events) keep drawing with the current sprites and re-cut once things settle.
+  RES.at = performance.now(); clearTimeout(RES.artT);
+  RES.artT = setTimeout(() => { if (typeof applyArtScale === 'function') applyArtScale(); }, 250);
   const cs = getComputedStyle($('#safe'));
   SAFE.t = parseFloat(cs.paddingTop) || 0; SAFE.r = parseFloat(cs.paddingRight) || 0;
   SAFE.b = parseFloat(cs.paddingBottom) || 0; SAFE.l = parseFloat(cs.paddingLeft) || 0;
@@ -2769,7 +2772,7 @@ function render() {
     G.shx = sh * (Math.sin(tt * 57) * 0.65 + Math.sin(tt * 91 + 1.7) * 0.35); G.shy = sh * (Math.sin(tt * 63 + 0.6) * 0.65 + Math.sin(tt * 83 + 2.9) * 0.35); }
   const s = DPR * ZOOM;
   WM[0] = s; WM[1] = DPR * (W / 2 + G.shx) - camX() * s; WM[2] = DPR * (H / 2 + G.shy) - camY() * s;
-  const gp = ART.ok ? groundAt(s) : null;
+  const gp = ART.ok && performance.now() - RES.at > 250 ? groundAt(s) : null;   // mid-resize: the scaled pattern, not a new tile per frame
   if (gp) drawGround(gp);
   else { ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, cvs.width, cvs.height); }
   worldT();
