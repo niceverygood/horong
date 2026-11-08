@@ -52,11 +52,11 @@ function applyArtScale() {
   ART.d = d;
   const A = {};
   for (const n in ART.src) if (!n.startsWith('i_') && !n.startsWith('fx_')) A[n] = scaledArt(ART.src[n], d);
-  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_se', '_s', '_ne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; }   // walk rig: feetless body + one foot
+  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot
   SPR.player = SPR.yeoni;
   for (const k in FXSRC) FX[k] = FXSRC[k].slice();   // effects keep source resolution: they are drawn at many sizes
-  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae']) SPR[k] = A[k];
-  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3']) SPRF[k] = whiteOf(SPR[k]);
+  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae']) SPR[k] = A[k];
+  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3']) SPRF[k] = whiteOf(SPR[k]);
   const off = (ART.meta && ART.meta.emisOff) || {};
   for (const n in A) if (n.endsWith('_e')) {
     const k = n.slice(0, -2), c = A[n], o = off[k] || [0, 0];

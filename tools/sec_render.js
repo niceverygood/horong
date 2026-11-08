@@ -11,7 +11,7 @@ const easeOut3 = k => 1 - Math.pow(1 - k, 3);
 function enemyPose(e, pose) {
   const pz = pose === undefined ? e.pose : pose, ps = pz ? SPR[e.spr + '_' + pz] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
   const w = SW(base) * e.scale * k, h = SH(base) * e.scale * k;
-  let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0;
+  let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
   const vx = e.mvx || 0, sp = Math.hypot(vx, e.mvy || 0);
   if (e.type === 'gseun') {   // a slow hover that breathes and leans into the drift
     y += Math.sin(G.t * 1.6 + e.bob) * 4 - 4;
@@ -21,10 +21,10 @@ function enemyPose(e, pose) {
     if (A && A.k === 'lunge' && A.t >= 0.6 && !A.land) { sx *= 1.22; sy *= 0.86; rot = 0; }        // stretched along the throw
     else if (A && A.k === 'lunge' && A.t < 0.6) { const q = A.t / 0.6; sy *= 1 - 0.1 * q; sx *= 1 + 0.06 * q; }   // coils before it
   } else if (e.type === 'gumiho' || e.type === 'clone') {   // gallop: leap, pitch, squash on landing; breathe when still
-    const run = e.act ? 0 : clamp((sp - 30) / 80, 0, 1), ph = (e.wk || 0) * 0.11 + e.bob, s1 = Math.sin(ph), face = sx;   // ≈2 strides/s at orbit speed
-    y -= Math.max(0, s1) * 10 * run;
-    rot = -Math.cos(ph) * 0.07 * run * face;
-    const land = Math.max(0, -s1); sy *= 1 - 0.11 * land * run + Math.max(0, s1) * 0.04 * run; sx *= 1 + 0.09 * land * run + Math.max(0, s1) * 0.06 * run;
+    const drawn = e.pose && e.pose[0] === 'r', run = e.act ? 0 : clamp((sp - 30) / 80, 0, 1) * (drawn ? 0.25 : 1), ph = (e.wk || 0) * (TAU / 72) + e.bob, s1 = Math.sin(ph), face = sx;   // the gallop frames carry the legs; only a little lift on top
+    y -= Math.max(0, s1) * 6 * run;
+    rot = -Math.cos(ph) * 0.05 * run * face;
+    const land = Math.max(0, -s1); sy *= 1 - 0.08 * land * run; sx *= 1 + 0.06 * land * run;
     const br = Math.sin(G.t * 2 + e.bob) * (1 - run); sy *= 1 + br * 0.02;
   } else if (FLOAT.has(e.type)) { y += Math.sin(G.t * 3 + e.bob) * 3 - 3; rot = Math.sin(G.t * 1.7 + e.bob) * 0.05; }
   else {
@@ -35,18 +35,18 @@ function enemyPose(e, pose) {
   }
   if (e.turnT > 0) { const q = e.turnT / 0.13; y -= Math.sin(q * Math.PI) * 3; sx *= 1 - 0.08 * q; sy *= 1 + 0.07 * q; }   // hop-turn
   if (e.type === 'egg' && e.st === 'wind') x += rnd(-1.5, 1.5);
-  if (pz !== undefined && pz !== null && pose === undefined) {
+  if (pz !== undefined && pz !== null && pose === undefined && pz[0] !== 'r') {
     const pu = Math.max(0, 1 - (e.poseT || 0) / 0.14); sx *= 1 + 0.1 * pu; sy *= 1 - 0.1 * pu;   // each new pose lands with a squash
     if (pz === 'p1' && !REDUCED) x += Math.sin(G.t * 55) * 1.3;                          // wind-up shiver
   }
   if (e.atk === 'wind') { const q = 1 - e.atkT / 0.4; sy *= 1 - 0.14 * q; sx *= 1 + 0.1 * q; x += Math.sin(G.t * 60) * 1.2; }   // crouch, club up
   else if (e.atk === 'lunge') { sx *= 1.14; sy *= 0.9; y -= 6; rot = (e.lvx < 0 ? -1 : 1) * 0.18; }
   if (e.sk) {
-    if (e.sk.k === 'roll' && e.sk.t > 0.25) { rot = e.sk.t * 16 * (e.fx < 0 ? -1 : 1); y -= 4; }
+    if (e.sk.k === 'roll' && e.sk.t > 0.25) { rot = e.sk.rot || 0; oy = -h / 2; y -= h / 2 * sy; sx = Math.abs(sx); }   // roll about the middle of the egg, not its feet
     else if (e.sk.k === 'burst') { const q = Math.min(1, e.sk.t / 0.5); sx *= 1 + 0.35 * q + Math.sin(G.t * 40) * 0.06 * q; sy *= 1 + 0.35 * q; }
   }
   if (e.stun > 0) rot = Math.sin(G.t * 30) * 0.12;
-  return { base, w, h, x, y, sx, sy, rot };
+  return { base, w, h, x, y, sx, sy, rot, oy };
 }
 // Bosses are drawn in strips so the drawing itself moves: 그슨대's robe ripples in rows (strongest at the hem, trailing
 // against the drift); 구미호's tails ripple in columns from the root out to the tips. Pose changes cross-fade.
@@ -85,16 +85,17 @@ function drawBoss(e) {
   ctx.globalAlpha = 1;
 }
 // 8 views: E, SE, S, SW, W, NW, N, NE. West-side views mirror the east ones; S and N keep the side she last faced.
-const OCT = [['', 1], ['_se', 1], ['_s', 0], ['_se', -1], ['', -1], ['_ne', -1], ['_n', 0], ['_ne', 1]];
+// 16 views, 22.5° apart: E, ESE, SE, SSE, S, SSW … (west side mirrors the east drawings; S and N keep the last side)
+const OCT = [['', 1], ['_ese', 1], ['_se', 1], ['_sse', 1], ['_s', 0], ['_sse', -1], ['_se', -1], ['_ese', -1], ['', -1], ['_ene', -1], ['_ne', -1], ['_nne', -1], ['_n', 0], ['_nne', 1], ['_ne', 1], ['_ene', 1]];
 function playerView() {
-  const o = OCT[P.d || 0], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
+  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
   return { name, frames: fr && fr[0] ? fr : SPR[P.spr], flip: o[1] || P.side || 1, ax: fr && ART.meta.ax ? ART.meta.ax[name] || 0 : 0 };
 }
 // Cut-out walk rig: each view keeps ONE drawing (META.rig picks it and finds the skirt hem and the gap between
 // the feet). The feet below the hem are two pieces that step (stance slides back, swing lifts and comes forward),
 // the skirt swings as strips under the waist, and the body dips on each contact. Nothing swaps between drawings,
 // so there is no flicker, at any frame rate.
-const RIGMODE = { '': 'side', '_se': 'dfront', '_s': 'front', '_ne': 'dback', '_n': 'back' };
+const RIGMODE = { '': 'side', '_ese': 'side', '_se': 'dfront', '_sse': 'front', '_s': 'front', '_ene': 'dback', '_ne': 'dback', '_nne': 'back', '_n': 'back' };
 const STEP_K = 1.25;   // walk phase (rad) per walk unit (P.walk += px / 15): ≈ 4 steps/s at base speed
 function footPhase(u) {   // unit stride profile: stance slides front→back linearly, swing comes back→front with a lift
   if (u < 0.5) return [1 - 4 * u, 0];
@@ -130,9 +131,15 @@ function drawPlayer() {
   worldT();
   const q = walkPose(), v = q.v, frames = v.frames, A = frames[q.a] || frames[0];
   if (P.iframe > 0 && Math.floor(G.t * 20) % 2) return;
-  const pw = SW(A), ph = SH(A), breathe = 1 + Math.sin(G.t * 2.4) * 0.018 * (1 - q.sp), gb = gearPoses(q, ph);
+  const pw = SW(A), ph = SH(A), x0 = -pw / 2 - v.ax, breathe = 1 + Math.sin(G.t * 2.4) * 0.018 * (1 - q.sp);
+  let arm = null; const AR = q.R && q.R.arm;
+  if (AR && SPR[AR.src + '_arm']) {   // shoulder and resting hand in world offsets from the feet
+    const wr = pw / q.R.w, hr = ph / q.R.h, sx0 = v.flip * (x0 + AR.s[0] * wr), sy0 = -ph + AR.s[1] * hr, hx0 = v.flip * (x0 + AR.h[0] * wr), hy0 = -ph + AR.h[1] * hr;
+    arm = { sx: sx0, sy: sy0, L: Math.hypot(hx0 - sx0, hy0 - sy0), a0: Math.atan2(hy0 - sy0, hx0 - sx0), borrow: !!AR.borrow };
+  }
+  const gb = gearPoses(q, ph, arm); q.arm = gb.arm;
   const lean = clamp((P.vx || 0) / 150, -1.2, 1.2) * 0.05 + gb.rot, tk = 1 - 0.035 * (P.turnK || 0), sx = (2 - tk) * gb.sx, sy = breathe * tk * gb.sy;
-  const x0 = -pw / 2 - v.ax, ox = P.x + q.sway + gb.dx, oy = P.y + 12 - q.bob + gb.dy;
+  const ox = P.x + q.sway + gb.dx, oy = P.y + 12 - q.bob + gb.dy;
   if (gb.list.length) drawGear(gb.list, ox, oy, lean, true);
   ctx.save(); ctx.translate(ox, oy); ctx.rotate(lean); ctx.scale(v.flip * sx, sy);
   if (q.R && A.at) drawRig(A, q, pw, ph, x0, v.flip);
@@ -163,6 +170,11 @@ function drawRig(img, q, pw, ph, x0, flip) {
     dI(foot, -fw / 2, -fh, fw, fh);
     ctx.restore();
   }
+  const AR = R.arm, armImg = AR && SPR[AR.src + '_arm'], drawArm = () => {   // the free arm, turned at the shoulder
+    const d = (q.arm ? q.arm.d : 0) * flip, ax2 = x0 + AR.s[0] * wr, ay2 = -ph + AR.s[1] * hr;
+    ctx.save(); ctx.translate(ax2, ay2); ctx.rotate(d); dI(armImg, (AR.o[0] - AR.s[0]) * wr, (AR.o[1] - AR.s[1]) * hr, SW(armImg), SH(armImg)); ctx.restore();
+  };
+  if (armImg && q.arm && q.arm.back) drawArm();
   // body above the waist in one piece; the skirt below it in strips that swing out toward the hem
   const hip = Math.round(Hd * 0.5);
   cut(0, hip + 1, 0);
@@ -174,6 +186,7 @@ function drawRig(img, q, pw, ph, x0, flip) {
     const y0 = hip + Math.floor((Hd - hip) * j / n), y1 = hip + Math.floor((Hd - hip) * (j + 1) / n), t = ((y0 + y1) / 2 - hip) / (Hd - hip), w = Math.pow(t, 1.7);
     cut(y0, y1 - y0 + 1, (kick * sp * (front ? 1.2 : 1) + trail) * w);
   }
+  if (armImg && !(q.arm && q.arm.back)) drawArm();
 }
 /* ---------- held gear ----------
    Weapons that are things (clubs, bell, brush, talisman; a lantern for 단비) are worn on the body and come to the
@@ -194,65 +207,86 @@ function gpose(phi, ph, lift = 0, reach = 5) {   // a swing pose: hand on a smal
 }
 function lpose(a, b, k) { return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), a: a.a + angDiff(b.a, a.a) * k, f: lerp(a.f, b.f, k), back: k < 0.5 ? a.back : b.back }; }
 function aimPose(hx, hy, tx, ty, L) { const dx = tx - hx, dy = ty - hy; return { x: hx, y: hy, a: Math.atan2(dy, dx), f: clamp(Math.hypot(dx, dy) / L, 0.35, 1), back: false }; }
-function gearPoses(q, ph) {
-  const out = { list: [], dx: 0, dy: 0, rot: 0, sx: 1, sy: 1 };
+// Each held item reports how much it is "in hand" (hold 0..1) and where the arm should point (armDir, world angle).
+// The most recent active item drives the free arm: its grip moves to the hand at the end of the arm, so the club,
+// baton, bell, brush and talisman are swung by the arm instead of floating. Others fall back to where they are worn.
+function gearPoses(q, ph, arm) {
+  const out = { list: [], dx: 0, dy: 0, rot: 0, sx: 1, sy: 1, arm: null };
+  const idle = Math.sin(q.th || 0) * 0.24 * q.sp;   // the free arm swings with the stride
+  if (arm) out.arm = { d: idle, back: arm.borrow };
   if (!P.weapons || !P.weapons.length || !ART.ok) return out;
   const s = P.side || 1, north = P.d >= 5 && P.d <= 7, fa0 = Math.atan2(P.face.y, P.face.x), danbi = P.spr === 'danbi';
   const swing = Math.sin(q.th || 0) * q.sp;   // hip items swing with the stride
+  let drv = null;
   for (const w of P.weapons) {
     const S = GEAR[w.id]; if (!S || (w.id === 'hollong' && !danbi)) continue;
     const img = ICON[w.id]; if (!img) continue;
     const L = S.len * ph, wind = w.wuAt > (w.at ?? -9) && G.t - w.wuAt < GEAR_WU[w.id] + 0.35, wk = wind ? clamp((G.t - w.wuAt) / GEAR_WU[w.id], 0, 1) : 0, h = w.at === undefined ? 9 : G.t - w.at;   // a wind-up with nothing to throw at lowers again
-    let pose, alpha = 1, smear = null;
+    let pose, rest, alpha = 1, smear = null, hold = 0, armDir = null, pri = 0;
     if (w.id === 'club') {
-      const rest = { x: -s * 6, y: -0.36 * ph, a: -Math.PI / 2 - s * 0.62, f: 1, back: !north };
+      rest = { x: -s * 6, y: -0.36 * ph, a: -Math.PI / 2 - s * 0.62, f: 1, back: !north };
       const d = w.dir || 1, fa = wind ? fa0 : (w.fa ?? fa0);
-      if (wind) { pose = lpose(rest, gpose(fa - d * 1.9, ph, 0.35), easeOut2(wk)); out.dx -= Math.cos(fa) * 2 * wk; out.sy *= 1 - 0.03 * wk; out.sx *= 1 + 0.02 * wk; }
-      else if (h < 0.09) { const k = easeOut2(h / 0.09); pose = gpose(fa - d * 1.5 + d * 3 * k, ph, 0.35 * (1 - k)); smear = { a0: fa - d * 1.5, a1: fa - d * 1.5 + d * 3 * k, al: 1 }; }
-      else if (h < 0.24) { const k = easeOut2((h - 0.09) / 0.15); pose = gpose(fa + d * (1.5 + 0.4 * k), ph); smear = { a0: fa - d * 1.5, a1: fa + d * 1.5, al: 1 - k }; }
-      else if (h < 0.5) pose = lpose(gpose(fa + d * 1.9, ph), rest, easeIO((h - 0.24) / 0.26));
+      if (wind) { pose = lpose(rest, gpose(fa - d * 1.9, ph, 0.35), easeOut2(wk)); hold = easeOut2(wk); out.dx -= Math.cos(fa) * 2 * wk; out.sy *= 1 - 0.03 * wk; out.sx *= 1 + 0.02 * wk; }
+      else if (h < 0.09) { const k = easeOut2(h / 0.09); pose = gpose(fa - d * 1.5 + d * 3 * k, ph, 0.35 * (1 - k)); hold = 1; smear = { a0: fa - d * 1.5, a1: fa - d * 1.5 + d * 3 * k, al: 1 }; }
+      else if (h < 0.24) { const k = easeOut2((h - 0.09) / 0.15); pose = gpose(fa + d * (1.5 + 0.4 * k), ph); hold = 1; smear = { a0: fa - d * 1.5, a1: fa + d * 1.5, al: 1 - k }; }
+      else if (h < 0.5) { const k = easeIO((h - 0.24) / 0.26); pose = lpose(gpose(fa + d * 1.9, ph), rest, k); hold = 1 - k; }
       else pose = rest;
+      armDir = pose.a;   // straight-arm swing: arm and club in one line
       if (!wind && h < 0.3) { const e = h < 0.06 ? h / 0.06 : 1 - (h - 0.06) / 0.24; out.dx += Math.cos(fa) * 3 * e; out.dy += Math.sin(fa) * 1.5 * e; out.rot += Math.cos(fa) * 0.08 * e; out.sy *= 1 + 0.03 * e; }
     } else if (w.id === 'yukmo') {
-      const rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
+      rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
       const d = s, fa = fa0, p0 = fa - d * Math.PI / 2;
       const plant = () => aimPose(Math.cos(fa) * 8, -0.42 * ph + Math.sin(fa) * 4, Math.cos(fa) * 30, Math.sin(fa) * 15, L);
       if (wind) {
         const t = wk * GEAR_WU.yukmo;
-        if (t < 0.08) pose = lpose(rest, gpose(p0, ph, 0.1, 7), easeOut2(t / 0.08));
-        else { const u = (t - 0.08) / 0.22, ph2 = p0 + d * 2.5 * Math.PI * u * u; pose = gpose(ph2, ph, 0.08, 7); smear = { a0: ph2 - d * Math.min(1.8, u * 4), a1: ph2, al: 0.9, r: 1 }; out.dy -= Math.sin(Math.PI * u) * 6; }
-      } else if (h < 0.07) pose = lpose(gpose(fa, ph, 0.08, 7), plant(), easeOut2(h / 0.07));
-      else if (h < 0.28) pose = plant();
-      else if (h < 0.6) pose = lpose(plant(), rest, easeIO((h - 0.28) / 0.32));
+        if (t < 0.08) { pose = lpose(rest, gpose(p0, ph, 0.1, 7), easeOut2(t / 0.08)); hold = easeOut2(t / 0.08); }
+        else { const u = (t - 0.08) / 0.22, ph2 = p0 + d * 2.5 * Math.PI * u * u; pose = gpose(ph2, ph, 0.08, 7); hold = 1; smear = { a0: ph2 - d * Math.min(1.8, u * 4), a1: ph2, al: 0.9, r: 1 }; out.dy -= Math.sin(Math.PI * u) * 6; }
+      } else if (h < 0.07) { pose = lpose(gpose(fa, ph, 0.08, 7), plant(), easeOut2(h / 0.07)); hold = 1; }
+      else if (h < 0.28) { pose = plant(); hold = 1; }
+      else if (h < 0.6) { const k = easeIO((h - 0.28) / 0.32); pose = lpose(plant(), rest, k); hold = 1 - k; }
       else pose = rest;
+      armDir = pose.a;
       if (!wind && h < 0.2) { const e = 1 - h / 0.2; out.sy *= 1 - 0.12 * e; out.sx *= 1 + 0.08 * e; out.dy += 1.5 * e; }
     } else if (w.id === 'bell') {
       const act = h < 0.4 ? 1 - h / 0.4 : 0;
       if (danbi) { if (act > 0) { out.rot += Math.sin(h * 40) * 0.035 * act; out.dy -= Math.sin(Math.min(1, h / 0.12) * Math.PI) * 2.5; } continue; }   // her staff already has the bells
-      const rest = { x: -s * 9, y: -0.4 * ph, a: Math.PI / 2 + swing * 0.3, f: 1, back: false };
+      rest = { x: -s * 9, y: -0.4 * ph, a: Math.PI / 2 + swing * 0.3, f: 1, back: false };
       const up = { x: Math.cos(fa0) * 12, y: -1.02 * ph, a: Math.PI / 2, f: 1, back: Math.sin(fa0) < -0.3 };   // held up over the head
-      if (wind) pose = lpose(rest, up, easeOut2(wk));
-      else if (h < 0.4) { pose = { ...up, a: Math.PI / 2 + Math.sin(h * 45) * 0.55 * act }; out.rot += Math.sin(h * 40) * 0.03 * act; }
-      else if (h < 0.65) pose = lpose(up, rest, easeIO((h - 0.4) / 0.25));
+      if (wind) { pose = lpose(rest, up, easeOut2(wk)); hold = easeOut2(wk); }
+      else if (h < 0.4) { pose = { ...up, a: Math.PI / 2 + Math.sin(h * 45) * 0.55 * act }; hold = 1; out.rot += Math.sin(h * 40) * 0.03 * act; }
+      else if (h < 0.65) { const k = easeIO((h - 0.4) / 0.25); pose = lpose(up, rest, k); hold = 1 - k; }
       else pose = rest;
+      armDir = -Math.PI / 2 + Math.cos(fa0) * 0.35 + (h < 0.4 ? Math.sin(h * 45) * 0.12 * act : 0);   // arm up, shaking
     } else if (w.id === 'ink') {
-      const rest = { x: -s * 7, y: -0.42 * ph, a: Math.PI / 2 + s * 0.45, f: 1, back: false };
+      rest = { x: -s * 7, y: -0.42 * ph, a: Math.PI / 2 + s * 0.45, f: 1, back: false };
       const m = clamp((P.spd01 || 0) * 1.4, 0, 1), cx = Math.cos(fa0), cy = Math.sin(fa0), wob = Math.sin(Math.PI * (P.walk || 0)) * 3;
       const drag = aimPose(-cx * 6, -0.4 * ph - cy * 2, -cx * 18 + wob * cy, 5 - cy * 9 - wob * cx * 0.5, L);
       drag.back = cy > 0.3; if (h < 0.15) drag.f *= 1 - 0.18 * Math.sin(Math.PI * h / 0.15);   // dab as each puddle drops
-      pose = lpose(rest, drag, easeIO(m));
+      pose = lpose(rest, drag, easeIO(m)); hold = easeIO(m);
     } else if (w.id === 'talisman') {
-      const rest = { x: -s * 5, y: -0.5 * ph, a: -Math.PI / 2 - s * 0.35 + Math.sin(G.t * 3) * 0.05, f: 1, back: !north };   // tucked in the back of the sash
+      rest = { x: -s * 5, y: -0.5 * ph, a: -Math.PI / 2 - s * 0.35 + Math.sin(G.t * 3) * 0.05, f: 1, back: !north };   // tucked in the back of the sash
       const ta = w.ta ?? fa0, up = { x: Math.cos(fa0) * 13 + s * 3, y: -0.6 * ph, a: -Math.PI / 2 + s * 0.45, f: 1, back: false };
-      if (wind) pose = lpose(rest, up, easeOut2(wk));
-      else if (h < 0.3) { pose = rest; alpha = 0; }   // it left the hand: that's the projectile
+      if (wind) { pose = lpose(rest, up, easeOut2(wk)); hold = easeOut2(wk); armDir = -Math.PI / 2 + s * 0.5; }
+      else if (h < 0.3) { pose = rest; alpha = 0; hold = Math.max(0, 1 - h / 0.22); armDir = Math.atan2(Math.sin(ta) * 0.5, Math.cos(ta)); }   // it left the hand: the arm follows through toward the throw
       else if (h < 0.48) { pose = rest; alpha = (h - 0.3) / 0.18; }   // a fresh one is drawn from the belt
       else pose = rest;
       if (!wind && h < 0.22) { const e = 1 - h / 0.22; out.rot += Math.cos(ta) * 0.07 * e; out.dx += Math.cos(ta) * 2 * e; }
-    } else {   // 단비's lantern
-      pose = { x: -s * 9, y: -0.44 * ph, a: Math.PI / 2 + swing * 0.35, f: 1, back: false };
+    } else {   // 단비's lantern hangs from her free hand
+      rest = { x: -s * 9, y: -0.44 * ph, a: Math.PI / 2 + swing * 0.35, f: 1, back: false };
+      pose = { ...rest }; hold = 1; pri = -1;
     }
-    out.list.push({ img, S, L, pose, alpha, smear, evo: w.evo });
+    if (hold > 0.01 && pri >= 0) pri = 1000 - Math.min(G.t - (w.at ?? -1e9), G.t - (w.wuAt ?? -1e9));
+    const it = { img, S, L, pose, rest, alpha, smear, evo: w.evo, hold, armDir, pri, lantern: w.id === 'hollong' };
+    out.list.push(it);
+    if (hold > 0.01 && arm && (!drv || it.pri > drv.pri)) drv = it;
+  }
+  if (arm && drv) {   // the driving item goes to the hand; the arm turns to reach it
+    const a0 = arm.a0 + idle, want = drv.armDir ?? (drv.lantern ? a0 : Math.atan2(drv.pose.y - arm.sy, drv.pose.x - arm.sx));
+    const ad = a0 + angDiff(want, a0) * drv.hold, hx = arm.sx + Math.cos(ad) * arm.L, hy = arm.sy + Math.sin(ad) * arm.L;
+    drv.pose = { ...drv.pose, x: lerp(drv.pose.x, hx, drv.hold), y: lerp(drv.pose.y, hy, drv.hold) };
+    if (drv.lantern) drv.pose.back = false;
+    out.arm = { d: ad - arm.a0, back: arm.borrow || (drv.hold > 0.5 && drv.pose.back) };
+    for (const it of out.list) if (it !== drv && it.hold > 0.01 && it.lantern) it.pose = it.rest;   // the lantern waits at the hip while the hand is busy
   }
   return out;
 }
@@ -260,7 +294,7 @@ function drawGear(list, ox, oy, lean, back) {
   ctx.save(); ctx.translate(ox, oy); ctx.rotate(lean);
   for (const it of list) {
     const p = it.pose, S = it.S, img = it.img;
-    if (!back && it.smear) {   // motion smear: an additive wedge from the swing start to the club, brightest at the leading edge
+    if (back && it.smear) {   // motion smear: an additive wedge from the swing start to the club, behind the body
       const sm = it.smear, n = 12, r0 = it.L * 0.25, r1 = it.L * 1.08, cx = p.x - Math.cos(sm.a1) * 0, cy = p.y;
       ctx.globalCompositeOperation = 'lighter';
       for (let i = 0; i < n; i++) {
@@ -310,12 +344,12 @@ function worldT() { ctx.setTransform(WM[0], 0, 0, WM[0], WM[1], WM[2]); }
 function drawPose(img, p) {
   const s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
   ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
-  dI(img, -p.w / 2, -p.h, p.w, p.h);
+  dI(img, -p.w / 2, p.oy ?? -p.h, p.w, p.h);
 }
 function drawEmis(em, p) {
   const k = p.w / SW(p.base), s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
   ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
-  dI(em, -p.w / 2 + (em._ox || 0) * k, -p.h + (em._oy || 0) * k, SW(em) * k, SH(em) * k);
+  dI(em, -p.w / 2 + (em._ox || 0) * k, (p.oy ?? -p.h) + (em._oy || 0) * k, SW(em) * k, SH(em) * k);
 }
 function drawImugi(e, emissive) {
   const segImg = SPR.seg, sw = SW(segImg), sh = SH(segImg);
@@ -397,8 +431,11 @@ function render() {
   // enemies: shadows (lit ones only), then bodies; deep-dark small enemies are left to the glow pass (eyes only)
   ctx.globalAlpha = 0.45;
   for (const e of enemies) {
-    if (e.dead || !e.inLight || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 90)) continue;
-    const r = e.r * e.scale, ex = e.rx ?? e.x, ey = e.ry ?? e.y; dI(GL.shadow, ex - r * 1.3, ey + r * 0.45, r * 2.6, r * 0.9);
+    if (e.dead || (!e.inLight && !e.big) || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 90)) continue;
+    const r = e.r * e.scale, ex = e.rx ?? e.x, ey = e.ry ?? e.y;
+    if (e.type === 'gumiho' || e.type === 'clone') { const sw = 150 * e.scale, sh = 28 * e.scale; ctx.globalAlpha = 0.55 * (e.alpha || 1); dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.6, sw, sh); ctx.globalAlpha = 0.45; continue; }   // a long shadow under the whole body grounds the fox
+    if (e.type === 'gseun') { const sw = 90 * e.scale, sh = 22 * e.scale; ctx.globalAlpha = 0.5; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.5, sw, sh); ctx.globalAlpha = 0.45; continue; }
+    dI(GL.shadow, ex - r * 1.3, ey + r * 0.45, r * 2.6, r * 0.9);
   }
   ctx.globalAlpha = 0.55; { const bob = P._pose ? P._pose.bob : 0, shw = 30 - bob * 1.5; dI(GL.shadow, P.x - shw / 2, P.y + 7, shw, 10); }
   ctx.globalAlpha = 1;
@@ -410,6 +447,7 @@ function render() {
   }
   P._k = P.y + 12; DL.push(P);
   DL.sort((a, b) => a._k - b._k);
+  drawUnder();
   for (const o of DL) { if (o === P) drawPlayer(); else if (o.prop) drawProp(o); else drawEnemy(o); }
   for (const e of enemies) {
     if (e.dead || !inView(e.x, e.y, 160)) continue;
@@ -433,8 +471,8 @@ function render() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const cx = W / 2 + G.shx - (G.cox || 0) * ZOOM, cy = H / 2 + G.shy - (G.coy || 0) * ZOOM, R = lightR() * ZOOM;
   const flick = 1 + Math.sin(G.t * 9) * 0.012 + Math.sin(G.t * 23) * 0.008;
-  const gr = ctx.createRadialGradient(cx, cy, Math.max(1, R * 0.5 * flick), cx, cy, R * 1.08 * flick);
-  gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.7, 'rgba(6,7,14,0.3)'); gr.addColorStop(1, 'rgba(5,6,12,0.9)');
+  const gr = ctx.createRadialGradient(cx, cy, Math.max(1, R * 0.55 * flick), cx, cy, R * 1.02 * flick);   // sight ends where the light ends
+  gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.62, 'rgba(6,7,14,0.38)'); gr.addColorStop(1, 'rgba(4,5,10,0.95)');
   ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'lighter';
   const wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
@@ -511,45 +549,16 @@ function drawDark(e) {
 function drawGlows() {
   worldT();
   ctx.globalCompositeOperation = 'lighter';
-  // edge of the lantern light = pickup range
-  const LR = lightR();
+  // pickup range ring
+  const LR = pickR();
   ctx.strokeStyle = `rgba(242,169,59,${0.14 + Math.sin(G.t * 2) * 0.04})`; ctx.lineWidth = 2;
   ctx.setLineDash([16, 12]); ctx.lineDashOffset = -G.t * 18; ctx.beginPath(); ctx.arc(P.x, P.y, LR, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-  // danger zones: tinted floor that fills toward the strike, rim flickers in the last quarter
-  for (const z of zones) {
-    const k = Math.min(1, z.t / z.warn), fired = z.fired, fa = fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : Math.min(1, z.t / 0.08), late = !fired && k > 0.75 ? 0.5 + 0.5 * Math.sin(G.t * 42) : 0, c = z.col;
-    ctx.globalAlpha = fa;
-    if (z.sh === 'c') {
-      ctx.fillStyle = `rgba(${c},${fired ? 0.55 : 0.12})`; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.fill();
-      if (!fired) { ctx.fillStyle = `rgba(${c},0.3)`; ctx.beginPath(); ctx.arc(z.x, z.y, z.r * k, 0, TAU); ctx.fill(); }
-      ctx.strokeStyle = `rgba(${c},${0.55 + 0.45 * late})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.stroke();
-    } else {
-      ctx.save(); ctx.translate(z.x, z.y); ctx.rotate(z.a);
-      ctx.fillStyle = `rgba(${c},0.12)`; ctx.fillRect(0, -z.w / 2, z.len, z.w);
-      if (!fired) { ctx.fillStyle = `rgba(${c},0.28)`; ctx.fillRect(0, -z.w / 2, z.len * k, z.w); }
-      ctx.strokeStyle = `rgba(${c},${0.5 + 0.45 * late})`; ctx.lineWidth = 2; ctx.strokeRect(0, -z.w / 2, z.len, z.w);
-      ctx.fillStyle = `rgba(${c},0.5)`; for (let i = 1; i < z.len / 70; i++) { const x = i * 70; ctx.beginPath(); ctx.moveTo(x + 10, 0); ctx.lineTo(x - 6, -z.w * 0.28); ctx.lineTo(x - 6, z.w * 0.28); ctx.closePath(); ctx.fill(); }   // direction chevrons
-      ctx.restore();
-    }
-  }
   ctx.globalAlpha = 1;
   // dash afterimages
   for (const g of G.ghosts || []) {   // afterimages; 그슨대 is too dark to read additively, so it leaves a violet-lit silhouette
     const a = 1 - g.t / 0.3;
     if (g.fl) { ctx.globalAlpha = 0.24 * a; drawPose(g.fl, g.p); worldT(); const z = g.p.h * 0.95; ctx.globalAlpha = 0.4 * a; dI(GL.violet, g.p.x - z / 2, g.p.y - g.p.h * 0.55 - z / 2, z, z); }
     else { ctx.globalAlpha = 0.42 * a; drawPose(g.p.base, g.p); worldT(); }
-  }
-  ctx.globalAlpha = 1;
-  // wind-up tells: a glow gathers on the body before a boss or a 도깨비 commits
-  for (const e of enemies) {
-    if (e.dead || !inView(e.x, e.y, 120)) continue;
-    if (e.pose === 'p1' && (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone')) {
-      const q = Math.min(1, (e.poseT || 0) / 0.5), gl = e.type === 'gseun' ? GL.violet : GL.pink, sz = (70 + 60 * q) * (e.scale || 1);
-      ctx.globalAlpha = 0.35 + 0.35 * q; dI(gl, e.x - sz / 2, e.y - sz * 0.75, sz, sz);
-    } else if (e.type === 'imugi' && e.pose === 'p2') {
-      const mx = e.x + Math.cos(e.ang) * 34, my = e.y + Math.sin(e.ang) * 34, sz = 60 + Math.sin(G.t * 30) * 8;
-      ctx.globalAlpha = 0.9; dI(GL.blue, mx - sz / 2, my - sz / 2, sz, sz); dI(GL.white, mx - 10, my - 10, 20, 20);
-    } else if (e.atk === 'wind') { ctx.globalAlpha = 0.8; dI(e.type === 'saja' ? GL.sun : GL.red, e.x - 14, e.y - 44, 28, 28); }
   }
   ctx.globalAlpha = 1;
   // landmarks: bonfire light pool + its safe ring, shrine aura and prayer ring, well sparkle, ward ring, gamble glint, peddler lamp
@@ -559,16 +568,11 @@ function drawGlows() {
     if (p.t === 'bonfire') {
       const z = 260 + Math.sin(G.t * 11 + p.y) * 10; ctx.globalAlpha = 0.34 * f + 0.1; dI(GL.amber, p.x - z / 2, p.y - 40 - z / 2, z, z);
       ctx.globalAlpha = 0.9; dI(GL.fire || GL.amber, p.x - 40, p.y - 80, 80, 80);
-      ctx.globalAlpha = 0.22; ctx.strokeStyle = 'rgba(255,170,80,1)'; ctx.lineWidth = 2; ctx.setLineDash([6, 8]); ctx.beginPath(); ctx.ellipse(p.x, p.y, 130, 130 * 0.62, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     } else if (p.t === 'shrine' && !p.used) {
       ctx.globalAlpha = 0.35 + 0.2 * Math.sin(G.t * 2.4); dI(GL.sun, p.x - 50, p.y - 120, 100, 100);
-      ctx.globalAlpha = 0.3; ctx.strokeStyle = 'rgba(255,214,120,1)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.6, 0, 0, TAU); ctx.stroke();
-      if (p.pray > 0) { const k = Math.min(1, p.pray / 2); ctx.globalAlpha = 0.95; ctx.strokeStyle = 'rgba(255,230,150,1)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.6, 0, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke(); }
     } else if (p.t === 'well' && G.t >= p.readyAt) {
       ctx.globalAlpha = 0.45 + 0.25 * Math.sin(G.t * 3 + p.x); dI(GL.blue || GL.white, p.x - 26, p.y - 58, 52, 40);
     } else if (p.t === 'sotdae') {
-      ctx.globalAlpha = 0.18 + 0.06 * Math.sin(G.t * 2); ctx.strokeStyle = 'rgba(150,190,255,1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(p.x, p.y, 120, 120 * 0.62, 0, 0, TAU); ctx.stroke();
-      ctx.lineWidth = 2.5; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = i * TAU / 12 + G.t * 0.4; ctx.moveTo(p.x + Math.cos(a) * 112, p.y + Math.sin(a) * 112 * 0.62); ctx.lineTo(p.x + Math.cos(a) * 126, p.y + Math.sin(a) * 126 * 0.62); } ctx.stroke();
       ctx.globalAlpha = 0.5 * f; dI(GL.blue || GL.white, p.x - 22, p.y - 92, 44, 44);
     } else if (p.t === 'mat' && !p.used) {
       ctx.globalAlpha = 0.35 + 0.25 * Math.sin(G.t * 5 + p.x); dI(GL.sun, p.x - 30, p.y - 40, 60, 44);
@@ -729,7 +733,48 @@ function drawGlows() {
     if (b === '0') { ctx.strokeStyle = '#fffbea'; ctx.lineWidth = 0.9; ctx.stroke(); }
   }
   ctx.globalAlpha = 1;
-  // effects
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+function drawZones() {   // attack warnings on the floor, under every character
+  // danger zones: tinted floor that fills toward the strike, rim flickers in the last quarter
+  for (const z of zones) {
+    const k = Math.min(1, z.t / z.warn), fired = z.fired, fa = fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : Math.min(1, z.t / 0.08), late = !fired && k > 0.75 ? 0.5 + 0.5 * Math.sin(G.t * 42) : 0, c = z.col;
+    ctx.globalAlpha = fa;
+    if (z.sh === 'c') {
+      ctx.fillStyle = `rgba(${c},${fired ? 0.65 : 0.18})`; ctx.beginPath(); ctx.ellipse(z.x, z.y, z.r, z.r * 0.62, 0, 0, TAU); ctx.fill();
+      if (!fired) { ctx.fillStyle = `rgba(${c},0.4)`; ctx.beginPath(); ctx.ellipse(z.x, z.y, z.r * k, z.r * k * 0.62, 0, 0, TAU); ctx.fill(); }
+      ctx.strokeStyle = `rgba(${c},${0.55 + 0.45 * late})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(z.x, z.y, z.r, z.r * 0.62, 0, 0, TAU); ctx.stroke();
+    } else {
+      ctx.save(); ctx.translate(z.x, z.y); ctx.rotate(z.a);
+      ctx.fillStyle = `rgba(${c},0.18)`; ctx.fillRect(0, -z.w / 2, z.len, z.w);
+      if (!fired) { ctx.fillStyle = `rgba(${c},0.38)`; ctx.fillRect(0, -z.w / 2, z.len * k, z.w); }
+      ctx.strokeStyle = `rgba(${c},${0.5 + 0.45 * late})`; ctx.lineWidth = 2; ctx.strokeRect(0, -z.w / 2, z.len, z.w);
+      ctx.fillStyle = `rgba(${c},0.5)`; for (let i = 1; i < z.len / 70; i++) { const x = i * 70; ctx.beginPath(); ctx.moveTo(x + 10, 0); ctx.lineTo(x - 6, -z.w * 0.28); ctx.lineTo(x - 6, z.w * 0.28); ctx.closePath(); ctx.fill(); }   // direction chevrons
+      ctx.restore();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+function drawBeam() {   // 이무기's water beam runs along the floor, under the characters
+  if (G.beam) {
+    const b = G.beam, L = 950;
+    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a);
+    if (b.t < b.warn) {
+      const k = b.t / b.warn, lock = b.t > b.warn - 0.25, pulse = lock ? 0.5 + 0.5 * Math.sin(G.t * 40) : 0;
+      ctx.fillStyle = `rgba(${AQUA},0.1)`; ctx.fillRect(0, -24, L, 48); ctx.fillStyle = `rgba(${AQUA},0.26)`; ctx.fillRect(0, -24, L * k, 48);
+      ctx.strokeStyle = `rgba(${AQUA},${0.45 + 0.45 * pulse})`; ctx.lineWidth = 2; ctx.strokeRect(0, -24, L, 48);
+      ctx.globalAlpha = 0.6 + 0.4 * k; const g = 26 + 46 * k; dI(GL.blue, -g / 2, -g / 2, g, g); dI(GL.white, -g / 5, -g / 5, g / 2.5, g / 2.5); ctx.globalAlpha = 1;
+    } else {
+      const q = (b.t - b.warn) / b.act, wid = 84 * (q < 0.12 ? q / 0.12 : q > 0.82 ? (1 - q) / 0.18 : 1), fr = FX.beam && FX.beam.length ? FX.beam[Math.floor(G.t * 22) % FX.beam.length] : null;
+      if (fr) { dI(fr, -30, -wid / 2, L + 40, wid); ctx.globalAlpha = 0.7; dI(fr, -30, -wid / 4, L + 40, wid / 2); ctx.globalAlpha = 1; }
+      else { ctx.strokeStyle = 'rgba(180,225,255,0.85)'; ctx.lineWidth = 26; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(L, 0); ctx.stroke(); }
+      dI(GL.white, -36, -36, 72, 72);
+    }
+    ctx.restore();
+  }
+}
+function drawFxList() {   // every effect sits on the floor, under the characters (players, mobs and bosses)
   for (const f of effects) {
     if (f.delay > 0) continue; const k = f.t / f.dur;
     if (f.k === 'fb') {   // flipbook: frame by normalised time, full brightness from frame 1, the sheet itself carries the decay
@@ -745,39 +790,40 @@ function drawGlows() {
       const img = FX[f.a || 'circle'] && FX[f.a || 'circle'][0]; if (!img) continue;
       const x = f.follow ? P.x : f.x, y = f.follow ? P.y + 10 : f.y, r0 = f.r0 ?? f.r * 0.6, r = r0 + (f.r - r0) * easeOut3(Math.min(1, k * 3));
       ctx.globalAlpha = (f.al ?? 0.9) * Math.min(1, k * 10) * (k > 0.55 ? (1 - k) / 0.45 : 1);
-      ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.55); ctx.rotate((f.rot || 0) + (REDUCED ? 0 : f.t * (f.spin ?? 1.2))); dI(img, -r, -r, r * 2, r * 2); ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.62); ctx.rotate((f.rot || 0) + (REDUCED ? 0 : f.t * (f.spin ?? 1.2))); dI(img, -r, -r, r * 2, r * 2); ctx.restore();
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring' && FX.ring && FX.ring[0]) {   // bell: generated sound-wave ring, sharp edge at the hit radius
       const r = f.r || 16, fa = 1 - k, z = r * 2.06;
-      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y - z / 2, z, z);
+      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y - z * 0.31, z, z * 0.62);   // a ground ripple: squashed to the floor
       if (k < 0.25) { ctx.globalAlpha = (0.25 - k) * 3; const c = 50; dI(GL.gold, P.x - c / 2, P.y - 12 - c / 2, c, c); }
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring') {
       const r = f.r || 16, fa = 1 - k, c = f.evo ? '255,214,120' : '240,226,180';
-      ctx.beginPath(); ctx.arc(P.x, P.y, r, 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y, r, r * 0.62, 0, 0, TAU);
       ctx.strokeStyle = `rgba(${c},${0.12 * fa})`; ctx.lineWidth = 22; ctx.stroke();       // wake
       ctx.strokeStyle = `rgba(${c},${0.35 * fa})`; ctx.lineWidth = 7; ctx.stroke();        // body
       ctx.strokeStyle = `rgba(255,250,232,${0.95 * fa})`; ctx.lineWidth = 2.2; ctx.stroke();   // hot edge
       if (f.evo) {   // rotating glyph ticks on the evolved bell
         ctx.strokeStyle = `rgba(255,230,160,${0.8 * fa})`; ctx.lineWidth = 2.5; ctx.beginPath();
-        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + Math.sin(a) * (r - 9)); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + Math.sin(a) * (r + 9)); }
+        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + Math.sin(a) * (r - 9) * 0.62); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + Math.sin(a) * (r + 9) * 0.62); }
         ctx.stroke();
       }
     } else if (f.k === 'swing') {
+      ctx.save(); ctx.translate(P.x, P.y); ctx.scale(1, 0.62); ctx.translate(-P.x, -P.y);
       const g = ctx.createRadialGradient(P.x, P.y, f.r * 0.3, P.x, P.y, f.r);
       g.addColorStop(0, 'rgba(79,163,122,0)'); g.addColorStop(0.75, `rgba(120,210,160,${0.35 * (1 - k)})`); g.addColorStop(1, `rgba(200,255,220,${0.6 * (1 - k)})`);
       ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = `rgba(230,255,240,${0.9 * (1 - k)})`; ctx.lineWidth = 3 * (1 - k) + 0.5; ctx.beginPath(); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.stroke();
+      ctx.strokeStyle = `rgba(230,255,240,${0.9 * (1 - k)})`; ctx.lineWidth = 3 * (1 - k) + 0.5; ctx.beginPath(); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.stroke(); ctx.restore();
     } else if (f.k === 'slam') {
       const r = f.r * (0.3 + 0.7 * easeOut3(k)), fa = 1 - k;
-      ctx.beginPath(); ctx.arc(P.x, P.y, Math.max(1, r), 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU);
       ctx.fillStyle = `rgba(217,173,69,${0.14 * fa})`; ctx.fill();
       ctx.strokeStyle = `rgba(240,200,110,${0.32 * fa})`; ctx.lineWidth = 8 * fa + 1; ctx.stroke();
       ctx.strokeStyle = `rgba(255,246,214,${0.8 * fa})`; ctx.lineWidth = 2.2 * fa + 0.5; ctx.stroke();
     } else if (f.k === 'burst') {
-      ctx.fillStyle = f.col; ctx.globalAlpha = 0.5 * (1 - k); ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.4 + k * 0.6), 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.fillStyle = f.col; ctx.globalAlpha = 0.5 * (1 - k); ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.4 + k * 0.6), f.r * (0.4 + k * 0.6) * 0.62, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
     } else if (f.k === 'hit') {   // core flash: full size on frame 1, then decay
       const fa = (1 - k) * (1 - k), z = (f.big ? 28 : 16) * (1 - k * 0.45); ctx.globalAlpha = fa * 0.85; dI(GL.white, f.x - z / 2, f.y - z / 2, z, z);
       ctx.globalAlpha = 1;
@@ -791,7 +837,7 @@ function drawGlows() {
       for (const L of f.lines) { const n = Math.min(L.length, 1 + Math.ceil(f.t / 0.03)); ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]); for (let i = 1; i < n; i++) ctx.lineTo(L[i][0], L[i][1]); ctx.stroke(); }
     } else if (f.k === 'shock') {
       const r = f.r0 + (f.r1 - f.r0) * easeOut3(k); ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.col; ctx.lineWidth = Math.max(0.5, f.w * (1 - k));
-      ctx.beginPath(); ctx.arc(f.x, f.y, Math.max(1, r), 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.ellipse(f.x, f.y, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
     } else if (f.k === 'rays') {
       const a0 = f.rot + (REDUCED ? 0 : G.t * 0.7), L0 = f.r * (0.55 + 0.45 * easeOut3(Math.min(1, k * 2))), al = 0.55 * Math.pow(1 - k, 1.5);
       const rg = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, L0);   // bright at the source, gone at the tips
@@ -813,33 +859,48 @@ function drawGlows() {
       }
       ctx.stroke();
     } else if (f.k === 'puff') {
-      ctx.strokeStyle = `rgba(170,200,255,${0.4 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 6 + k * f.r, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = `rgba(170,200,255,${0.4 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(f.x, f.y, 6 + k * f.r, (6 + k * f.r) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'lightburst') {
-      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(P.x, P.y, 30 + k * 260, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(P.x, P.y, 30 + k * 260, (30 + k * 260) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'ohaeng') {
-      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(P.x, P.y, Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26), 0, TAU); ctx.stroke(); });
+      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; const rr = Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26); ctx.beginPath(); ctx.ellipse(P.x, P.y, rr, rr * 0.62, 0, 0, TAU); ctx.stroke(); });
       ctx.globalAlpha = 1;
     }
   }
-  // imugi water beam
-  if (G.beam) {
-    const b = G.beam, L = 950;
-    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a);
-    if (b.t < b.warn) {
-      const k = b.t / b.warn, lock = b.t > b.warn - 0.25, pulse = lock ? 0.5 + 0.5 * Math.sin(G.t * 40) : 0;
-      ctx.fillStyle = `rgba(${AQUA},0.1)`; ctx.fillRect(0, -24, L, 48); ctx.fillStyle = `rgba(${AQUA},0.26)`; ctx.fillRect(0, -24, L * k, 48);
-      ctx.strokeStyle = `rgba(${AQUA},${0.45 + 0.45 * pulse})`; ctx.lineWidth = 2; ctx.strokeRect(0, -24, L, 48);
-      ctx.globalAlpha = 0.6 + 0.4 * k; const g = 26 + 46 * k; dI(GL.blue, -g / 2, -g / 2, g, g); dI(GL.white, -g / 5, -g / 5, g / 2.5, g / 2.5); ctx.globalAlpha = 1;
-    } else {
-      const q = (b.t - b.warn) / b.act, wid = 84 * (q < 0.12 ? q / 0.12 : q > 0.82 ? (1 - q) / 0.18 : 1), fr = FX.beam && FX.beam.length ? FX.beam[Math.floor(G.t * 22) % FX.beam.length] : null;
-      if (fr) { dI(fr, -30, -wid / 2, L + 40, wid); ctx.globalAlpha = 0.7; dI(fr, -30, -wid / 4, L + 40, wid / 2); ctx.globalAlpha = 1; }
-      else { ctx.strokeStyle = 'rgba(180,225,255,0.85)'; ctx.lineWidth = 26; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(L, 0); ctx.stroke(); }
-      dI(GL.white, -36, -36, 72, 72);
-    }
-    ctx.restore();
+  ctx.globalAlpha = 1;
+}
+function drawWindTells() {   // wind-up glows sit behind the bodies they light
+  // wind-up tells: a glow gathers on the body before a boss or a 도깨비 commits
+  for (const e of enemies) {
+    if (e.dead || !inView(e.x, e.y, 120)) continue;
+    if (e.pose === 'p1' && (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone')) {
+      const q = Math.min(1, (e.poseT || 0) / 0.5), gl = e.type === 'gseun' ? GL.violet : GL.pink, sz = (70 + 60 * q) * (e.scale || 1);
+      ctx.globalAlpha = 0.35 + 0.35 * q; dI(gl, e.x - sz / 2, e.y - sz * 0.75, sz, sz);
+    } else if (e.type === 'imugi' && e.pose === 'p2') {
+      const mx = e.x + Math.cos(e.ang) * 34, my = e.y + Math.sin(e.ang) * 34, sz = 60 + Math.sin(G.t * 30) * 8;
+      ctx.globalAlpha = 0.9; dI(GL.blue, mx - sz / 2, my - sz / 2, sz, sz); dI(GL.white, mx - 10, my - 10, 20, 20);
+    } else if (e.atk === 'wind') { ctx.globalAlpha = 0.8; dI(e.type === 'saja' ? GL.sun : GL.red, e.x - 14, e.y - 44, 28, 28); }
   }
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.globalAlpha = 1;
+}
+function drawPoiRings() {   // landmark circles on the floor: bonfire warmth, shrine prayer, 솟대 ward
+  for (const p of poiList) {
+    if (p.broken || !inView(p.x, p.y, 160)) continue;
+    if (p.t === 'bonfire') { ctx.globalAlpha = 0.3; ctx.strokeStyle = 'rgba(255,170,80,1)'; ctx.lineWidth = 2; ctx.setLineDash([6, 8]); ctx.beginPath(); ctx.ellipse(p.x, p.y, 130, 130 * 0.62, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
+    else if (p.t === 'shrine' && !p.used) {
+      ctx.globalAlpha = 0.4; ctx.strokeStyle = 'rgba(255,214,120,1)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.62, 0, 0, TAU); ctx.stroke();
+      if (p.pray > 0) { const k = Math.min(1, p.pray / 2); ctx.globalAlpha = 0.95; ctx.strokeStyle = 'rgba(255,230,150,1)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.62, 0, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke(); }
+    } else if (p.t === 'sotdae') {
+      ctx.globalAlpha = 0.26 + 0.06 * Math.sin(G.t * 2); ctx.strokeStyle = 'rgba(150,190,255,1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(p.x, p.y, 120, 120 * 0.62, 0, 0, TAU); ctx.stroke();
+      ctx.lineWidth = 2.5; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = i * TAU / 12 + G.t * 0.4; ctx.moveTo(p.x + Math.cos(a) * 112, p.y + Math.sin(a) * 112 * 0.62); ctx.lineTo(p.x + Math.cos(a) * 126, p.y + Math.sin(a) * 126 * 0.62); } ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+function drawUnder() {   // everything that happens on the floor, drawn after the ground and before any character
+  worldT(); ctx.globalCompositeOperation = 'lighter';
+  drawZones(); drawPoiRings(); drawBeam(); drawFxList(); drawWindTells();
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; worldT();
 }
 function drawVignette(a = 0.5) {
   const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) / 2);

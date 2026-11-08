@@ -730,7 +730,7 @@ function buyPeddler(i) {
 function closePeddler() { if (G.state !== 'peddler') return; showOnly(null); G.state = 'play'; }
 
 /* ---------- art (generated sprite atlas) ---------- */
-const ATLAS = {"frames":{"fx_ring":[0,0,509,512],"fx_circle":[511,0,445,448],"fx_pillar0":[958,0,90,384],"fx_pillar1":[1050,0,90,384],"fx_pillar2":[1142,0,90,384],"fx_pillar3":[1234,0,90,384],"fx_pillar4":[1326,0,90,384],"fx_pillar5":[1418,0,90,384],"fx_pillar6":[1510,0,90,384],"fx_pillar7":[1602,0,90,384],"fx_claw0":[1694,0,136,256],"fx_claw1":[1832,0,136,256],"fx_claw2":[0,514,136,256],"fx_claw3":[138,514,136,256],"fx_claw4":[276,514,136,256],"fx_claw5":[414,514,136,256],"fx_claw6":[552,514,136,256],"fx_claw7":[690,514,136,256],"fx_geyser0":[828,514,144,256],"fx_geyser1":[974,514,144,256],"fx_geyser2":[1120,514,144,256],"fx_geyser3":[1266,514,144,256],"fx_geyser4":[1412,514,144,256],"fx_geyser5":[1558,514,144,256],"fx_geyser6":[1704,514,144,256],"fx_geyser7":[1850,514,144,256],"gseun_p1":[0,772,143,243],"gumiho":[145,772,290,241],"gumiho_e":[437,772,289,241],"gseun":[728,772,122,230],"stall":[852,772,250,226],"fx_slash0":[1104,772,190,224],"fx_slash1":[1296,772,190,224],"fx_slash2":[1488,772,190,224],"fx_slash3":[1680,772,190,224],"fx_slash4":[0,1017,190,224],"fx_slash5":[192,1017,190,224],"fx_slash6":[384,1017,190,224],"fx_slash7":[576,1017,190,224],"fx_slam0":[768,1017,288,224],"fx_slam1":[1058,1017,288,224],"fx_slam2":[1348,1017,288,224],"fx_slam3":[1638,1017,288,224],"fx_slam4":[0,1243,288,224],"fx_slam5":[290,1243,288,224],"fx_slam6":[580,1243,288,224],"fx_slam7":[870,1243,288,224],"fx_soul0":[1160,1243,199,224],"fx_soul1":[1361,1243,199,224],"fx_soul2":[1562,1243,199,224],"fx_soul3":[1763,1243,199,224],"fx_soul4":[0,1469,199,224],"fx_soul5":[201,1469,199,224],"fx_soul6":[402,1469,199,224],"fx_soul7":[603,1469,199,224],"fx_fire0":[804,1469,224,216],"fx_fire1":[1030,1469,224,216],"fx_fire2":[1256,1469,224,216],"fx_fire3":[1482,1469,224,216],"fx_fire4":[1708,1469,224,216],"fx_fire5":[0,1695,224,216],"fx_fire6":[226,1695,224,216],"fx_fire7":[452,1695,224,216],"gumiho_p3":[678,1695,297,216],"gumiho_p1":[977,1695,280,208],"shrine":[1259,1695,151,200],"fx_hit0":[1412,1695,192,186],"fx_hit1":[1606,1695,192,186],"fx_hit2":[1800,1695,192,186],"fx_hit3":[0,1913,192,186],"fx_hit4":[194,1913,192,186],"fx_hit5":[388,1913,192,186],"fx_hit6":[582,1913,192,186],"fx_hit7":[776,1913,192,186],"tree":[970,1913,160,180],"sotdae":[1132,1913,66,170],"gumiho_p2":[1200,1913,326,168],"gseun_p2":[1528,1913,231,166],"gumiho_p0":[0,2101,327,160],"fx_ink0":[329,2101,200,153],"fx_ink1":[531,2101,200,153],"fx_ink2":[733,2101,200,153],"fx_ink3":[935,2101,200,153],"fx_ink4":[1137,2101,200,153],"fx_ink5":[1339,2101,200,153],"fx_ink6":[1541,2101,200,153],"fx_ink7":[1743,2101,200,153],"imugi":[0,2263,150,150],"post":[152,2263,124,150],"imugi_p2":[278,2263,142,141],"jangseung":[422,2263,90,140],"well":[514,2263,151,140],"peddler":[667,2263,141,140],"imugi_p0":[810,2263,161,139],"bonfire":[973,2263,120,138],"gseun_p3":[1095,2263,236,137],"cart":[1333,2263,150,137],"imugi_p3":[1485,2263,150,134],"imugi_p1":[1637,2263,142,133],"cairn":[1781,2263,82,130],"jars":[0,2415,200,126],"yeoni_se0":[202,2415,76,109],"yeoni_se1":[280,2415,76,109],"yeoni_se2":[358,2415,76,109],"yeoni_se3":[436,2415,76,109],"yeoni_se_body":[514,2415,76,109],"yeoni_s0":[592,2415,64,109],"yeoni_s1":[658,2415,64,109],"yeoni_s2":[724,2415,64,109],"yeoni_s3":[790,2415,64,109],"yeoni_s_body":[856,2415,64,109],"yeoni_n0":[922,2415,61,109],"yeoni_n1":[985,2415,61,109],"yeoni_n2":[1048,2415,61,109],"yeoni_n3":[1111,2415,61,109],"yeoni_n_body":[1174,2415,61,109],"danbi_ne0":[1237,2415,70,109],"danbi_ne1":[1309,2415,70,109],"danbi_ne2":[1381,2415,70,109],"danbi_ne3":[1453,2415,70,109],"danbi_ne_body":[1525,2415,70,109],"mat":[1597,2415,150,109],"danbi0":[1749,2415,70,108],"danbi1":[1821,2415,70,108],"danbi2":[1893,2415,70,108],"danbi3":[1965,2415,70,108],"yeoni_ne0":[0,2543,77,108],"yeoni_ne1":[79,2543,77,108],"yeoni_ne2":[158,2543,77,108],"yeoni_ne3":[237,2543,77,108],"yeoni_ne_body":[316,2543,77,108],"danbi_body":[395,2543,70,108],"danbi_se0":[467,2543,76,108],"danbi_se1":[545,2543,76,108],"danbi_se2":[623,2543,76,108],"danbi_se3":[701,2543,76,108],"danbi_se_body":[779,2543,76,108],"danbi_s0":[857,2543,68,108],"danbi_s1":[927,2543,68,108],"danbi_s2":[997,2543,68,108],"danbi_s3":[1067,2543,68,108],"danbi_s_body":[1137,2543,68,108],"yeoni0":[1207,2543,76,107],"yeoni1":[1285,2543,76,107],"yeoni2":[1363,2543,76,107],"yeoni3":[1441,2543,76,107],"yeoni_body":[1519,2543,76,107],"danbi_n0":[1597,2543,63,107],"danbi_n1":[1662,2543,63,107],"danbi_n2":[1727,2543,63,107],"danbi_n3":[1792,2543,63,107],"danbi_n_body":[1857,2543,63,107],"saja":[1922,2543,70,90],"fx_beam0":[0,2653,512,86],"fx_beam1":[514,2653,512,86],"fx_beam2":[1028,2653,512,86],"fx_beam3":[0,2741,512,86],"water":[514,2741,71,84],"gseun_e":[587,2741,53,81],"dokkaebi":[642,2741,91,80],"seg":[735,2741,94,79],"egg":[831,2741,60,76],"japgwi":[893,2741,70,74],"chest":[965,2741,64,67],"jar":[1031,2741,56,66],"water_e":[1089,2741,51,64],"skylantern":[1142,2741,49,64],"i_hollong":[1193,2741,64,64],"i_bell":[1259,2741,64,64],"i_club":[1325,2741,64,64],"i_yukmo":[1391,2741,64,64],"i_ink":[1457,2741,64,64],"i_talisman":[1523,2741,64,64],"i_oiljar":[1589,2741,64,64],"i_shoes":[1655,2741,64,64],"i_gat":[1721,2741,64,64],"i_redink":[1787,2741,64,64],"i_mirror":[1853,2741,64,64],"i_rice":[1919,2741,64,64],"fire0":[1985,2741,43,60],"fire1":[0,2829,43,60],"fire2":[45,2829,43,60],"fire3":[90,2829,43,60],"fox0":[135,2829,40,60],"fox1":[177,2829,40,60],"fox2":[219,2829,40,60],"fox3":[261,2829,40,60],"wisp":[303,2829,36,58],"wisp_e":[341,2829,36,58],"imugi_e":[379,2829,51,55],"ginseng":[432,2829,48,54],"magnet":[482,2829,50,48],"rice":[534,2829,32,43],"dokkaebi_e":[568,2829,58,42],"gem3":[628,2829,29,42],"saja_e":[659,2829,27,39],"talisman":[688,2829,32,38],"gem2":[722,2829,19,34],"gem1":[743,2829,21,28],"oil":[766,2829,22,28],"coin":[790,2829,30,28],"yeoni_ne_foot":[822,2829,13,18],"japgwi_e":[837,2829,26,17],"yeoni_n_foot":[865,2829,11,15],"yeoni_s_foot":[878,2829,13,14],"yeoni_foot":[893,2829,17,13],"danbi_ne_foot":[912,2829,14,13],"yeoni_se_foot":[928,2829,15,11],"danbi_foot":[945,2829,14,11],"danbi_n_foot":[961,2829,11,11],"danbi_s_foot":[974,2829,10,9],"danbi_se_foot":[986,2829,12,8]},"meta":{"lantern":[7.7,-33.9],"bells":[5.7,-33.4],"ax":{"yeoni":1.9,"yeoni_se":2.0,"yeoni_s":1.3,"yeoni_ne":2.5,"yeoni_n":1.0,"danbi":-2.0,"danbi_se":-2.1,"danbi_s":-1.8,"danbi_ne":-0.2,"danbi_n":-1.4},"lamp":{"yeoni":[6.4,-32.9],"yeoni_se":[7.0,-32.6],"yeoni_s":[3.7,-36.3],"yeoni_ne":[9.9,-31.1],"yeoni_n":[7.6,-25.8],"danbi":[3.7,-32.9],"danbi_se":[6.3,-33.8],"danbi_s":[4.2,-32.1],"danbi_ne":[12.5,-42.6],"danbi_n":[10.4,-44.2]},"lampF":{"yeoni":[[6.4,-32.9],[6.7,-33.1],[6.3,-34.0],[6.1,-33.8]],"yeoni_se":[[7.0,-32.6],[7.2,-32.3],[7.0,-33.4],[6.8,-32.7]],"yeoni_s":[[3.7,-36.3],[3.8,-35.2],[3.6,-34.7],[3.9,-36.3]],"yeoni_ne":[[9.9,-31.1],[10.6,-32.5],[10.6,-32.4],[9.8,-33.0]],"yeoni_n":[[7.6,-25.8],[5.8,-24.9],[7.0,-25.1],[7.0,-25.2]],"danbi":[[3.7,-32.9],[3.7,-36.1],[6.5,-35.9],[5.0,-37.0]],"danbi_se":[[6.3,-33.8],[5.1,-32.7],[5.8,-33.0],[7.7,-36.3]],"danbi_s":[[4.2,-32.1],[4.3,-32.6],[5.8,-34.9],[5.8,-34.2]],"danbi_ne":[[12.5,-42.6],[11.8,-43.5],[11.9,-43.2],[11.8,-44.3]],"danbi_n":[[10.4,-44.2],[10.1,-43.8],[10.6,-42.7],[10.4,-43.9]]},"rig":{"yeoni":{"base":2,"hem":96,"split":41,"w":76,"h":107,"fx":[16,58],"fo":[42,94],"fc":38.1,"sep":34.4,"gy":107,"fw":17,"n":2},"yeoni_se":{"base":3,"hem":96,"split":46,"w":76,"h":109,"fx":[26,61],"fo":[47,97],"fc":47.3,"sep":35.8,"gy":108,"fw":15,"n":2},"yeoni_s":{"base":0,"hem":95,"split":36,"w":64,"h":109,"fx":[22,48],"fo":[23,94],"fc":31.6,"sep":0,"gy":108,"fw":13,"n":1},"yeoni_ne":{"base":1,"hem":95,"split":30,"w":77,"h":108,"fx":[17,46],"fo":[17,90],"fc":31.6,"sep":32.5,"gy":108,"fw":13,"n":2},"yeoni_n":{"base":0,"hem":99,"split":24,"w":61,"h":109,"fx":[14,34],"fo":[25,94],"fc":30.8,"sep":12.7,"gy":109,"fw":11,"n":2},"danbi":{"base":3,"hem":94,"split":27,"w":70,"h":108,"fx":[20,50],"fo":[38,97],"fc":32.7,"sep":37.1,"gy":108,"fw":14,"n":2},"danbi_se":{"base":0,"hem":95,"split":26,"w":76,"h":108,"fx":[17,49],"fo":[38,100],"fc":34.4,"sep":23.1,"gy":108,"fw":12,"n":2},"danbi_s":{"base":3,"hem":94,"split":21,"w":68,"h":108,"fx":[15,41],"fo":[26,99],"fc":30.5,"sep":0,"gy":108,"fw":10,"n":1},"danbi_ne":{"base":1,"hem":95,"split":30,"w":70,"h":109,"fx":[17,45],"fo":[17,96],"fc":32.0,"sep":30.5,"gy":109,"fw":14,"n":2},"danbi_n":{"base":3,"hem":94,"split":22,"w":63,"h":107,"fx":[18,35],"fo":[22,96],"fc":26.5,"sep":0,"gy":107,"fw":11,"n":1}},"jarsLamp":[48.2,-39.4],"postLamp":[21.2,-36.9],"emisOff":{"japgwi":[34,26],"water":[20,20],"dokkaebi":[21,0],"saja":[31,30],"wisp":[0,0],"gseun":[33,38],"gumiho":[1,0],"imugi":[97,43]}}};
+const ATLAS = {"frames":{"fx_ring":[0,0,509,512],"fx_circle":[511,0,445,448],"fx_pillar0":[958,0,90,384],"fx_pillar1":[1050,0,90,384],"fx_pillar2":[1142,0,90,384],"fx_pillar3":[1234,0,90,384],"fx_pillar4":[1326,0,90,384],"fx_pillar5":[1418,0,90,384],"fx_pillar6":[1510,0,90,384],"fx_pillar7":[1602,0,90,384],"fx_claw0":[1694,0,136,256],"fx_claw1":[1832,0,136,256],"fx_claw2":[0,514,136,256],"fx_claw3":[138,514,136,256],"fx_claw4":[276,514,136,256],"fx_claw5":[414,514,136,256],"fx_claw6":[552,514,136,256],"fx_claw7":[690,514,136,256],"fx_geyser0":[828,514,144,256],"fx_geyser1":[974,514,144,256],"fx_geyser2":[1120,514,144,256],"fx_geyser3":[1266,514,144,256],"fx_geyser4":[1412,514,144,256],"fx_geyser5":[1558,514,144,256],"fx_geyser6":[1704,514,144,256],"fx_geyser7":[1850,514,144,256],"gumiho_r0":[0,772,353,255],"gumiho_r1":[355,772,353,255],"gumiho_r2":[710,772,353,255],"gumiho_r3":[1065,772,353,255],"gumiho_r4":[1420,772,353,255],"gumiho_r5":[0,1029,353,255],"gseun_p1":[355,1029,143,243],"gumiho":[500,1029,290,241],"gumiho_e":[792,1029,289,241],"gseun":[1083,1029,122,230],"stall":[1207,1029,250,226],"fx_slash0":[1459,1029,190,224],"fx_slash1":[1651,1029,190,224],"fx_slash2":[1843,1029,190,224],"fx_slash3":[0,1286,190,224],"fx_slash4":[192,1286,190,224],"fx_slash5":[384,1286,190,224],"fx_slash6":[576,1286,190,224],"fx_slash7":[768,1286,190,224],"fx_slam0":[960,1286,288,224],"fx_slam1":[1250,1286,288,224],"fx_slam2":[1540,1286,288,224],"fx_slam3":[0,1512,288,224],"fx_slam4":[290,1512,288,224],"fx_slam5":[580,1512,288,224],"fx_slam6":[870,1512,288,224],"fx_slam7":[1160,1512,288,224],"fx_soul0":[1450,1512,199,224],"fx_soul1":[1651,1512,199,224],"fx_soul2":[0,1738,199,224],"fx_soul3":[201,1738,199,224],"fx_soul4":[402,1738,199,224],"fx_soul5":[603,1738,199,224],"fx_soul6":[804,1738,199,224],"fx_soul7":[1005,1738,199,224],"fx_fire0":[1206,1738,224,216],"fx_fire1":[1432,1738,224,216],"fx_fire2":[1658,1738,224,216],"fx_fire3":[0,1964,224,216],"fx_fire4":[226,1964,224,216],"fx_fire5":[452,1964,224,216],"fx_fire6":[678,1964,224,216],"fx_fire7":[904,1964,224,216],"gumiho_p3":[1130,1964,297,216],"gumiho_p1":[1429,1964,280,208],"shrine":[1711,1964,151,200],"fx_hit0":[0,2182,192,186],"fx_hit1":[194,2182,192,186],"fx_hit2":[388,2182,192,186],"fx_hit3":[582,2182,192,186],"fx_hit4":[776,2182,192,186],"fx_hit5":[970,2182,192,186],"fx_hit6":[1164,2182,192,186],"fx_hit7":[1358,2182,192,186],"tree":[1552,2182,160,180],"sotdae":[1714,2182,66,170],"gumiho_p2":[0,2370,326,168],"gseun_p2":[328,2370,231,166],"gumiho_p0":[561,2370,327,160],"fx_ink0":[890,2370,200,153],"fx_ink1":[1092,2370,200,153],"fx_ink2":[1294,2370,200,153],"fx_ink3":[1496,2370,200,153],"fx_ink4":[1698,2370,200,153],"fx_ink5":[0,2540,200,153],"fx_ink6":[202,2540,200,153],"fx_ink7":[404,2540,200,153],"imugi":[606,2540,150,150],"post":[758,2540,124,150],"imugi_p2":[884,2540,142,141],"jangseung":[1028,2540,90,140],"well":[1120,2540,151,140],"peddler":[1273,2540,141,140],"imugi_p0":[1416,2540,161,139],"bonfire":[1579,2540,120,138],"gseun_p3":[1701,2540,236,137],"cart":[0,2695,150,137],"imugi_p3":[152,2695,150,134],"imugi_p1":[304,2695,142,133],"cairn":[448,2695,82,130],"jars":[532,2695,200,126],"yeoni_se0":[734,2695,76,109],"yeoni_se1":[812,2695,76,109],"yeoni_se2":[890,2695,76,109],"yeoni_se3":[968,2695,76,109],"yeoni_se_body":[1046,2695,76,109],"yeoni_s0":[1124,2695,64,109],"yeoni_s1":[1190,2695,64,109],"yeoni_s2":[1256,2695,64,109],"yeoni_s3":[1322,2695,64,109],"yeoni_s_body":[1388,2695,64,109],"yeoni_n0":[1454,2695,61,109],"yeoni_n1":[1517,2695,61,109],"yeoni_n2":[1580,2695,61,109],"yeoni_n3":[1643,2695,61,109],"yeoni_n_body":[1706,2695,61,109],"danbi_ne0":[1769,2695,70,109],"danbi_ne1":[1841,2695,70,109],"danbi_ne2":[1913,2695,70,109],"danbi_ne3":[0,2834,70,109],"danbi_ne_body":[72,2834,70,109],"mat":[144,2834,150,109],"danbi0":[296,2834,70,108],"danbi1":[368,2834,70,108],"danbi2":[440,2834,70,108],"danbi3":[512,2834,70,108],"yeoni_ese0":[584,2834,76,108],"yeoni_ese1":[662,2834,76,108],"yeoni_ese2":[740,2834,76,108],"yeoni_ese3":[818,2834,76,108],"yeoni_ese_body":[896,2834,76,108],"yeoni_sse0":[974,2834,70,108],"yeoni_sse1":[1046,2834,70,108],"yeoni_sse2":[1118,2834,70,108],"yeoni_sse3":[1190,2834,70,108],"yeoni_sse_body":[1262,2834,70,108],"yeoni_ene0":[1334,2834,71,108],"yeoni_ene1":[1407,2834,71,108],"yeoni_ene2":[1480,2834,71,108],"yeoni_ene3":[1553,2834,71,108],"yeoni_ene_body":[1626,2834,71,108],"yeoni_ne0":[1699,2834,77,108],"yeoni_ne1":[1778,2834,77,108],"yeoni_ne2":[1857,2834,77,108],"yeoni_ne3":[1936,2834,77,108],"yeoni_ne_body":[0,2945,77,108],"yeoni_nne0":[79,2945,62,108],"yeoni_nne1":[143,2945,62,108],"yeoni_nne2":[207,2945,62,108],"yeoni_nne3":[271,2945,62,108],"yeoni_nne_body":[335,2945,62,108],"danbi_body":[399,2945,70,108],"danbi_ese0":[471,2945,68,108],"danbi_ese1":[541,2945,68,108],"danbi_ese2":[611,2945,68,108],"danbi_ese3":[681,2945,68,108],"danbi_ese_body":[751,2945,68,108],"danbi_se0":[821,2945,76,108],"danbi_se1":[899,2945,76,108],"danbi_se2":[977,2945,76,108],"danbi_se3":[1055,2945,76,108],"danbi_se_body":[1133,2945,76,108],"danbi_sse0":[1211,2945,70,108],"danbi_sse1":[1283,2945,70,108],"danbi_sse2":[1355,2945,70,108],"danbi_sse3":[1427,2945,70,108],"danbi_sse_body":[1499,2945,70,108],"danbi_s0":[1571,2945,68,108],"danbi_s1":[1641,2945,68,108],"danbi_s2":[1711,2945,68,108],"danbi_s3":[1781,2945,68,108],"danbi_s_body":[1851,2945,68,108],"danbi_ene0":[1921,2945,67,108],"danbi_ene1":[0,3055,67,108],"danbi_ene2":[69,3055,67,108],"danbi_ene3":[138,3055,67,108],"danbi_ene_body":[207,3055,67,108],"danbi_nne0":[276,3055,65,108],"danbi_nne1":[343,3055,65,108],"danbi_nne2":[410,3055,65,108],"danbi_nne3":[477,3055,65,108],"danbi_nne_body":[544,3055,65,108],"yeoni0":[611,3055,76,107],"yeoni1":[689,3055,76,107],"yeoni2":[767,3055,76,107],"yeoni3":[845,3055,76,107],"yeoni_body":[923,3055,76,107],"danbi_n0":[1001,3055,63,107],"danbi_n1":[1066,3055,63,107],"danbi_n2":[1131,3055,63,107],"danbi_n3":[1196,3055,63,107],"danbi_n_body":[1261,3055,63,107],"saja":[1326,3055,70,90],"fx_beam0":[1398,3055,512,86],"fx_beam1":[0,3165,512,86],"fx_beam2":[514,3165,512,86],"fx_beam3":[1028,3165,512,86],"water":[1542,3165,71,84],"gseun_e":[1615,3165,53,81],"dokkaebi":[1670,3165,91,80],"seg":[1763,3165,94,79],"egg":[1859,3165,60,76],"japgwi":[1921,3165,70,74],"chest":[0,3253,64,67],"jar":[66,3253,56,66],"water_e":[124,3253,51,64],"skylantern":[177,3253,49,64],"i_hollong":[228,3253,64,64],"i_bell":[294,3253,64,64],"i_club":[360,3253,64,64],"i_yukmo":[426,3253,64,64],"i_ink":[492,3253,64,64],"i_talisman":[558,3253,64,64],"i_oiljar":[624,3253,64,64],"i_shoes":[690,3253,64,64],"i_gat":[756,3253,64,64],"i_redink":[822,3253,64,64],"i_mirror":[888,3253,64,64],"i_rice":[954,3253,64,64],"fire0":[1020,3253,43,60],"fire1":[1065,3253,43,60],"fire2":[1110,3253,43,60],"fire3":[1155,3253,43,60],"fox0":[1200,3253,40,60],"fox1":[1242,3253,40,60],"fox2":[1284,3253,40,60],"fox3":[1326,3253,40,60],"wisp":[1368,3253,36,58],"wisp_e":[1406,3253,36,58],"imugi_e":[1444,3253,51,55],"ginseng":[1497,3253,48,54],"magnet":[1547,3253,50,48],"rice":[1599,3253,32,43],"dokkaebi_e":[1633,3253,58,42],"gem3":[1693,3253,29,42],"saja_e":[1724,3253,27,39],"yeoni_ese_arm":[1753,3253,11,38],"talisman":[1766,3253,32,38],"yeoni_se_arm":[1800,3253,9,37],"yeoni_sse_arm":[1811,3253,11,37],"yeoni_arm":[1824,3253,10,36],"yeoni_nne_arm":[1836,3253,11,36],"danbi_ese_arm":[1849,3253,11,36],"danbi_nne_arm":[1862,3253,11,36],"yeoni_s_arm":[1875,3253,11,35],"yeoni_n_arm":[1888,3253,13,35],"danbi_sse_arm":[1903,3253,11,35],"danbi_arm":[1916,3253,12,34],"danbi_se_arm":[1930,3253,11,34],"danbi_n_arm":[1943,3253,13,34],"gem2":[1958,3253,19,34],"danbi_s_arm":[1979,3253,14,32],"danbi_ene_arm":[1995,3253,12,30],"danbi_ne_arm":[2009,3253,11,28],"gem1":[2022,3253,21,28],"oil":[0,3322,22,28],"coin":[24,3322,30,28],"yeoni_ne_foot":[56,3322,13,18],"japgwi_e":[71,3322,26,17],"yeoni_n_foot":[99,3322,11,15],"yeoni_s_foot":[112,3322,13,14],"yeoni_foot":[127,3322,17,13],"yeoni_ene_foot":[146,3322,15,13],"danbi_ne_foot":[163,3322,14,13],"yeoni_se_foot":[179,3322,15,11],"danbi_foot":[196,3322,14,11],"danbi_n_foot":[212,3322,11,11],"yeoni_ese_foot":[225,3322,15,10],"yeoni_sse_foot":[242,3322,16,10],"danbi_ese_foot":[260,3322,14,10],"yeoni_nne_foot":[276,3322,16,9],"danbi_sse_foot":[294,3322,13,9],"danbi_s_foot":[309,3322,10,9],"danbi_nne_foot":[321,3322,13,9],"danbi_se_foot":[336,3322,12,8],"danbi_ene_foot":[350,3322,13,8]},"meta":{"lantern":[7.7,-33.9],"bells":[5.7,-33.4],"ax":{"yeoni":1.9,"yeoni_ese":2.0,"yeoni_se":2.0,"yeoni_sse":1.2,"yeoni_s":1.3,"yeoni_ene":2.1,"yeoni_ne":2.5,"yeoni_nne":0.6,"yeoni_n":1.0,"danbi":-2.0,"danbi_ese":-2.2,"danbi_se":-2.1,"danbi_sse":-2.2,"danbi_s":-1.8,"danbi_ene":-1.7,"danbi_ne":-0.2,"danbi_nne":-1.3,"danbi_n":-1.4},"lamp":{"yeoni":[6.4,-32.9],"yeoni_ese":[6.5,-33.1],"yeoni_se":[7.0,-32.6],"yeoni_sse":[4.4,-34.6],"yeoni_s":[3.7,-36.3],"yeoni_ene":[9.1,-31.6],"yeoni_ne":[9.9,-31.1],"yeoni_nne":[7.8,-27.3],"yeoni_n":[7.6,-25.8],"danbi":[3.7,-32.9],"danbi_ese":[3.5,-33.9],"danbi_se":[6.3,-33.8],"danbi_sse":[3.6,-34.0],"danbi_s":[4.2,-32.1],"danbi_ene":[12.6,-46.0],"danbi_ne":[12.5,-42.6],"danbi_nne":[11.7,-45.4],"danbi_n":[10.4,-44.2]},"lampF":{"yeoni":[[6.4,-32.9],[6.7,-33.1],[6.3,-34.0],[6.1,-33.8]],"yeoni_ese":[[6.5,-33.1],[6.5,-33.1],[6.5,-33.1],[6.5,-33.1]],"yeoni_se":[[7.0,-32.6],[7.2,-32.3],[7.0,-33.4],[6.8,-32.7]],"yeoni_sse":[[4.4,-34.6],[4.4,-34.6],[4.4,-34.6],[4.4,-34.6]],"yeoni_s":[[3.7,-36.3],[3.8,-35.2],[3.6,-34.7],[3.9,-36.3]],"yeoni_ene":[[9.1,-31.6],[9.1,-31.6],[9.1,-31.6],[9.1,-31.6]],"yeoni_ne":[[9.9,-31.1],[10.6,-32.5],[10.6,-32.4],[9.8,-33.0]],"yeoni_nne":[[7.8,-27.3],[7.8,-27.3],[7.8,-27.3],[7.8,-27.3]],"yeoni_n":[[7.6,-25.8],[5.8,-24.9],[7.0,-25.1],[7.0,-25.2]],"danbi":[[3.7,-32.9],[3.7,-36.1],[6.5,-35.9],[5.0,-37.0]],"danbi_ese":[[3.5,-33.9],[3.5,-33.9],[3.5,-33.9],[3.5,-33.9]],"danbi_se":[[6.3,-33.8],[5.1,-32.7],[5.8,-33.0],[7.7,-36.3]],"danbi_sse":[[3.6,-34.0],[3.6,-34.0],[3.6,-34.0],[3.6,-34.0]],"danbi_s":[[4.2,-32.1],[4.3,-32.6],[5.8,-34.9],[5.8,-34.2]],"danbi_ene":[[12.6,-46.0],[12.6,-46.0],[12.6,-46.0],[12.6,-46.0]],"danbi_ne":[[12.5,-42.6],[11.8,-43.5],[11.9,-43.2],[11.8,-44.3]],"danbi_nne":[[11.7,-45.4],[11.7,-45.4],[11.7,-45.4],[11.7,-45.4]],"danbi_n":[[10.4,-44.2],[10.1,-43.8],[10.6,-42.7],[10.4,-43.9]]},"rig":{"yeoni":{"base":2,"hem":96,"split":41,"w":76,"h":107,"fx":[16,58],"arm":{"s":[28,38],"h":[27,66],"o":[23,35],"src":"yeoni"},"fo":[42,94],"fc":38.1,"sep":34.4,"gy":107,"fw":17,"n":2},"yeoni_ese":{"base":0,"hem":101,"split":37,"w":76,"h":108,"fx":[17,58],"arm":{"s":[27,38],"h":[29,67],"o":[23,34],"src":"yeoni_ese"},"fo":[16,98],"fc":36.6,"sep":27.8,"gy":108,"fw":15,"n":2},"yeoni_se":{"base":3,"hem":96,"split":46,"w":76,"h":109,"fx":[26,61],"arm":{"s":[28,39],"h":[28,67],"o":[24,35],"src":"yeoni_se"},"fo":[47,97],"fc":47.3,"sep":35.8,"gy":108,"fw":15,"n":2},"yeoni_sse":{"base":0,"hem":101,"split":33,"w":70,"h":108,"fx":[13,54],"arm":{"s":[25,38],"h":[23,66],"o":[19,34],"src":"yeoni_sse"},"fo":[39,97],"fc":33.0,"sep":27.7,"gy":107,"fw":16,"n":2},"yeoni_s":{"base":0,"hem":95,"split":36,"w":64,"h":109,"fx":[22,48],"arm":{"s":[20,38],"h":[17,64],"o":[14,34],"src":"yeoni_s"},"fo":[23,94],"fc":31.6,"sep":0,"gy":108,"fw":13,"n":1},"yeoni_ene":{"base":0,"hem":97,"split":35,"w":71,"h":108,"fx":[17,54],"arm":{"s":[28,40],"h":[24,68],"src":"yeoni_n","borrow":true,"o":[20,38]},"fo":[17,95],"fc":33.3,"sep":23.0,"gy":108,"fw":15,"n":2},"yeoni_ne":{"base":1,"hem":95,"split":30,"w":77,"h":108,"fx":[17,46],"arm":{"s":[31,41],"h":[27,69],"src":"yeoni_n","borrow":true,"o":[23,39]},"fo":[17,90],"fc":31.6,"sep":32.5,"gy":108,"fw":13,"n":2},"yeoni_nne":{"base":0,"hem":103,"split":26,"w":62,"h":108,"fx":[11,42],"arm":{"s":[10,37],"h":[7,65],"o":[4,34],"src":"yeoni_nne"},"fo":[29,98],"fc":26.5,"sep":20.1,"gy":107,"fw":16,"n":2},"yeoni_n":{"base":0,"hem":99,"split":24,"w":61,"h":109,"fx":[14,34],"arm":{"s":[14,37],"h":[10,65],"o":[6,35],"src":"yeoni_n"},"fo":[25,94],"fc":30.8,"sep":12.7,"gy":109,"fw":11,"n":2},"danbi":{"base":3,"hem":94,"split":27,"w":70,"h":108,"fx":[20,50],"arm":{"s":[18,46],"h":[19,69],"o":[13,41],"src":"danbi"},"fo":[38,97],"fc":32.7,"sep":37.1,"gy":108,"fw":14,"n":2},"danbi_ese":{"base":0,"hem":99,"split":32,"w":68,"h":108,"fx":[8,49],"arm":{"s":[17,46],"h":[17,71],"o":[12,41],"src":"danbi_ese"},"fo":[37,98],"fc":29.3,"sep":30.3,"gy":108,"fw":14,"n":2},"danbi_se":{"base":0,"hem":95,"split":26,"w":76,"h":108,"fx":[17,49],"arm":{"s":[19,47],"h":[19,70],"o":[14,42],"src":"danbi_se"},"fo":[38,100],"fc":34.4,"sep":23.1,"gy":108,"fw":12,"n":2},"danbi_sse":{"base":0,"hem":99,"split":32,"w":70,"h":108,"fx":[10,49],"arm":{"s":[15,46],"h":[15,70],"o":[10,41],"src":"danbi_sse"},"fo":[37,99],"fc":30.1,"sep":28.9,"gy":108,"fw":13,"n":2},"danbi_s":{"base":3,"hem":94,"split":21,"w":68,"h":108,"fx":[15,41],"arm":{"s":[13,45],"h":[10,66],"o":[5,40],"src":"danbi_s"},"fo":[26,99],"fc":30.5,"sep":0,"gy":108,"fw":10,"n":1},"danbi_ene":{"base":0,"hem":99,"split":28,"w":67,"h":108,"fx":[6,45],"arm":{"s":[14,49],"h":[11,70],"o":[7,45],"src":"danbi_ene"},"fo":[33,100],"fc":25.2,"sep":28.5,"gy":108,"fw":13,"n":2},"danbi_ne":{"base":1,"hem":95,"split":30,"w":70,"h":109,"fx":[17,45],"arm":{"s":[15,49],"h":[12,70],"o":[9,46],"src":"danbi_ne"},"fo":[17,96],"fc":32.0,"sep":30.5,"gy":109,"fw":14,"n":2},"danbi_nne":{"base":0,"hem":100,"split":27,"w":65,"h":108,"fx":[7,47],"arm":{"s":[11,45],"h":[8,72],"o":[5,41],"src":"danbi_nne"},"fo":[35,99],"fc":26.9,"sep":30.7,"gy":108,"fw":13,"n":2},"danbi_n":{"base":3,"hem":94,"split":22,"w":63,"h":107,"fx":[18,35],"arm":{"s":[12,45],"h":[8,71],"o":[4,42],"src":"danbi_n"},"fo":[22,96],"fc":26.5,"sep":0,"gy":107,"fw":11,"n":1}},"jarsLamp":[48.2,-39.4],"postLamp":[21.2,-36.9],"emisOff":{"japgwi":[34,26],"water":[20,20],"dokkaebi":[21,0],"saja":[31,30],"wisp":[0,0],"gseun":[33,38],"gumiho":[1,0],"imugi":[97,43]}}};
 const ART = { ok: false, meta: {}, src: null, d: 0 }; const EMIS = {}, ICON = {}, ICONURL = {}; let FIRE = null, FOX = null, INK = null;
 const SW = s => s.width * (s._s || 1), SH = s => s.height * (s._s || 1);
 // Flipbook VFX (Meshy gpt-image-2 sheets, luminance-keyed, drawn additively). Hit sparks are tinted per element.
@@ -755,7 +755,7 @@ function buildFx(src) {
 const FLOAT = new Set(['egg', 'water', 'wisp', 'saja', 'gseun']);
 function loadImg(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
 async function loadArt() {
-  const [atlas, tile] = await Promise.all([loadImg('assets/sprites-57394b77a3.png'), loadImg('assets/ground.jpg')]);
+  const [atlas, tile] = await Promise.all([loadImg('assets/sprites-8c8f77072c.png'), loadImg('assets/ground.jpg')]);
   const src = {};
   for (const n in ATLAS.frames) {
     const [x, y, w, h] = ATLAS.frames[n], c = document.createElement('canvas');
@@ -783,11 +783,11 @@ function applyArtScale() {
   ART.d = d;
   const A = {};
   for (const n in ART.src) if (!n.startsWith('i_') && !n.startsWith('fx_')) A[n] = scaledArt(ART.src[n], d);
-  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_se', '_s', '_ne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; }   // walk rig: feetless body + one foot
+  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot
   SPR.player = SPR.yeoni;
   for (const k in FXSRC) FX[k] = FXSRC[k].slice();   // effects keep source resolution: they are drawn at many sizes
-  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae']) SPR[k] = A[k];
-  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3']) SPRF[k] = whiteOf(SPR[k]);
+  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae']) SPR[k] = A[k];
+  for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3']) SPRF[k] = whiteOf(SPR[k]);
   const off = (ART.meta && ART.meta.emisOff) || {};
   for (const n in A) if (n.endsWith('_e')) {
     const k = n.slice(0, -2), c = A[n], o = off[k] || [0, 0];
@@ -919,7 +919,8 @@ const MOVE = { acc: 0.05, dec: 0.07, steer: 0 };   // 이동 곡선 시간상수
 const RING = { n: 56, rows: 2, gap: 36, hp: 3, knock: 0.3, scale: 1.2, spd: 62, life: 45 };   // 포위진: 두 겹 원진이 소환 지점으로 조여 옴 → 뚫고 나가야 함
 const lateSpd = t => 1 + Math.max(0, t - 420) / 60 * 0.10;   // 7분 이후 일반 요괴 이동 속도 분당 +10%
 const normHp = t => 1 + t / 60 * 0.38 + Math.max(0, t - 420) / 60 * 0.7;   // 일반 요괴 체력: 분당 +38%, 7분 이후 분당 +108%
-const lightR = () => (2.5 + 4.5 * P.light / 100) * M * P.lightRadiusMult * (PG.on && PG.bright ? 2.4 : 1);
+const lightR = () => (2 + 5 * P.light / 100) * M * P.lightRadiusMult * (PG.on && PG.bright ? 2.4 : 1);   // the light is your sight: 7m at full, 2m when it's out
+const pickR = () => (2.5 + 4.5 * P.light / 100) * M * P.lightRadiusMult;   // loot pull keeps the gentler curve, so a dim lantern isn't also a starving one
 const pLv = id => { const x = P.passives.find(p => p.id === id); return x ? x.lv : 0; };
 
 function recalc() {
@@ -1333,7 +1334,7 @@ function updateEffects(dt) {
     if (f.k === 'ring') {
       const r = lerp(16, f.maxR, Math.min(1, f.t / f.dur)); f.r = r;
       forTargets(P.x, P.y, r + 12, (e, part) => {
-        if (f.hit.has(e)) return; const d = Math.hypot(part.x - P.x, part.y - P.y);
+        if (f.hit.has(e)) return; const d = Math.hypot(part.x - P.x, (part.y - P.y) / 0.62);   // the ring is a floor ellipse
         if (d < r - 20 - part.r) return; f.hit.add(e);
         if (f.evo && !e.boss && !e.elite && Math.random() < 0.05) hurtEnemy(e, 99999, f.w);
         else { hurtEnemy(e, f.dmg, f.w, { knock: 25 }); if (f.w && f.w.trait === 'stun' && !e.boss && !e.elite) e.stun = Math.max(e.stun, 0.5); }
@@ -1574,15 +1575,18 @@ const EVENTS = [
   [520, () => { spawnRing(); G.warnT = 1.6; banner('포위진', '두 번째 포위 · 이무기가 깨어나기 전입니다'); sfx('boss'); }],
   [540, () => { spawnBoss('imugi'); banner('이무기가 깨어났다', '푸른 선이 보이면 비켜서세요'); sfx('boss'); }],
 ];
-// The body turns through the in-between views (45° every 42ms) instead of flipping; a half turn goes via the front.
+// The body turns through the in-between views (16 of them, 22.5° every 26ms) instead of flipping; a half turn goes via the front.
 function turnStep(dt) {
   P.dT -= dt; P.turnK = Math.max(0, (P.turnK || 0) - dt / 0.09);
-  if (P.d === P.dw || P.dT > 0) return;
-  const delta = ((P.dw - P.d) % 8 + 8) % 8, via = s => [1, 2, 3].some(i => ((P.d + s * i) % 8 + 8) % 8 === 2);
-  let step = delta < 4 ? 1 : delta > 4 ? -1 : via(1) ? 1 : via(-1) ? -1 : (P.d === 2 ? -P.side : P.side);
-  if (delta === 4 && (P.d === 2 || P.dw === 2)) step = P.d === 2 ? (P.side > 0 ? -1 : 1) : (P.side > 0 ? 1 : -1);
-  P.d = (P.d + step + 8) % 8; P.dT = 0.042; P.turnK = 1;
-  if (P.d === 0 || P.d === 1 || P.d === 7) P.side = 1; else if (P.d >= 3 && P.d <= 5) P.side = -1;
+  if (P.d16 === undefined) P.d16 = (P.d || 0) * 2;
+  const tw = P.dw16 ?? (P.dw || 0) * 2;
+  if (P.d16 === tw || P.dT > 0) return;
+  const delta = ((tw - P.d16) % 16 + 16) % 16, via = s => [1, 2, 3, 4, 5, 6, 7].some(i => ((P.d16 + s * i) % 16 + 16) % 16 === 4);
+  let step = delta < 8 ? 1 : delta > 8 ? -1 : via(1) ? 1 : via(-1) ? -1 : (P.d16 === 4 ? -P.side : P.side);
+  if (delta === 8 && (P.d16 === 4 || tw === 4)) step = P.d16 === 4 ? (P.side > 0 ? -1 : 1) : (P.side > 0 ? 1 : -1);
+  P.d16 = (P.d16 + step + 16) % 16; P.dT = 0.026; P.turnK = 1;
+  P.d = Math.round(P.d16 / 2) % 8;
+  if (P.d16 <= 3 || P.d16 >= 13) P.side = 1; else if (P.d16 >= 5 && P.d16 <= 11) P.side = -1;
   P.fx = P.fs = P.side;
 }
 /* ---------- attacks: predictive aim, telegraphed danger zones, boss action states ---------- */
@@ -1599,7 +1603,7 @@ function aimAt(x, y, v, k = 1) {   // intercept for a shot of speed v: [angle, x
 let zones = [];
 function zone(z) { z.t = 0; zones.push(z); return z; }
 function inZone(z, x, y, pr) {
-  if (z.sh === 'c') return Math.hypot(x - z.x, y - z.y) < z.r + pr * 0.5;
+  if (z.sh === 'c') return Math.hypot(x - z.x, (y - z.y) / 0.62) < z.r + pr * 0.5;   // circles lie on the floor: ellipses
   const ux = Math.cos(z.a), uy = Math.sin(z.a), px = x - z.x, py = y - z.y, al = px * ux + py * uy;
   return al > -pr && al < z.len + pr && Math.abs(px * uy - py * ux) < z.w / 2 + pr * 0.5;
 }
@@ -1750,7 +1754,9 @@ function gumihoAI(e, dt, d, mult) {
     e.orb = e.orb || (Math.random() < 0.5 ? 1 : -1); if (Math.random() < dt * 0.12) e.orb = -e.orb;
     const ang = Math.atan2(e.y - P.y, e.x - P.x) + e.orb * 0.6, R = clone ? 115 : 130;   // close enough for your weapons to bite
     bossMove(e, P.x + Math.cos(ang) * R, P.y + Math.sin(ang) * R, e.spd * 1.5 * mult, dt, 0.32);
-    const rv = Math.hypot(e.mvx, e.mvy); setPose(e, rv > 90 ? 'p0' : null);
+    const rv = Math.hypot(e.mvx, e.mvy);
+    if (rv > 90) { const fr = 'r' + (Math.floor((e.wk || 0) / 12) % 6); if (!e.pose || e.pose[0] !== 'r') setPose(e, fr); else e.pose = fr; }   // gallop: 6 drawn frames, one every 12px
+    else setPose(e, null);
     if (rv > 90 && inView(e.x, e.y, 60)) {   // foxfire streams off the tails; a faint afterimage at full stride
       const tx = e.x - (e.fx || 1) * 46 * e.scale, ty = e.y - 34 * e.scale;
       if (parts.length < 600 && Math.random() < dt * 26) addPart({ k: 'ember', x: tx + rnd(-14, 14), y: ty + rnd(-14, 10), vx: -(e.mvx) * 0.25 + rnd(-10, 10), vy: rnd(-34, -12), life: rnd(0.35, 0.6), max: 0.6, gl: 'pink', size: rnd(7, 12), drag: 2 });
@@ -1909,7 +1915,7 @@ function mobSkill(e, dt, d, mult) {
   }
   if (k === 'roll') {   // tucks in and rolls on a curving line toward where you're headed
     if (t < 0.25) { wind(0.25); return true; }
-    if (t < 1.55) { e.atk = null; const [tx, ty] = leadPos(0.5, 0.8), want = Math.atan2(ty - e.y, tx - e.x); A.a += clamp(angDiff(want, A.a), -2.2 * dt, 2.2 * dt); e.x += Math.cos(A.a) * 175 * dt * mult; e.y += Math.sin(A.a) * 175 * dt * mult; e.fx = Math.cos(A.a) < 0 ? -1 : 1; if (Math.random() < 0.5) addPart({ k: 'dust', x: e.x, y: e.y + 6, vx: rnd(-20, 20), vy: rnd(-10, 0), life: 0.35, max: 0.35, col: '#c8c0b0', size: rnd(8, 14), drag: 5 }); return true; }
+    if (t < 1.55) { e.atk = null; const [tx, ty] = leadPos(0.5, 0.8), want = Math.atan2(ty - e.y, tx - e.x); A.a += clamp(angDiff(want, A.a), -2.2 * dt, 2.2 * dt); e.x += Math.cos(A.a) * 175 * dt * mult; e.y += Math.sin(A.a) * 175 * dt * mult; e.fx = Math.cos(A.a) < 0 ? -1 : 1; A.rot = (A.rot || 0) + 175 * dt * mult / 17 * e.fx; /* rolls without slipping: angle = distance / radius */ if (Math.random() < 0.5) addPart({ k: 'dust', x: e.x, y: e.y + 6, vx: rnd(-20, 20), vy: rnd(-10, 0), life: 0.35, max: 0.35, col: '#c8c0b0', size: rnd(8, 14), drag: 5 }); return true; }
     end(); return false;
   }
   if (k === 'blink') {   // fades, comes back behind you
@@ -1970,6 +1976,7 @@ function update(dt) {
     const l = Math.hypot(ix, iy); P.face = { x: ix / l, y: iy / l };
     const ang = Math.atan2(P.face.y, P.face.x);   // 8-way target, with a little hysteresis for analog sticks
     if (Math.abs(angDiff(ang, P.dw * Math.PI / 4)) > Math.PI / 8 + 0.08) P.dw = ((Math.round(ang / (Math.PI / 4)) % 8) + 8) % 8;
+    if (Math.abs(angDiff(ang, (P.dw16 ?? P.dw * 2) * Math.PI / 8)) > Math.PI / 16 + 0.05) P.dw16 = ((Math.round(ang / (Math.PI / 8)) % 16) + 16) % 16;   // 16-way target
   }
   turnStep(dt);
   const sp = 150 * P.speedMult * (P.slowT > 0 ? 0.5 : 1) * (PG.on ? PG.spd : 1) * (blessLeft('spd') > 0 ? 1.2 : 1);
@@ -1998,7 +2005,7 @@ function update(dt) {
   }
   P.hp = Math.min(P.maxHp, P.hp + (P.regen + (P.light >= WARM ? 0.4 : 0)) * dt);
   G.hurtT = Math.max(0, (G.hurtT || 0) - dt);
-  P.light = PG.on ? 100 : P.inFire ? P.light : clamp(P.light - P.lightDecay * (1 + G.t / 600) * dt, 0, 100);
+  P.light = PG.on ? (PG.light ?? 100) : P.inFire ? P.light : clamp(P.light - P.lightDecay * (1 + G.t / 600) * dt, 0, 100);
   if (P.light <= GREED && !P.greedSeen) { P.greedSeen = true; banner('탐욕 구간', '빛 30 이하: 경험치·엽전 ×2, 대신 회복 없음'); }
   if (P.light <= 0 && (!G.dark || G.dark.dead)) {
     const a = rnd(0, TAU); G.dark = makeEnemy('dark', P.x + Math.cos(a) * 340, P.y + Math.sin(a) * 340, { grow: 0, fade: 0 });
@@ -2181,7 +2188,7 @@ function update(dt) {
         const step = Math.min(dist, sp * dt); d.x += mx * step; d.y += my * step; d.vx = mx * sp; d.vy = my * sp;
       }
     } else if (d.k === 'gem' || d.k === 'coin' || d.k === 'rice') {
-      if (dist < Math.max(LR, 4 * M) || d.mag) { d.mag = true; const s = Math.max(260, 640 - dist); d.x += dx / dist * s * dt; d.y += dy / dist * s * dt; }
+      if (dist < Math.max(pickR(), 4 * M) || d.mag) { d.mag = true; const s = Math.max(260, 640 - dist); d.x += dx / dist * s * dt; d.y += dy / dist * s * dt; }
     } else if (d.k === 'magnet' || d.k === 'ginseng') {
       if (dist < 46 && G.t - (d.born ?? -9) > 0.45) { d.x += dx / dist * 200 * dt; d.y += dy / dist * 200 * dt; }
     } else if (d.k === 'oil') {
@@ -2312,7 +2319,7 @@ const easeOut3 = k => 1 - Math.pow(1 - k, 3);
 function enemyPose(e, pose) {
   const pz = pose === undefined ? e.pose : pose, ps = pz ? SPR[e.spr + '_' + pz] : null, base = ps || SPR[e.spr], k = e.type === 'gseun' ? 0.8 : 1;
   const w = SW(base) * e.scale * k, h = SH(base) * e.scale * k;
-  let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0;
+  let x = e.rx ?? e.x, y = (e.ry ?? e.y) + e.r * 0.75, sx = (e.fs ?? e.fx) < 0 ? -1 : 1, sy = 1, rot = 0, oy;
   const vx = e.mvx || 0, sp = Math.hypot(vx, e.mvy || 0);
   if (e.type === 'gseun') {   // a slow hover that breathes and leans into the drift
     y += Math.sin(G.t * 1.6 + e.bob) * 4 - 4;
@@ -2322,10 +2329,10 @@ function enemyPose(e, pose) {
     if (A && A.k === 'lunge' && A.t >= 0.6 && !A.land) { sx *= 1.22; sy *= 0.86; rot = 0; }        // stretched along the throw
     else if (A && A.k === 'lunge' && A.t < 0.6) { const q = A.t / 0.6; sy *= 1 - 0.1 * q; sx *= 1 + 0.06 * q; }   // coils before it
   } else if (e.type === 'gumiho' || e.type === 'clone') {   // gallop: leap, pitch, squash on landing; breathe when still
-    const run = e.act ? 0 : clamp((sp - 30) / 80, 0, 1), ph = (e.wk || 0) * 0.11 + e.bob, s1 = Math.sin(ph), face = sx;   // ≈2 strides/s at orbit speed
-    y -= Math.max(0, s1) * 10 * run;
-    rot = -Math.cos(ph) * 0.07 * run * face;
-    const land = Math.max(0, -s1); sy *= 1 - 0.11 * land * run + Math.max(0, s1) * 0.04 * run; sx *= 1 + 0.09 * land * run + Math.max(0, s1) * 0.06 * run;
+    const drawn = e.pose && e.pose[0] === 'r', run = e.act ? 0 : clamp((sp - 30) / 80, 0, 1) * (drawn ? 0.25 : 1), ph = (e.wk || 0) * (TAU / 72) + e.bob, s1 = Math.sin(ph), face = sx;   // the gallop frames carry the legs; only a little lift on top
+    y -= Math.max(0, s1) * 6 * run;
+    rot = -Math.cos(ph) * 0.05 * run * face;
+    const land = Math.max(0, -s1); sy *= 1 - 0.08 * land * run; sx *= 1 + 0.06 * land * run;
     const br = Math.sin(G.t * 2 + e.bob) * (1 - run); sy *= 1 + br * 0.02;
   } else if (FLOAT.has(e.type)) { y += Math.sin(G.t * 3 + e.bob) * 3 - 3; rot = Math.sin(G.t * 1.7 + e.bob) * 0.05; }
   else {
@@ -2336,18 +2343,18 @@ function enemyPose(e, pose) {
   }
   if (e.turnT > 0) { const q = e.turnT / 0.13; y -= Math.sin(q * Math.PI) * 3; sx *= 1 - 0.08 * q; sy *= 1 + 0.07 * q; }   // hop-turn
   if (e.type === 'egg' && e.st === 'wind') x += rnd(-1.5, 1.5);
-  if (pz !== undefined && pz !== null && pose === undefined) {
+  if (pz !== undefined && pz !== null && pose === undefined && pz[0] !== 'r') {
     const pu = Math.max(0, 1 - (e.poseT || 0) / 0.14); sx *= 1 + 0.1 * pu; sy *= 1 - 0.1 * pu;   // each new pose lands with a squash
     if (pz === 'p1' && !REDUCED) x += Math.sin(G.t * 55) * 1.3;                          // wind-up shiver
   }
   if (e.atk === 'wind') { const q = 1 - e.atkT / 0.4; sy *= 1 - 0.14 * q; sx *= 1 + 0.1 * q; x += Math.sin(G.t * 60) * 1.2; }   // crouch, club up
   else if (e.atk === 'lunge') { sx *= 1.14; sy *= 0.9; y -= 6; rot = (e.lvx < 0 ? -1 : 1) * 0.18; }
   if (e.sk) {
-    if (e.sk.k === 'roll' && e.sk.t > 0.25) { rot = e.sk.t * 16 * (e.fx < 0 ? -1 : 1); y -= 4; }
+    if (e.sk.k === 'roll' && e.sk.t > 0.25) { rot = e.sk.rot || 0; oy = -h / 2; y -= h / 2 * sy; sx = Math.abs(sx); }   // roll about the middle of the egg, not its feet
     else if (e.sk.k === 'burst') { const q = Math.min(1, e.sk.t / 0.5); sx *= 1 + 0.35 * q + Math.sin(G.t * 40) * 0.06 * q; sy *= 1 + 0.35 * q; }
   }
   if (e.stun > 0) rot = Math.sin(G.t * 30) * 0.12;
-  return { base, w, h, x, y, sx, sy, rot };
+  return { base, w, h, x, y, sx, sy, rot, oy };
 }
 // Bosses are drawn in strips so the drawing itself moves: 그슨대's robe ripples in rows (strongest at the hem, trailing
 // against the drift); 구미호's tails ripple in columns from the root out to the tips. Pose changes cross-fade.
@@ -2386,16 +2393,17 @@ function drawBoss(e) {
   ctx.globalAlpha = 1;
 }
 // 8 views: E, SE, S, SW, W, NW, N, NE. West-side views mirror the east ones; S and N keep the side she last faced.
-const OCT = [['', 1], ['_se', 1], ['_s', 0], ['_se', -1], ['', -1], ['_ne', -1], ['_n', 0], ['_ne', 1]];
+// 16 views, 22.5° apart: E, ESE, SE, SSE, S, SSW … (west side mirrors the east drawings; S and N keep the last side)
+const OCT = [['', 1], ['_ese', 1], ['_se', 1], ['_sse', 1], ['_s', 0], ['_sse', -1], ['_se', -1], ['_ese', -1], ['', -1], ['_ene', -1], ['_ne', -1], ['_nne', -1], ['_n', 0], ['_nne', 1], ['_ne', 1], ['_ene', 1]];
 function playerView() {
-  const o = OCT[P.d || 0], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
+  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
   return { name, frames: fr && fr[0] ? fr : SPR[P.spr], flip: o[1] || P.side || 1, ax: fr && ART.meta.ax ? ART.meta.ax[name] || 0 : 0 };
 }
 // Cut-out walk rig: each view keeps ONE drawing (META.rig picks it and finds the skirt hem and the gap between
 // the feet). The feet below the hem are two pieces that step (stance slides back, swing lifts and comes forward),
 // the skirt swings as strips under the waist, and the body dips on each contact. Nothing swaps between drawings,
 // so there is no flicker, at any frame rate.
-const RIGMODE = { '': 'side', '_se': 'dfront', '_s': 'front', '_ne': 'dback', '_n': 'back' };
+const RIGMODE = { '': 'side', '_ese': 'side', '_se': 'dfront', '_sse': 'front', '_s': 'front', '_ene': 'dback', '_ne': 'dback', '_nne': 'back', '_n': 'back' };
 const STEP_K = 1.25;   // walk phase (rad) per walk unit (P.walk += px / 15): ≈ 4 steps/s at base speed
 function footPhase(u) {   // unit stride profile: stance slides front→back linearly, swing comes back→front with a lift
   if (u < 0.5) return [1 - 4 * u, 0];
@@ -2431,9 +2439,15 @@ function drawPlayer() {
   worldT();
   const q = walkPose(), v = q.v, frames = v.frames, A = frames[q.a] || frames[0];
   if (P.iframe > 0 && Math.floor(G.t * 20) % 2) return;
-  const pw = SW(A), ph = SH(A), breathe = 1 + Math.sin(G.t * 2.4) * 0.018 * (1 - q.sp), gb = gearPoses(q, ph);
+  const pw = SW(A), ph = SH(A), x0 = -pw / 2 - v.ax, breathe = 1 + Math.sin(G.t * 2.4) * 0.018 * (1 - q.sp);
+  let arm = null; const AR = q.R && q.R.arm;
+  if (AR && SPR[AR.src + '_arm']) {   // shoulder and resting hand in world offsets from the feet
+    const wr = pw / q.R.w, hr = ph / q.R.h, sx0 = v.flip * (x0 + AR.s[0] * wr), sy0 = -ph + AR.s[1] * hr, hx0 = v.flip * (x0 + AR.h[0] * wr), hy0 = -ph + AR.h[1] * hr;
+    arm = { sx: sx0, sy: sy0, L: Math.hypot(hx0 - sx0, hy0 - sy0), a0: Math.atan2(hy0 - sy0, hx0 - sx0), borrow: !!AR.borrow };
+  }
+  const gb = gearPoses(q, ph, arm); q.arm = gb.arm;
   const lean = clamp((P.vx || 0) / 150, -1.2, 1.2) * 0.05 + gb.rot, tk = 1 - 0.035 * (P.turnK || 0), sx = (2 - tk) * gb.sx, sy = breathe * tk * gb.sy;
-  const x0 = -pw / 2 - v.ax, ox = P.x + q.sway + gb.dx, oy = P.y + 12 - q.bob + gb.dy;
+  const ox = P.x + q.sway + gb.dx, oy = P.y + 12 - q.bob + gb.dy;
   if (gb.list.length) drawGear(gb.list, ox, oy, lean, true);
   ctx.save(); ctx.translate(ox, oy); ctx.rotate(lean); ctx.scale(v.flip * sx, sy);
   if (q.R && A.at) drawRig(A, q, pw, ph, x0, v.flip);
@@ -2464,6 +2478,11 @@ function drawRig(img, q, pw, ph, x0, flip) {
     dI(foot, -fw / 2, -fh, fw, fh);
     ctx.restore();
   }
+  const AR = R.arm, armImg = AR && SPR[AR.src + '_arm'], drawArm = () => {   // the free arm, turned at the shoulder
+    const d = (q.arm ? q.arm.d : 0) * flip, ax2 = x0 + AR.s[0] * wr, ay2 = -ph + AR.s[1] * hr;
+    ctx.save(); ctx.translate(ax2, ay2); ctx.rotate(d); dI(armImg, (AR.o[0] - AR.s[0]) * wr, (AR.o[1] - AR.s[1]) * hr, SW(armImg), SH(armImg)); ctx.restore();
+  };
+  if (armImg && q.arm && q.arm.back) drawArm();
   // body above the waist in one piece; the skirt below it in strips that swing out toward the hem
   const hip = Math.round(Hd * 0.5);
   cut(0, hip + 1, 0);
@@ -2475,6 +2494,7 @@ function drawRig(img, q, pw, ph, x0, flip) {
     const y0 = hip + Math.floor((Hd - hip) * j / n), y1 = hip + Math.floor((Hd - hip) * (j + 1) / n), t = ((y0 + y1) / 2 - hip) / (Hd - hip), w = Math.pow(t, 1.7);
     cut(y0, y1 - y0 + 1, (kick * sp * (front ? 1.2 : 1) + trail) * w);
   }
+  if (armImg && !(q.arm && q.arm.back)) drawArm();
 }
 /* ---------- held gear ----------
    Weapons that are things (clubs, bell, brush, talisman; a lantern for 단비) are worn on the body and come to the
@@ -2495,65 +2515,86 @@ function gpose(phi, ph, lift = 0, reach = 5) {   // a swing pose: hand on a smal
 }
 function lpose(a, b, k) { return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), a: a.a + angDiff(b.a, a.a) * k, f: lerp(a.f, b.f, k), back: k < 0.5 ? a.back : b.back }; }
 function aimPose(hx, hy, tx, ty, L) { const dx = tx - hx, dy = ty - hy; return { x: hx, y: hy, a: Math.atan2(dy, dx), f: clamp(Math.hypot(dx, dy) / L, 0.35, 1), back: false }; }
-function gearPoses(q, ph) {
-  const out = { list: [], dx: 0, dy: 0, rot: 0, sx: 1, sy: 1 };
+// Each held item reports how much it is "in hand" (hold 0..1) and where the arm should point (armDir, world angle).
+// The most recent active item drives the free arm: its grip moves to the hand at the end of the arm, so the club,
+// baton, bell, brush and talisman are swung by the arm instead of floating. Others fall back to where they are worn.
+function gearPoses(q, ph, arm) {
+  const out = { list: [], dx: 0, dy: 0, rot: 0, sx: 1, sy: 1, arm: null };
+  const idle = Math.sin(q.th || 0) * 0.24 * q.sp;   // the free arm swings with the stride
+  if (arm) out.arm = { d: idle, back: arm.borrow };
   if (!P.weapons || !P.weapons.length || !ART.ok) return out;
   const s = P.side || 1, north = P.d >= 5 && P.d <= 7, fa0 = Math.atan2(P.face.y, P.face.x), danbi = P.spr === 'danbi';
   const swing = Math.sin(q.th || 0) * q.sp;   // hip items swing with the stride
+  let drv = null;
   for (const w of P.weapons) {
     const S = GEAR[w.id]; if (!S || (w.id === 'hollong' && !danbi)) continue;
     const img = ICON[w.id]; if (!img) continue;
     const L = S.len * ph, wind = w.wuAt > (w.at ?? -9) && G.t - w.wuAt < GEAR_WU[w.id] + 0.35, wk = wind ? clamp((G.t - w.wuAt) / GEAR_WU[w.id], 0, 1) : 0, h = w.at === undefined ? 9 : G.t - w.at;   // a wind-up with nothing to throw at lowers again
-    let pose, alpha = 1, smear = null;
+    let pose, rest, alpha = 1, smear = null, hold = 0, armDir = null, pri = 0;
     if (w.id === 'club') {
-      const rest = { x: -s * 6, y: -0.36 * ph, a: -Math.PI / 2 - s * 0.62, f: 1, back: !north };
+      rest = { x: -s * 6, y: -0.36 * ph, a: -Math.PI / 2 - s * 0.62, f: 1, back: !north };
       const d = w.dir || 1, fa = wind ? fa0 : (w.fa ?? fa0);
-      if (wind) { pose = lpose(rest, gpose(fa - d * 1.9, ph, 0.35), easeOut2(wk)); out.dx -= Math.cos(fa) * 2 * wk; out.sy *= 1 - 0.03 * wk; out.sx *= 1 + 0.02 * wk; }
-      else if (h < 0.09) { const k = easeOut2(h / 0.09); pose = gpose(fa - d * 1.5 + d * 3 * k, ph, 0.35 * (1 - k)); smear = { a0: fa - d * 1.5, a1: fa - d * 1.5 + d * 3 * k, al: 1 }; }
-      else if (h < 0.24) { const k = easeOut2((h - 0.09) / 0.15); pose = gpose(fa + d * (1.5 + 0.4 * k), ph); smear = { a0: fa - d * 1.5, a1: fa + d * 1.5, al: 1 - k }; }
-      else if (h < 0.5) pose = lpose(gpose(fa + d * 1.9, ph), rest, easeIO((h - 0.24) / 0.26));
+      if (wind) { pose = lpose(rest, gpose(fa - d * 1.9, ph, 0.35), easeOut2(wk)); hold = easeOut2(wk); out.dx -= Math.cos(fa) * 2 * wk; out.sy *= 1 - 0.03 * wk; out.sx *= 1 + 0.02 * wk; }
+      else if (h < 0.09) { const k = easeOut2(h / 0.09); pose = gpose(fa - d * 1.5 + d * 3 * k, ph, 0.35 * (1 - k)); hold = 1; smear = { a0: fa - d * 1.5, a1: fa - d * 1.5 + d * 3 * k, al: 1 }; }
+      else if (h < 0.24) { const k = easeOut2((h - 0.09) / 0.15); pose = gpose(fa + d * (1.5 + 0.4 * k), ph); hold = 1; smear = { a0: fa - d * 1.5, a1: fa + d * 1.5, al: 1 - k }; }
+      else if (h < 0.5) { const k = easeIO((h - 0.24) / 0.26); pose = lpose(gpose(fa + d * 1.9, ph), rest, k); hold = 1 - k; }
       else pose = rest;
+      armDir = pose.a;   // straight-arm swing: arm and club in one line
       if (!wind && h < 0.3) { const e = h < 0.06 ? h / 0.06 : 1 - (h - 0.06) / 0.24; out.dx += Math.cos(fa) * 3 * e; out.dy += Math.sin(fa) * 1.5 * e; out.rot += Math.cos(fa) * 0.08 * e; out.sy *= 1 + 0.03 * e; }
     } else if (w.id === 'yukmo') {
-      const rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
+      rest = { x: s * 4, y: -0.34 * ph, a: -Math.PI / 2 + s * 0.5, f: 1, back: !north };
       const d = s, fa = fa0, p0 = fa - d * Math.PI / 2;
       const plant = () => aimPose(Math.cos(fa) * 8, -0.42 * ph + Math.sin(fa) * 4, Math.cos(fa) * 30, Math.sin(fa) * 15, L);
       if (wind) {
         const t = wk * GEAR_WU.yukmo;
-        if (t < 0.08) pose = lpose(rest, gpose(p0, ph, 0.1, 7), easeOut2(t / 0.08));
-        else { const u = (t - 0.08) / 0.22, ph2 = p0 + d * 2.5 * Math.PI * u * u; pose = gpose(ph2, ph, 0.08, 7); smear = { a0: ph2 - d * Math.min(1.8, u * 4), a1: ph2, al: 0.9, r: 1 }; out.dy -= Math.sin(Math.PI * u) * 6; }
-      } else if (h < 0.07) pose = lpose(gpose(fa, ph, 0.08, 7), plant(), easeOut2(h / 0.07));
-      else if (h < 0.28) pose = plant();
-      else if (h < 0.6) pose = lpose(plant(), rest, easeIO((h - 0.28) / 0.32));
+        if (t < 0.08) { pose = lpose(rest, gpose(p0, ph, 0.1, 7), easeOut2(t / 0.08)); hold = easeOut2(t / 0.08); }
+        else { const u = (t - 0.08) / 0.22, ph2 = p0 + d * 2.5 * Math.PI * u * u; pose = gpose(ph2, ph, 0.08, 7); hold = 1; smear = { a0: ph2 - d * Math.min(1.8, u * 4), a1: ph2, al: 0.9, r: 1 }; out.dy -= Math.sin(Math.PI * u) * 6; }
+      } else if (h < 0.07) { pose = lpose(gpose(fa, ph, 0.08, 7), plant(), easeOut2(h / 0.07)); hold = 1; }
+      else if (h < 0.28) { pose = plant(); hold = 1; }
+      else if (h < 0.6) { const k = easeIO((h - 0.28) / 0.32); pose = lpose(plant(), rest, k); hold = 1 - k; }
       else pose = rest;
+      armDir = pose.a;
       if (!wind && h < 0.2) { const e = 1 - h / 0.2; out.sy *= 1 - 0.12 * e; out.sx *= 1 + 0.08 * e; out.dy += 1.5 * e; }
     } else if (w.id === 'bell') {
       const act = h < 0.4 ? 1 - h / 0.4 : 0;
       if (danbi) { if (act > 0) { out.rot += Math.sin(h * 40) * 0.035 * act; out.dy -= Math.sin(Math.min(1, h / 0.12) * Math.PI) * 2.5; } continue; }   // her staff already has the bells
-      const rest = { x: -s * 9, y: -0.4 * ph, a: Math.PI / 2 + swing * 0.3, f: 1, back: false };
+      rest = { x: -s * 9, y: -0.4 * ph, a: Math.PI / 2 + swing * 0.3, f: 1, back: false };
       const up = { x: Math.cos(fa0) * 12, y: -1.02 * ph, a: Math.PI / 2, f: 1, back: Math.sin(fa0) < -0.3 };   // held up over the head
-      if (wind) pose = lpose(rest, up, easeOut2(wk));
-      else if (h < 0.4) { pose = { ...up, a: Math.PI / 2 + Math.sin(h * 45) * 0.55 * act }; out.rot += Math.sin(h * 40) * 0.03 * act; }
-      else if (h < 0.65) pose = lpose(up, rest, easeIO((h - 0.4) / 0.25));
+      if (wind) { pose = lpose(rest, up, easeOut2(wk)); hold = easeOut2(wk); }
+      else if (h < 0.4) { pose = { ...up, a: Math.PI / 2 + Math.sin(h * 45) * 0.55 * act }; hold = 1; out.rot += Math.sin(h * 40) * 0.03 * act; }
+      else if (h < 0.65) { const k = easeIO((h - 0.4) / 0.25); pose = lpose(up, rest, k); hold = 1 - k; }
       else pose = rest;
+      armDir = -Math.PI / 2 + Math.cos(fa0) * 0.35 + (h < 0.4 ? Math.sin(h * 45) * 0.12 * act : 0);   // arm up, shaking
     } else if (w.id === 'ink') {
-      const rest = { x: -s * 7, y: -0.42 * ph, a: Math.PI / 2 + s * 0.45, f: 1, back: false };
+      rest = { x: -s * 7, y: -0.42 * ph, a: Math.PI / 2 + s * 0.45, f: 1, back: false };
       const m = clamp((P.spd01 || 0) * 1.4, 0, 1), cx = Math.cos(fa0), cy = Math.sin(fa0), wob = Math.sin(Math.PI * (P.walk || 0)) * 3;
       const drag = aimPose(-cx * 6, -0.4 * ph - cy * 2, -cx * 18 + wob * cy, 5 - cy * 9 - wob * cx * 0.5, L);
       drag.back = cy > 0.3; if (h < 0.15) drag.f *= 1 - 0.18 * Math.sin(Math.PI * h / 0.15);   // dab as each puddle drops
-      pose = lpose(rest, drag, easeIO(m));
+      pose = lpose(rest, drag, easeIO(m)); hold = easeIO(m);
     } else if (w.id === 'talisman') {
-      const rest = { x: -s * 5, y: -0.5 * ph, a: -Math.PI / 2 - s * 0.35 + Math.sin(G.t * 3) * 0.05, f: 1, back: !north };   // tucked in the back of the sash
+      rest = { x: -s * 5, y: -0.5 * ph, a: -Math.PI / 2 - s * 0.35 + Math.sin(G.t * 3) * 0.05, f: 1, back: !north };   // tucked in the back of the sash
       const ta = w.ta ?? fa0, up = { x: Math.cos(fa0) * 13 + s * 3, y: -0.6 * ph, a: -Math.PI / 2 + s * 0.45, f: 1, back: false };
-      if (wind) pose = lpose(rest, up, easeOut2(wk));
-      else if (h < 0.3) { pose = rest; alpha = 0; }   // it left the hand: that's the projectile
+      if (wind) { pose = lpose(rest, up, easeOut2(wk)); hold = easeOut2(wk); armDir = -Math.PI / 2 + s * 0.5; }
+      else if (h < 0.3) { pose = rest; alpha = 0; hold = Math.max(0, 1 - h / 0.22); armDir = Math.atan2(Math.sin(ta) * 0.5, Math.cos(ta)); }   // it left the hand: the arm follows through toward the throw
       else if (h < 0.48) { pose = rest; alpha = (h - 0.3) / 0.18; }   // a fresh one is drawn from the belt
       else pose = rest;
       if (!wind && h < 0.22) { const e = 1 - h / 0.22; out.rot += Math.cos(ta) * 0.07 * e; out.dx += Math.cos(ta) * 2 * e; }
-    } else {   // 단비's lantern
-      pose = { x: -s * 9, y: -0.44 * ph, a: Math.PI / 2 + swing * 0.35, f: 1, back: false };
+    } else {   // 단비's lantern hangs from her free hand
+      rest = { x: -s * 9, y: -0.44 * ph, a: Math.PI / 2 + swing * 0.35, f: 1, back: false };
+      pose = { ...rest }; hold = 1; pri = -1;
     }
-    out.list.push({ img, S, L, pose, alpha, smear, evo: w.evo });
+    if (hold > 0.01 && pri >= 0) pri = 1000 - Math.min(G.t - (w.at ?? -1e9), G.t - (w.wuAt ?? -1e9));
+    const it = { img, S, L, pose, rest, alpha, smear, evo: w.evo, hold, armDir, pri, lantern: w.id === 'hollong' };
+    out.list.push(it);
+    if (hold > 0.01 && arm && (!drv || it.pri > drv.pri)) drv = it;
+  }
+  if (arm && drv) {   // the driving item goes to the hand; the arm turns to reach it
+    const a0 = arm.a0 + idle, want = drv.armDir ?? (drv.lantern ? a0 : Math.atan2(drv.pose.y - arm.sy, drv.pose.x - arm.sx));
+    const ad = a0 + angDiff(want, a0) * drv.hold, hx = arm.sx + Math.cos(ad) * arm.L, hy = arm.sy + Math.sin(ad) * arm.L;
+    drv.pose = { ...drv.pose, x: lerp(drv.pose.x, hx, drv.hold), y: lerp(drv.pose.y, hy, drv.hold) };
+    if (drv.lantern) drv.pose.back = false;
+    out.arm = { d: ad - arm.a0, back: arm.borrow || (drv.hold > 0.5 && drv.pose.back) };
+    for (const it of out.list) if (it !== drv && it.hold > 0.01 && it.lantern) it.pose = it.rest;   // the lantern waits at the hip while the hand is busy
   }
   return out;
 }
@@ -2561,7 +2602,7 @@ function drawGear(list, ox, oy, lean, back) {
   ctx.save(); ctx.translate(ox, oy); ctx.rotate(lean);
   for (const it of list) {
     const p = it.pose, S = it.S, img = it.img;
-    if (!back && it.smear) {   // motion smear: an additive wedge from the swing start to the club, brightest at the leading edge
+    if (back && it.smear) {   // motion smear: an additive wedge from the swing start to the club, behind the body
       const sm = it.smear, n = 12, r0 = it.L * 0.25, r1 = it.L * 1.08, cx = p.x - Math.cos(sm.a1) * 0, cy = p.y;
       ctx.globalCompositeOperation = 'lighter';
       for (let i = 0; i < n; i++) {
@@ -2611,12 +2652,12 @@ function worldT() { ctx.setTransform(WM[0], 0, 0, WM[0], WM[1], WM[2]); }
 function drawPose(img, p) {
   const s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
   ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
-  dI(img, -p.w / 2, -p.h, p.w, p.h);
+  dI(img, -p.w / 2, p.oy ?? -p.h, p.w, p.h);
 }
 function drawEmis(em, p) {
   const k = p.w / SW(p.base), s = WM[0], c = Math.cos(p.rot), n = Math.sin(p.rot);
   ctx.setTransform(s * c * p.sx, s * n * p.sx, -s * n * p.sy, s * c * p.sy, s * p.x + WM[1], s * p.y + WM[2]);
-  dI(em, -p.w / 2 + (em._ox || 0) * k, -p.h + (em._oy || 0) * k, SW(em) * k, SH(em) * k);
+  dI(em, -p.w / 2 + (em._ox || 0) * k, (p.oy ?? -p.h) + (em._oy || 0) * k, SW(em) * k, SH(em) * k);
 }
 function drawImugi(e, emissive) {
   const segImg = SPR.seg, sw = SW(segImg), sh = SH(segImg);
@@ -2698,8 +2739,11 @@ function render() {
   // enemies: shadows (lit ones only), then bodies; deep-dark small enemies are left to the glow pass (eyes only)
   ctx.globalAlpha = 0.45;
   for (const e of enemies) {
-    if (e.dead || !e.inLight || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 90)) continue;
-    const r = e.r * e.scale, ex = e.rx ?? e.x, ey = e.ry ?? e.y; dI(GL.shadow, ex - r * 1.3, ey + r * 0.45, r * 2.6, r * 0.9);
+    if (e.dead || (!e.inLight && !e.big) || e.parent || e.type === 'dark' || e.type === 'imugi' || !inView(e.x, e.y, 90)) continue;
+    const r = e.r * e.scale, ex = e.rx ?? e.x, ey = e.ry ?? e.y;
+    if (e.type === 'gumiho' || e.type === 'clone') { const sw = 150 * e.scale, sh = 28 * e.scale; ctx.globalAlpha = 0.55 * (e.alpha || 1); dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.6, sw, sh); ctx.globalAlpha = 0.45; continue; }   // a long shadow under the whole body grounds the fox
+    if (e.type === 'gseun') { const sw = 90 * e.scale, sh = 22 * e.scale; ctx.globalAlpha = 0.5; dI(GL.shadow, ex - sw / 2, ey + r * 0.75 - sh * 0.5, sw, sh); ctx.globalAlpha = 0.45; continue; }
+    dI(GL.shadow, ex - r * 1.3, ey + r * 0.45, r * 2.6, r * 0.9);
   }
   ctx.globalAlpha = 0.55; { const bob = P._pose ? P._pose.bob : 0, shw = 30 - bob * 1.5; dI(GL.shadow, P.x - shw / 2, P.y + 7, shw, 10); }
   ctx.globalAlpha = 1;
@@ -2711,6 +2755,7 @@ function render() {
   }
   P._k = P.y + 12; DL.push(P);
   DL.sort((a, b) => a._k - b._k);
+  drawUnder();
   for (const o of DL) { if (o === P) drawPlayer(); else if (o.prop) drawProp(o); else drawEnemy(o); }
   for (const e of enemies) {
     if (e.dead || !inView(e.x, e.y, 160)) continue;
@@ -2734,8 +2779,8 @@ function render() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const cx = W / 2 + G.shx - (G.cox || 0) * ZOOM, cy = H / 2 + G.shy - (G.coy || 0) * ZOOM, R = lightR() * ZOOM;
   const flick = 1 + Math.sin(G.t * 9) * 0.012 + Math.sin(G.t * 23) * 0.008;
-  const gr = ctx.createRadialGradient(cx, cy, Math.max(1, R * 0.5 * flick), cx, cy, R * 1.08 * flick);
-  gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.7, 'rgba(6,7,14,0.3)'); gr.addColorStop(1, 'rgba(5,6,12,0.9)');
+  const gr = ctx.createRadialGradient(cx, cy, Math.max(1, R * 0.55 * flick), cx, cy, R * 1.02 * flick);   // sight ends where the light ends
+  gr.addColorStop(0, 'rgba(6,7,14,0)'); gr.addColorStop(0.62, 'rgba(6,7,14,0.38)'); gr.addColorStop(1, 'rgba(4,5,10,0.95)');
   ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'lighter';
   const wg = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
@@ -2812,45 +2857,16 @@ function drawDark(e) {
 function drawGlows() {
   worldT();
   ctx.globalCompositeOperation = 'lighter';
-  // edge of the lantern light = pickup range
-  const LR = lightR();
+  // pickup range ring
+  const LR = pickR();
   ctx.strokeStyle = `rgba(242,169,59,${0.14 + Math.sin(G.t * 2) * 0.04})`; ctx.lineWidth = 2;
   ctx.setLineDash([16, 12]); ctx.lineDashOffset = -G.t * 18; ctx.beginPath(); ctx.arc(P.x, P.y, LR, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-  // danger zones: tinted floor that fills toward the strike, rim flickers in the last quarter
-  for (const z of zones) {
-    const k = Math.min(1, z.t / z.warn), fired = z.fired, fa = fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : Math.min(1, z.t / 0.08), late = !fired && k > 0.75 ? 0.5 + 0.5 * Math.sin(G.t * 42) : 0, c = z.col;
-    ctx.globalAlpha = fa;
-    if (z.sh === 'c') {
-      ctx.fillStyle = `rgba(${c},${fired ? 0.55 : 0.12})`; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.fill();
-      if (!fired) { ctx.fillStyle = `rgba(${c},0.3)`; ctx.beginPath(); ctx.arc(z.x, z.y, z.r * k, 0, TAU); ctx.fill(); }
-      ctx.strokeStyle = `rgba(${c},${0.55 + 0.45 * late})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.stroke();
-    } else {
-      ctx.save(); ctx.translate(z.x, z.y); ctx.rotate(z.a);
-      ctx.fillStyle = `rgba(${c},0.12)`; ctx.fillRect(0, -z.w / 2, z.len, z.w);
-      if (!fired) { ctx.fillStyle = `rgba(${c},0.28)`; ctx.fillRect(0, -z.w / 2, z.len * k, z.w); }
-      ctx.strokeStyle = `rgba(${c},${0.5 + 0.45 * late})`; ctx.lineWidth = 2; ctx.strokeRect(0, -z.w / 2, z.len, z.w);
-      ctx.fillStyle = `rgba(${c},0.5)`; for (let i = 1; i < z.len / 70; i++) { const x = i * 70; ctx.beginPath(); ctx.moveTo(x + 10, 0); ctx.lineTo(x - 6, -z.w * 0.28); ctx.lineTo(x - 6, z.w * 0.28); ctx.closePath(); ctx.fill(); }   // direction chevrons
-      ctx.restore();
-    }
-  }
   ctx.globalAlpha = 1;
   // dash afterimages
   for (const g of G.ghosts || []) {   // afterimages; 그슨대 is too dark to read additively, so it leaves a violet-lit silhouette
     const a = 1 - g.t / 0.3;
     if (g.fl) { ctx.globalAlpha = 0.24 * a; drawPose(g.fl, g.p); worldT(); const z = g.p.h * 0.95; ctx.globalAlpha = 0.4 * a; dI(GL.violet, g.p.x - z / 2, g.p.y - g.p.h * 0.55 - z / 2, z, z); }
     else { ctx.globalAlpha = 0.42 * a; drawPose(g.p.base, g.p); worldT(); }
-  }
-  ctx.globalAlpha = 1;
-  // wind-up tells: a glow gathers on the body before a boss or a 도깨비 commits
-  for (const e of enemies) {
-    if (e.dead || !inView(e.x, e.y, 120)) continue;
-    if (e.pose === 'p1' && (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone')) {
-      const q = Math.min(1, (e.poseT || 0) / 0.5), gl = e.type === 'gseun' ? GL.violet : GL.pink, sz = (70 + 60 * q) * (e.scale || 1);
-      ctx.globalAlpha = 0.35 + 0.35 * q; dI(gl, e.x - sz / 2, e.y - sz * 0.75, sz, sz);
-    } else if (e.type === 'imugi' && e.pose === 'p2') {
-      const mx = e.x + Math.cos(e.ang) * 34, my = e.y + Math.sin(e.ang) * 34, sz = 60 + Math.sin(G.t * 30) * 8;
-      ctx.globalAlpha = 0.9; dI(GL.blue, mx - sz / 2, my - sz / 2, sz, sz); dI(GL.white, mx - 10, my - 10, 20, 20);
-    } else if (e.atk === 'wind') { ctx.globalAlpha = 0.8; dI(e.type === 'saja' ? GL.sun : GL.red, e.x - 14, e.y - 44, 28, 28); }
   }
   ctx.globalAlpha = 1;
   // landmarks: bonfire light pool + its safe ring, shrine aura and prayer ring, well sparkle, ward ring, gamble glint, peddler lamp
@@ -2860,16 +2876,11 @@ function drawGlows() {
     if (p.t === 'bonfire') {
       const z = 260 + Math.sin(G.t * 11 + p.y) * 10; ctx.globalAlpha = 0.34 * f + 0.1; dI(GL.amber, p.x - z / 2, p.y - 40 - z / 2, z, z);
       ctx.globalAlpha = 0.9; dI(GL.fire || GL.amber, p.x - 40, p.y - 80, 80, 80);
-      ctx.globalAlpha = 0.22; ctx.strokeStyle = 'rgba(255,170,80,1)'; ctx.lineWidth = 2; ctx.setLineDash([6, 8]); ctx.beginPath(); ctx.ellipse(p.x, p.y, 130, 130 * 0.62, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     } else if (p.t === 'shrine' && !p.used) {
       ctx.globalAlpha = 0.35 + 0.2 * Math.sin(G.t * 2.4); dI(GL.sun, p.x - 50, p.y - 120, 100, 100);
-      ctx.globalAlpha = 0.3; ctx.strokeStyle = 'rgba(255,214,120,1)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.6, 0, 0, TAU); ctx.stroke();
-      if (p.pray > 0) { const k = Math.min(1, p.pray / 2); ctx.globalAlpha = 0.95; ctx.strokeStyle = 'rgba(255,230,150,1)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.6, 0, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke(); }
     } else if (p.t === 'well' && G.t >= p.readyAt) {
       ctx.globalAlpha = 0.45 + 0.25 * Math.sin(G.t * 3 + p.x); dI(GL.blue || GL.white, p.x - 26, p.y - 58, 52, 40);
     } else if (p.t === 'sotdae') {
-      ctx.globalAlpha = 0.18 + 0.06 * Math.sin(G.t * 2); ctx.strokeStyle = 'rgba(150,190,255,1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(p.x, p.y, 120, 120 * 0.62, 0, 0, TAU); ctx.stroke();
-      ctx.lineWidth = 2.5; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = i * TAU / 12 + G.t * 0.4; ctx.moveTo(p.x + Math.cos(a) * 112, p.y + Math.sin(a) * 112 * 0.62); ctx.lineTo(p.x + Math.cos(a) * 126, p.y + Math.sin(a) * 126 * 0.62); } ctx.stroke();
       ctx.globalAlpha = 0.5 * f; dI(GL.blue || GL.white, p.x - 22, p.y - 92, 44, 44);
     } else if (p.t === 'mat' && !p.used) {
       ctx.globalAlpha = 0.35 + 0.25 * Math.sin(G.t * 5 + p.x); dI(GL.sun, p.x - 30, p.y - 40, 60, 44);
@@ -3030,7 +3041,48 @@ function drawGlows() {
     if (b === '0') { ctx.strokeStyle = '#fffbea'; ctx.lineWidth = 0.9; ctx.stroke(); }
   }
   ctx.globalAlpha = 1;
-  // effects
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+function drawZones() {   // attack warnings on the floor, under every character
+  // danger zones: tinted floor that fills toward the strike, rim flickers in the last quarter
+  for (const z of zones) {
+    const k = Math.min(1, z.t / z.warn), fired = z.fired, fa = fired ? Math.max(0, 1 - (z.t - z.warn) / 0.22) : Math.min(1, z.t / 0.08), late = !fired && k > 0.75 ? 0.5 + 0.5 * Math.sin(G.t * 42) : 0, c = z.col;
+    ctx.globalAlpha = fa;
+    if (z.sh === 'c') {
+      ctx.fillStyle = `rgba(${c},${fired ? 0.65 : 0.18})`; ctx.beginPath(); ctx.ellipse(z.x, z.y, z.r, z.r * 0.62, 0, 0, TAU); ctx.fill();
+      if (!fired) { ctx.fillStyle = `rgba(${c},0.4)`; ctx.beginPath(); ctx.ellipse(z.x, z.y, z.r * k, z.r * k * 0.62, 0, 0, TAU); ctx.fill(); }
+      ctx.strokeStyle = `rgba(${c},${0.55 + 0.45 * late})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(z.x, z.y, z.r, z.r * 0.62, 0, 0, TAU); ctx.stroke();
+    } else {
+      ctx.save(); ctx.translate(z.x, z.y); ctx.rotate(z.a);
+      ctx.fillStyle = `rgba(${c},0.18)`; ctx.fillRect(0, -z.w / 2, z.len, z.w);
+      if (!fired) { ctx.fillStyle = `rgba(${c},0.38)`; ctx.fillRect(0, -z.w / 2, z.len * k, z.w); }
+      ctx.strokeStyle = `rgba(${c},${0.5 + 0.45 * late})`; ctx.lineWidth = 2; ctx.strokeRect(0, -z.w / 2, z.len, z.w);
+      ctx.fillStyle = `rgba(${c},0.5)`; for (let i = 1; i < z.len / 70; i++) { const x = i * 70; ctx.beginPath(); ctx.moveTo(x + 10, 0); ctx.lineTo(x - 6, -z.w * 0.28); ctx.lineTo(x - 6, z.w * 0.28); ctx.closePath(); ctx.fill(); }   // direction chevrons
+      ctx.restore();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+function drawBeam() {   // 이무기's water beam runs along the floor, under the characters
+  if (G.beam) {
+    const b = G.beam, L = 950;
+    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a);
+    if (b.t < b.warn) {
+      const k = b.t / b.warn, lock = b.t > b.warn - 0.25, pulse = lock ? 0.5 + 0.5 * Math.sin(G.t * 40) : 0;
+      ctx.fillStyle = `rgba(${AQUA},0.1)`; ctx.fillRect(0, -24, L, 48); ctx.fillStyle = `rgba(${AQUA},0.26)`; ctx.fillRect(0, -24, L * k, 48);
+      ctx.strokeStyle = `rgba(${AQUA},${0.45 + 0.45 * pulse})`; ctx.lineWidth = 2; ctx.strokeRect(0, -24, L, 48);
+      ctx.globalAlpha = 0.6 + 0.4 * k; const g = 26 + 46 * k; dI(GL.blue, -g / 2, -g / 2, g, g); dI(GL.white, -g / 5, -g / 5, g / 2.5, g / 2.5); ctx.globalAlpha = 1;
+    } else {
+      const q = (b.t - b.warn) / b.act, wid = 84 * (q < 0.12 ? q / 0.12 : q > 0.82 ? (1 - q) / 0.18 : 1), fr = FX.beam && FX.beam.length ? FX.beam[Math.floor(G.t * 22) % FX.beam.length] : null;
+      if (fr) { dI(fr, -30, -wid / 2, L + 40, wid); ctx.globalAlpha = 0.7; dI(fr, -30, -wid / 4, L + 40, wid / 2); ctx.globalAlpha = 1; }
+      else { ctx.strokeStyle = 'rgba(180,225,255,0.85)'; ctx.lineWidth = 26; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(L, 0); ctx.stroke(); }
+      dI(GL.white, -36, -36, 72, 72);
+    }
+    ctx.restore();
+  }
+}
+function drawFxList() {   // every effect sits on the floor, under the characters (players, mobs and bosses)
   for (const f of effects) {
     if (f.delay > 0) continue; const k = f.t / f.dur;
     if (f.k === 'fb') {   // flipbook: frame by normalised time, full brightness from frame 1, the sheet itself carries the decay
@@ -3046,39 +3098,40 @@ function drawGlows() {
       const img = FX[f.a || 'circle'] && FX[f.a || 'circle'][0]; if (!img) continue;
       const x = f.follow ? P.x : f.x, y = f.follow ? P.y + 10 : f.y, r0 = f.r0 ?? f.r * 0.6, r = r0 + (f.r - r0) * easeOut3(Math.min(1, k * 3));
       ctx.globalAlpha = (f.al ?? 0.9) * Math.min(1, k * 10) * (k > 0.55 ? (1 - k) / 0.45 : 1);
-      ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.55); ctx.rotate((f.rot || 0) + (REDUCED ? 0 : f.t * (f.spin ?? 1.2))); dI(img, -r, -r, r * 2, r * 2); ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.scale(1, 0.62); ctx.rotate((f.rot || 0) + (REDUCED ? 0 : f.t * (f.spin ?? 1.2))); dI(img, -r, -r, r * 2, r * 2); ctx.restore();
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring' && FX.ring && FX.ring[0]) {   // bell: generated sound-wave ring, sharp edge at the hit radius
       const r = f.r || 16, fa = 1 - k, z = r * 2.06;
-      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y - z / 2, z, z);
+      ctx.globalAlpha = Math.min(1, fa * 1.6) * (f.evo ? 1 : 0.9); dI(FX.ring[0], P.x - z / 2, P.y - z * 0.31, z, z * 0.62);   // a ground ripple: squashed to the floor
       if (k < 0.25) { ctx.globalAlpha = (0.25 - k) * 3; const c = 50; dI(GL.gold, P.x - c / 2, P.y - 12 - c / 2, c, c); }
       ctx.globalAlpha = 1; continue;
     }
     if (f.k === 'ring') {
       const r = f.r || 16, fa = 1 - k, c = f.evo ? '255,214,120' : '240,226,180';
-      ctx.beginPath(); ctx.arc(P.x, P.y, r, 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y, r, r * 0.62, 0, 0, TAU);
       ctx.strokeStyle = `rgba(${c},${0.12 * fa})`; ctx.lineWidth = 22; ctx.stroke();       // wake
       ctx.strokeStyle = `rgba(${c},${0.35 * fa})`; ctx.lineWidth = 7; ctx.stroke();        // body
       ctx.strokeStyle = `rgba(255,250,232,${0.95 * fa})`; ctx.lineWidth = 2.2; ctx.stroke();   // hot edge
       if (f.evo) {   // rotating glyph ticks on the evolved bell
         ctx.strokeStyle = `rgba(255,230,160,${0.8 * fa})`; ctx.lineWidth = 2.5; ctx.beginPath();
-        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + Math.sin(a) * (r - 9)); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + Math.sin(a) * (r + 9)); }
+        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + G.t * 1.5; ctx.moveTo(P.x + Math.cos(a) * (r - 9), P.y + Math.sin(a) * (r - 9) * 0.62); ctx.lineTo(P.x + Math.cos(a) * (r + 9), P.y + Math.sin(a) * (r + 9) * 0.62); }
         ctx.stroke();
       }
     } else if (f.k === 'swing') {
+      ctx.save(); ctx.translate(P.x, P.y); ctx.scale(1, 0.62); ctx.translate(-P.x, -P.y);
       const g = ctx.createRadialGradient(P.x, P.y, f.r * 0.3, P.x, P.y, f.r);
       g.addColorStop(0, 'rgba(79,163,122,0)'); g.addColorStop(0.75, `rgba(120,210,160,${0.35 * (1 - k)})`); g.addColorStop(1, `rgba(200,255,220,${0.6 * (1 - k)})`);
       ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = `rgba(230,255,240,${0.9 * (1 - k)})`; ctx.lineWidth = 3 * (1 - k) + 0.5; ctx.beginPath(); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.stroke();
+      ctx.strokeStyle = `rgba(230,255,240,${0.9 * (1 - k)})`; ctx.lineWidth = 3 * (1 - k) + 0.5; ctx.beginPath(); ctx.arc(P.x, P.y, f.r, f.a - 1.1 + k * 0.4, f.a + 1.1); ctx.stroke(); ctx.restore();
     } else if (f.k === 'slam') {
       const r = f.r * (0.3 + 0.7 * easeOut3(k)), fa = 1 - k;
-      ctx.beginPath(); ctx.arc(P.x, P.y, Math.max(1, r), 0, TAU);
+      ctx.beginPath(); ctx.ellipse(P.x, P.y, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU);
       ctx.fillStyle = `rgba(217,173,69,${0.14 * fa})`; ctx.fill();
       ctx.strokeStyle = `rgba(240,200,110,${0.32 * fa})`; ctx.lineWidth = 8 * fa + 1; ctx.stroke();
       ctx.strokeStyle = `rgba(255,246,214,${0.8 * fa})`; ctx.lineWidth = 2.2 * fa + 0.5; ctx.stroke();
     } else if (f.k === 'burst') {
-      ctx.fillStyle = f.col; ctx.globalAlpha = 0.5 * (1 - k); ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.4 + k * 0.6), 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.fillStyle = f.col; ctx.globalAlpha = 0.5 * (1 - k); ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.4 + k * 0.6), f.r * (0.4 + k * 0.6) * 0.62, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
     } else if (f.k === 'hit') {   // core flash: full size on frame 1, then decay
       const fa = (1 - k) * (1 - k), z = (f.big ? 28 : 16) * (1 - k * 0.45); ctx.globalAlpha = fa * 0.85; dI(GL.white, f.x - z / 2, f.y - z / 2, z, z);
       ctx.globalAlpha = 1;
@@ -3092,7 +3145,7 @@ function drawGlows() {
       for (const L of f.lines) { const n = Math.min(L.length, 1 + Math.ceil(f.t / 0.03)); ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]); for (let i = 1; i < n; i++) ctx.lineTo(L[i][0], L[i][1]); ctx.stroke(); }
     } else if (f.k === 'shock') {
       const r = f.r0 + (f.r1 - f.r0) * easeOut3(k); ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.col; ctx.lineWidth = Math.max(0.5, f.w * (1 - k));
-      ctx.beginPath(); ctx.arc(f.x, f.y, Math.max(1, r), 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.ellipse(f.x, f.y, Math.max(1, r), Math.max(1, r) * 0.62, 0, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1;
     } else if (f.k === 'rays') {
       const a0 = f.rot + (REDUCED ? 0 : G.t * 0.7), L0 = f.r * (0.55 + 0.45 * easeOut3(Math.min(1, k * 2))), al = 0.55 * Math.pow(1 - k, 1.5);
       const rg = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, L0);   // bright at the source, gone at the tips
@@ -3114,33 +3167,48 @@ function drawGlows() {
       }
       ctx.stroke();
     } else if (f.k === 'puff') {
-      ctx.strokeStyle = `rgba(170,200,255,${0.4 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 6 + k * f.r, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = `rgba(170,200,255,${0.4 * (1 - k)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(f.x, f.y, 6 + k * f.r, (6 + k * f.r) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'lightburst') {
-      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(P.x, P.y, 30 + k * 260, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = `rgba(242,169,59,${0.9 * (1 - k)})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(P.x, P.y, 30 + k * 260, (30 + k * 260) * 0.62, 0, 0, TAU); ctx.stroke();
     } else if (f.k === 'ohaeng') {
-      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(P.x, P.y, Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26), 0, TAU); ctx.stroke(); });
+      EL.forEach((el, i) => { ctx.strokeStyle = EL_COLOR[el]; ctx.globalAlpha = 0.8 * (1 - k); ctx.lineWidth = 5; const rr = Math.max(1, 40 + k * (Math.hypot(VW, VH) + 80) - i * 26); ctx.beginPath(); ctx.ellipse(P.x, P.y, rr, rr * 0.62, 0, 0, TAU); ctx.stroke(); });
       ctx.globalAlpha = 1;
     }
   }
-  // imugi water beam
-  if (G.beam) {
-    const b = G.beam, L = 950;
-    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a);
-    if (b.t < b.warn) {
-      const k = b.t / b.warn, lock = b.t > b.warn - 0.25, pulse = lock ? 0.5 + 0.5 * Math.sin(G.t * 40) : 0;
-      ctx.fillStyle = `rgba(${AQUA},0.1)`; ctx.fillRect(0, -24, L, 48); ctx.fillStyle = `rgba(${AQUA},0.26)`; ctx.fillRect(0, -24, L * k, 48);
-      ctx.strokeStyle = `rgba(${AQUA},${0.45 + 0.45 * pulse})`; ctx.lineWidth = 2; ctx.strokeRect(0, -24, L, 48);
-      ctx.globalAlpha = 0.6 + 0.4 * k; const g = 26 + 46 * k; dI(GL.blue, -g / 2, -g / 2, g, g); dI(GL.white, -g / 5, -g / 5, g / 2.5, g / 2.5); ctx.globalAlpha = 1;
-    } else {
-      const q = (b.t - b.warn) / b.act, wid = 84 * (q < 0.12 ? q / 0.12 : q > 0.82 ? (1 - q) / 0.18 : 1), fr = FX.beam && FX.beam.length ? FX.beam[Math.floor(G.t * 22) % FX.beam.length] : null;
-      if (fr) { dI(fr, -30, -wid / 2, L + 40, wid); ctx.globalAlpha = 0.7; dI(fr, -30, -wid / 4, L + 40, wid / 2); ctx.globalAlpha = 1; }
-      else { ctx.strokeStyle = 'rgba(180,225,255,0.85)'; ctx.lineWidth = 26; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(L, 0); ctx.stroke(); }
-      dI(GL.white, -36, -36, 72, 72);
-    }
-    ctx.restore();
+  ctx.globalAlpha = 1;
+}
+function drawWindTells() {   // wind-up glows sit behind the bodies they light
+  // wind-up tells: a glow gathers on the body before a boss or a 도깨비 commits
+  for (const e of enemies) {
+    if (e.dead || !inView(e.x, e.y, 120)) continue;
+    if (e.pose === 'p1' && (e.type === 'gseun' || e.type === 'gumiho' || e.type === 'clone')) {
+      const q = Math.min(1, (e.poseT || 0) / 0.5), gl = e.type === 'gseun' ? GL.violet : GL.pink, sz = (70 + 60 * q) * (e.scale || 1);
+      ctx.globalAlpha = 0.35 + 0.35 * q; dI(gl, e.x - sz / 2, e.y - sz * 0.75, sz, sz);
+    } else if (e.type === 'imugi' && e.pose === 'p2') {
+      const mx = e.x + Math.cos(e.ang) * 34, my = e.y + Math.sin(e.ang) * 34, sz = 60 + Math.sin(G.t * 30) * 8;
+      ctx.globalAlpha = 0.9; dI(GL.blue, mx - sz / 2, my - sz / 2, sz, sz); dI(GL.white, mx - 10, my - 10, 20, 20);
+    } else if (e.atk === 'wind') { ctx.globalAlpha = 0.8; dI(e.type === 'saja' ? GL.sun : GL.red, e.x - 14, e.y - 44, 28, 28); }
   }
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.globalAlpha = 1;
+}
+function drawPoiRings() {   // landmark circles on the floor: bonfire warmth, shrine prayer, 솟대 ward
+  for (const p of poiList) {
+    if (p.broken || !inView(p.x, p.y, 160)) continue;
+    if (p.t === 'bonfire') { ctx.globalAlpha = 0.3; ctx.strokeStyle = 'rgba(255,170,80,1)'; ctx.lineWidth = 2; ctx.setLineDash([6, 8]); ctx.beginPath(); ctx.ellipse(p.x, p.y, 130, 130 * 0.62, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
+    else if (p.t === 'shrine' && !p.used) {
+      ctx.globalAlpha = 0.4; ctx.strokeStyle = 'rgba(255,214,120,1)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.62, 0, 0, TAU); ctx.stroke();
+      if (p.pray > 0) { const k = Math.min(1, p.pray / 2); ctx.globalAlpha = 0.95; ctx.strokeStyle = 'rgba(255,230,150,1)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(p.x, p.y - 6, 64, 64 * 0.62, 0, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke(); }
+    } else if (p.t === 'sotdae') {
+      ctx.globalAlpha = 0.26 + 0.06 * Math.sin(G.t * 2); ctx.strokeStyle = 'rgba(150,190,255,1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(p.x, p.y, 120, 120 * 0.62, 0, 0, TAU); ctx.stroke();
+      ctx.lineWidth = 2.5; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = i * TAU / 12 + G.t * 0.4; ctx.moveTo(p.x + Math.cos(a) * 112, p.y + Math.sin(a) * 112 * 0.62); ctx.lineTo(p.x + Math.cos(a) * 126, p.y + Math.sin(a) * 126 * 0.62); } ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+function drawUnder() {   // everything that happens on the floor, drawn after the ground and before any character
+  worldT(); ctx.globalCompositeOperation = 'lighter';
+  drawZones(); drawPoiRings(); drawBeam(); drawFxList(); drawWindTells();
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; worldT();
 }
 function drawVignette(a = 0.5) {
   const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) / 2);
@@ -3548,6 +3616,7 @@ function pgBuild() {
   s = sec('등불지기 · 걷기');
   r = row(s, '인물'); for (const c of CHARS.filter(c => !c.locked)) r.appendChild(btn(c.name, () => pgChar(c.id), { char: c.id }));
   slider(s, '이동 속도', 0.2, 2, 0.05, () => PG.spd, v => { PG.spd = v; }, v => `${v.toFixed(2)}×`);
+  slider(s, '빛 (시야)', 0, 100, 1, () => PG.light ?? 100, v => { PG.light = v; }, v => `${v}`);
   r = row(s, '자동 걷기'); r.classList.add('wrap'); for (const [k, n] of PG_WALK) r.appendChild(btn(n, () => { PG.walk = k; PG.wT = 0; }, { walk: k || '' }));
   const strip = el('canvas'); strip.id = 'pg-strip'; strip.width = 264; strip.height = 92; s.appendChild(strip);
   const wk = el('pre', 'pg-pre'); wk.id = 'pg-walk'; s.appendChild(wk);

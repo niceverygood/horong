@@ -189,6 +189,64 @@ def bright_point(im, test):
     return [round((cx - im.width / 2) / 2, 1), round((cy - im.height) / 2, 1)]
 
 
+# Free arm per view (rig px of the base drawing): shoulder, hand, capsule radius. The arm is cut out as its own sprite
+# so the runtime can swing it (walk swing, and the hand that holds the club); the body behind it is patched from the
+# torso next to it. 'ne' views hide that arm, so they borrow the back view's arm at a shoulder behind the body.
+ARM = {
+    'yeoni': ((28, 38), (27, 66), 4), 'yeoni_se': ((28, 39), (28, 67), 4), 'yeoni_s': ((20, 38), (17, 64), 4),
+    'yeoni_n': ((14, 37), (10, 65), 4), 'danbi': ((18, 46), (19, 69), 5), 'danbi_se': ((19, 47), (19, 70), 5),
+    'danbi_s': ((13, 45), (10, 66), 5), 'danbi_ne': ((15, 49), (12, 70), 4), 'danbi_n': ((12, 45), (8, 71), 4),
+}
+ARM.update({
+    'yeoni_ese': ((27, 38), (29, 67), 4), 'yeoni_sse': ((25, 38), (23, 66), 4), 'yeoni_nne': ((10, 37), (7, 65), 4),
+    'danbi_ese': ((17, 46), (17, 71), 5), 'danbi_sse': ((15, 46), (15, 70), 5), 'danbi_ene': ((14, 49), (11, 70), 4),
+    'danbi_nne': ((11, 45), (8, 72), 4),
+})
+ARM_BORROW = {'yeoni_ne': ('yeoni_n', (31, 41)), 'yeoni_ene': ('yeoni_n', (28, 40))}
+
+
+def seg_dist(px, py, ax, ay, bx, by):
+    vx, vy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / (vx * vx + vy * vy)))
+    cx, cy = ax + vx * t, ay + vy * t
+    return ((px - cx) ** 2 + (py - cy) ** 2) ** 0.5, cx
+
+
+def cut_arm(body, spec):
+    """Returns (body with the arm removed and patched, arm sprite, offset). Pixels inside the capsule go to the arm.
+    In the body, the inner half (toward the torso, +x) is refilled from the nearest torso pixel to the right and the
+    new edge gets an outline; the outer half becomes transparent."""
+    (sx, sy), (hx, hy), r = spec
+    W, H = body.size
+    src = body.copy()
+    sp, bp = src.load(), body.load()
+    arm = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    ap = arm.load()
+    inside = set()
+    for y in range(max(0, sy - r - 2), min(H, hy + r + 3)):
+        for x in range(max(0, min(sx, hx) - r - 2), min(W, max(sx, hx) + r + 3)):
+            d, cx = seg_dist(x + 0.5, y + 0.5, sx + 0.5, sy + 0.5, hx + 0.5, hy + 0.5)
+            if d <= r and sp[x, y][3] > 0:
+                ap[x, y] = sp[x, y]
+                inside.add((x, y))
+    for (x, y) in inside:
+        d, cx = seg_dist(x + 0.5, y + 0.5, sx + 0.5, sy + 0.5, hx + 0.5, hy + 0.5)
+        left_body = any(sp[x - k, y][3] > 200 and (x - k, y) not in inside for k in range(1, 6) if x - k >= 0)   # e.g. skirt behind the hand
+        if (x + 0.5 < cx or y > hy - 1) and not left_body:
+            bp[x, y] = (0, 0, 0, 0)
+            continue
+        row = sorted((sp[x + k, y] for k in range(1, 18) if x + k < W and (x + k, y) not in inside and sp[x + k, y][3] > 200),
+                     key=lambda c: c[0] + c[1] + c[2])   # torso fabric next to it: the median ignores thin outlines and the braid
+        fill = row[len(row) * 3 // 5] if len(row) >= 3 else None
+        bp[x, y] = fill if fill else (0, 0, 0, 0)
+    for (x, y) in inside:   # a soft edge where the patch meets the outside, not a hard seam line
+        if bp[x, y][3] > 0 and (x - 1 < 0 or bp[x - 1, y][3] == 0):
+            c = bp[x, y]
+            bp[x, y] = (int(c[0] * 0.7), int(c[1] * 0.68), int(c[2] * 0.72), 255)
+    bb = arm.getbbox()
+    return body, arm.crop(bb), [bb[0], bb[1]]
+
+
 def rig_params(frames):
     """Cut-out walk rig: pick the drawing whose feet are closest together, find the skirt hem (the lowest
     row still at least half the widest row) and the column between the two feet below it. The runtime keeps
@@ -335,7 +393,7 @@ for who in ('yeoni', 'danbi'):
 META['ax'], META['lamp'], META['lampF'] = {}, {}, {}
 lamp_test = {'yeoni': lambda r, g, b: r > 235 and g > 170 and b < 150, 'danbi': lambda r, g, b: r > 200 and g > 150 and b < 90}
 for who in ('yeoni', 'danbi'):
-    for d in ('', '_se', '_s', '_ne', '_n'):
+    for d in ('', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n'):   # 16 directions: 9 drawn views, west side mirrored
         im = load(who + d)
         if who == 'danbi' and d == '_s':
             im = im.transpose(Image.FLIP_LEFT_RIGHT)   # bells on the image's right, like the other east-side views
@@ -349,12 +407,27 @@ for who in ('yeoni', 'danbi'):
         META['lampF'][who + d] = [bright_point(S[f'{who}{d}{i}'], lamp_test[who]) for i in range(4)]   # the lantern swings between drawings
         rp = rig_params(frames)
         body, foot, info = split_feet(frames[rp['base']], rp, who, d in ('_s', '_n'))
+        if who + d in ARM:
+            body, armimg, ao = cut_arm(body, ARM[who + d])
+            S[f'{who}{d}_arm'] = armimg
+            (asx, asy), (ahx, ahy), _ = ARM[who + d]
+            rp['arm'] = {'s': [asx, asy], 'h': [ahx, ahy], 'o': ao, 'src': who + d}
+        elif who + d in ARM_BORROW:
+            srcv, (asx, asy) = ARM_BORROW[who + d]
+            (bsx, bsy), (bhx, bhy), _ = ARM[srcv]
+            rp['arm'] = {'s': [asx, asy], 'h': [asx + bhx - bsx, asy + bhy - bsy], 'src': srcv, 'borrow': True}
         S[f'{who}{d}_body'] = body
         S[f'{who}{d}_foot'] = foot
         rp.update(info)
         META.setdefault('rig', {})[who + d] = rp
 
 
+
+for name_, rp_ in META['rig'].items():   # a borrowed arm keeps the source arm's offset from its shoulder
+    a_ = rp_.get('arm')
+    if a_ and a_.get('borrow'):
+        src_ = META['rig'][a_['src']]['arm']
+        a_['o'] = [a_['s'][0] + src_['o'][0] - src_['s'][0], a_['s'][1] + src_['o'][1] - src_['s'][1]]
 
 # --- VFX flipbooks (black background -> luminance alpha, drawn additively) -----------
 for name, cols, rows, box in (('fx_hit', 4, 2, 192), ('fx_fire', 4, 2, 224), ('fx_slash', 4, 2, 224),
@@ -408,6 +481,12 @@ def pose_sheet(name, cols, rows, ref_cell, key, size, out):
 pose_sheet('gseun_p', 2, 2, 0, 'h', 230, [None, 'gseun_p1', 'gseun_p2', 'gseun_p3'])          # raise arms, slam, lunge
 pose_sheet('gumiho_p', 2, 2, 1, 'w', 280, ['gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3'])  # gallop, crouch, pounce, cast
 pose_sheet('imugi_p', 2, 2, 3, 'w', 150, ['imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3'])        # hiss, roar, charge, bite
+# 구미호 gallop: 6 frames (3 x 2), cropped to one shared box so each frame keeps its height off the ground
+_run = load('gumiho_run')
+_cells = union_crop([clean(cell(_run, 3, 2, i % 3, i // 3)) for i in range(6)])
+_k = 330 / max(1, trim(_cells[0]).width)
+for i, c in enumerate(_cells):
+    S[f'gumiho_r{i}'] = c.resize((max(1, round(c.width * _k)), max(1, round(c.height * _k))), Image.LANCZOS)
 
 # --- items --------------------------------------------------------------------
 items = load('items')
