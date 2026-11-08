@@ -105,7 +105,7 @@ window.__run = (seconds, opt = {}) => {
   return m;
 };
 window.__newRun = (char = 'yeoni') => {
-  const sel = [...document.querySelectorAll('.char')].find(b => b.textContent.includes({ danbi: '단비', makswe: '막쇠' }[char] || '연이'));
+  const sel = [...document.querySelectorAll('.char')].find(b => b.textContent.includes({ danbi: '단비', makswe: '막쇠', dueok: '두억' }[char] || '연이'));
   if (sel) sel.click();
   document.querySelector('#btn-start').click();
 };

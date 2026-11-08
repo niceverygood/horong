@@ -207,6 +207,11 @@ ARM.update({   # 막쇠: his empty arm shows in every view, the back ones includ
     'makswe_sse': ((14, 40), (10, 69), 5), 'makswe_s': ((10, 40), (6, 67), 5), 'makswe_ene': ((14, 42), (9, 64), 5),
     'makswe_ne': ((14, 42), (10, 64), 5), 'makswe_nne': ((12, 42), (7, 64), 5), 'makswe_n': ((9, 40), (6, 66), 5),
 })
+ARM.update({   # 두억: wide too-long sleeves, so a slightly fatter capsule
+    'kkoma': ((28, 44), (22, 70), 6), 'kkoma_ese': ((18, 45), (10, 71), 6), 'kkoma_se': ((23, 45), (15, 69), 6),
+    'kkoma_sse': ((16, 45), (9, 71), 6), 'kkoma_s': ((12, 44), (7, 70), 5), 'kkoma_ene': ((11, 44), (5, 70), 5),
+    'kkoma_ne': ((14, 45), (9, 72), 5), 'kkoma_nne': ((11, 44), (5, 69), 5), 'kkoma_n': ((12, 45), (7, 74), 5),
+})
 ARM_BORROW = {'yeoni_ne': ('yeoni_n', (31, 41)), 'yeoni_ene': ('yeoni_n', (28, 40))}
 
 
@@ -295,7 +300,9 @@ def split_feet(f, rp, who, front=False):
         if c[3] < 40:
             return False
         h, s_, v = hsv(c)
-        if who in ('yeoni', 'makswe'):   # straw sandals under a pale skirt / a grey-blue robe
+        if who == 'kkoma' and 0.38 < h < 0.6 and s_ > 0.12 and v > 0.14:   # 두억's teal ankles show under the robe: they step with the sandals
+            return True
+        if who in ('yeoni', 'makswe', 'kkoma'):   # straw sandals under a pale skirt / a grey-blue robe / a plum robe
             return s_ > 0.32 and 0.02 < h < 0.16 and v > 0.12
         return s_ < 0.26 and v > 0.18   # white socks and their grey outline; the skirt is saturated red
     top = max(0, hem - 18)
@@ -313,7 +320,7 @@ def split_feet(f, rp, who, front=False):
             if 0 <= nx < W and 0 <= ny < H and (nx, ny) not in mask:
                 c = px[nx, ny]
                 h, s_, v = hsv(c)
-                if c[3] >= 40 and v < 0.42 and (who in ('yeoni', 'makswe') or s_ < 0.5):
+                if c[3] >= 40 and v < 0.42 and (who in ('yeoni', 'makswe', 'kkoma') or s_ < 0.5):
                     ring.add((nx, ny))
     mask |= ring
     comps, seen = [], set()
@@ -383,7 +390,7 @@ S = {}      # name -> image (2x world size)
 META = {}
 
 # --- players: 4-frame walk cycles -------------------------------------------
-for who in ('yeoni', 'danbi', 'makswe'):
+for who in ('yeoni', 'danbi', 'makswe', 'kkoma'):
     frames = row_frames(load(who), 4, h=108)
     for i, f in enumerate(frames):
         S[f'{who}{i}'] = f
@@ -397,12 +404,12 @@ for who in ('yeoni', 'danbi', 'makswe'):
 # a body anchor so swapping views never makes the body hop sideways.
 META['ax'], META['lamp'], META['lampF'] = {}, {}, {}
 lamp_test = {'yeoni': lambda r, g, b: r > 235 and g > 170 and b < 150, 'danbi': lambda r, g, b: r > 200 and g > 150 and b < 90}
-lamp_test['makswe'] = lamp_test['yeoni']   # 막쇠 carries the same brass lantern
-for who in ('yeoni', 'danbi', 'makswe'):
+lamp_test['makswe'] = lamp_test['kkoma'] = lamp_test['yeoni']   # 막쇠 and 두억 carry the same brass lantern
+for who in ('yeoni', 'danbi', 'makswe', 'kkoma'):
     for d in ('', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n'):   # 16 directions: 9 drawn views, west side mirrored
         im = load(who + d)
-        if who == 'danbi' and d == '_s':
-            im = im.transpose(Image.FLIP_LEFT_RIGHT)   # bells on the image's right, like the other east-side views
+        if who in ('danbi', 'kkoma') and d == '_s':
+            im = im.transpose(Image.FLIP_LEFT_RIGHT)   # bells / lantern on the image's right, like the other east-side views
         frames, shifts = register(row_frames(im, 4, h=108))
         print('register', who + d, shifts)
         for i, f in enumerate(frames):
