@@ -5,7 +5,8 @@
 - **1탄 · 밤 장터**: 9분에 깨어나는 이무기를 쓰러뜨리면 1탄이 끝납니다.
 - **2탄 · 안개 산길**: 레벨·무기·패시브·엽전을 그대로 들고 이어집니다. 일반 요괴 6종(손각시·그림자귀·야광귀·저승새·망태 할아범·장승귀, 기술 3개씩), 보스 장산범(2:30) · 두억시니(5:00) · 불가살이(9:00). 불가살이를 쓰러뜨리면 승리입니다.
 
-- 웹 체험판(claude.ai): https://claude.ai/artifact/2zdxPYtZDpU1kbE2hyrwY7
+- 웹 체험판(claude.ai): https://claude.ai/artifact/WgvNw4VX4AMrXGJXCdxwMG (이 브랜치 빌드: 도파민 보강 1·2·3차 · 막쇠 · 두억)
+- 이전 체험판(main #5 빌드): https://claude.ai/artifact/2zdxPYtZDpU1kbE2hyrwY7
 - 기획서: https://claude.ai/artifact/GFGoEUP9CcWNyiWRCeSZ9U
 
 ## 로컬에서 실행
