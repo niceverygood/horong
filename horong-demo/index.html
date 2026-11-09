@@ -1213,7 +1213,8 @@ function makeEnemy(type, x, y, extra) {
     act: undefined, pose: undefined, prevPose: undefined, poseT: undefined, cd: undefined, ghT: undefined, dashCd: undefined, orbCd: undefined,
     cloned: undefined, leaveT: undefined, rd: undefined, lastFx: undefined, blinkCd: undefined, orb: undefined, running: undefined,
     mad: undefined, stepN: undefined, armorT: undefined, ang: undefined, trail: undefined, segs: undefined, beamCd: undefined, slT: undefined,
-    cs: undefined, seq: undefined };
+    cs: undefined, seq: undefined, dtx: undefined, hits0: undefined, ghost: undefined, ghostHit: undefined, ringId: undefined,
+    first: undefined, spill: undefined, jk: undefined, jkT: undefined, dropT: undefined, coinT: undefined };
   e.normal = !e.big; if (e.normal && e.ai === 'chase') e.lead = Math.random() < 0.35 ? rnd(0.25, 0.6) : 0;
   if (extra) Object.assign(e, extra);
   enemies.push(e); return e;
