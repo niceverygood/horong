@@ -28,6 +28,7 @@ window.__run = (seconds, opt = {}) => {
         const o = H.G.opts[j]; let s = o && o.id ? pref.indexOf(o.id) : 500; if (s < 0) s = 300;
         if (o && o.kind === 'w' && o.lv > 0) s -= 0.5; if (s < bs) { bs = s; best = j; }
       });
+      if (opt.pick === 'random') best = Math.floor(Math.random() * cards.length);   // a player who doesn't plan a build
       const o = H.G.opts[best]; m.picks[o.id || o.kind] = (m.picks[o.id || o.kind] || 0) + 1; cards[best].click();
     }
     if (H.G.state === 'peddler') { const b2 = [...document.querySelectorAll('#ped-list button')].find(x => !x.disabled && /주먹밥|들기름/.test(x.textContent)); if (b2 && P0().hp < P0().maxHp * 0.6) b2.click(); document.querySelector('#btn-ped-close').click(); }
@@ -56,7 +57,7 @@ window.__run = (seconds, opt = {}) => {
         }
         if (d < reach && d > 0.1) { const w = (reach - d) / reach; vx += dx / d * w * w * (e.big ? 3 : 1); vy += dy / d * w * w * (e.big ? 3 : 1); }
       }
-      for (const z of (H.zones || [])) {   // read the telegraphs: step out of a filling zone, away from its centre / off the line
+      if (opt.zones !== false) for (const z of (H.zones || [])) {   // read the telegraphs: step out of a filling zone, away from its centre / off the line
         if (z.fired || z.t < 0.15) continue;
         if (z.sh === 'c') { const dx = P.x - z.x, dy = P.y - z.y, d = Math.hypot(dx, dy) || 1; if (d < z.r + 26) { const w = 2.6 * (1 - d / (z.r + 26)) + 0.8; vx += dx / d * w; vy += dy / d * w; } }
         else { const ux = Math.cos(z.a), uy = Math.sin(z.a), px = P.x - z.x, py = P.y - z.y, al = px * ux + py * uy, side = px * uy - py * ux; if (al > -20 && al < z.len + 20 && Math.abs(side) < z.w / 2 + 26) { const sg = Math.sign(side) || 1; vx += uy * sg * 2.6; vy += -ux * sg * 2.6; } }

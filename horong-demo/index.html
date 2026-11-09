@@ -2189,7 +2189,7 @@ function mobSkill(e, dt, d, mult) {
   if (k === 'seal') { if (t < 0.4) { e.atk = 'wind'; e.atkT = 0.3; return false; } end(); return false; }
   if (k === 'step') {   // sinks into its own shadow, rises beside you and strikes
     if (t < 0.4) { e.alpha = 1 - t / 0.4 * 0.9; A.ghost = true; return true; }
-    if (!A.moved) { A.moved = true; const a = rnd(0, TAU); e.x = e.rx = P.x + Math.cos(a) * 85; e.y = e.ry = P.y + Math.sin(a) * 65; e.fx = P.x < e.x ? -1 : 1; zone({ sh: 'c', x: e.x, y: e.y, r: 44, warn: 0.3, dmg: 8 * (1 + dT() / 900), label: '갓 쓴 귀신의 그림자 걸음', short: '그림자', col: VIO, onFire: z => { fx({ k: 'fb', a: 'slash_p', x: z.x, y: z.y - 14, s: 110, dur: 0.25, rot: rnd(0, TAU) }); } }); shadeBurst(e.x, e.y, 4, 0.7); }
+    if (!A.moved) { A.moved = true; const a = rnd(0, TAU); e.x = e.rx = P.x + Math.cos(a) * 85; e.y = e.ry = P.y + Math.sin(a) * 65; e.fx = P.x < e.x ? -1 : 1; zone({ sh: 'c', x: e.x, y: e.y, r: 44, warn: 0.3, dmg: 8 * (1 + dT() / 900), label: A.lab || '갓 쓴 귀신의 그림자 걸음', short: '그림자', col: VIO, onFire: z => { fx({ k: 'fb', a: 'slash_p', x: z.x, y: z.y - 14, s: 110, dur: 0.25, rot: rnd(0, TAU) }); } }); shadeBurst(e.x, e.y, 4, 0.7); }
     if (t < 0.7) { e.alpha = 0.1 + (t - 0.4) / 0.3 * 0.9; return true; }
     if (t < 1.0) { A.ghost = false; e.alpha = undefined; return true; } end(); return false;
   }
