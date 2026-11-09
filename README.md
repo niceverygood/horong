@@ -87,6 +87,21 @@ python3 -m http.server 8731 --directory horong-demo
 - 몹 기술 쿨타임은 숫자 배열(`e.skc = [기술0, 기술1, 기술2, 준비됨]`), 공간 격자 키(`gkey`)는 작은 정수(2^30 미만)라 읽을 때 숫자 상자를 만들지 않습니다.
 - 개발용: `HORONG.pf` 로 구간별 시간(`HORONG.pf.flush = true` 면 구간마다 캔버스를 비워 래스터 비용까지 그 구간에 넣음), `HORONG.rs = 1` 로 렌더 배율 고정.
 
+## 밸런스 확인
+
+자동 플레이 봇(`horong-demo/bot.js`)으로 1탄 → 2탄을 무적 없이 끝까지 여러 판 돌려 난이도를 잽니다. 판마다 새 브라우저(주막 강화 없음)라 '처음 하는 사람' 기준입니다.
+
+```bash
+bash wrap.sh
+python3 -m http.server 8731 --directory horong-demo &
+bash tools/balance.sh 12        # 실력 3단계 × 연이·단비 × 12판, 결과 요약까지 (4판씩 병렬, 수 분)
+```
+
+- 실력 단계: **초보**(늦게 알아채고, 바닥 예고·투사체를 안 피하고, 카드는 아무거나), **보통**(예고·투사체를 피하고 보스는 피해 다님), **공격형**(잘 피하지만 보물상자를 노리고 보스에 붙음).
+- 목표: 보통 실력은 대부분 새벽까지 가고, 초보도 가끔은 1탄을 넘기며, 2탄에서도 쓰러질 수 있을 것.
+- 현재(2026-11, 12판씩): 1탄 통과 / 승리 — 초보 연이 4/2, 단비 3/2 · 보통 연이 9/8, 단비 10/10 · 공격형 연이 7/6, 단비 9/7.
+- 고친 판끼리 비교: `PAGE=test-xyz.html OUT=bal-xyz bash tools/balance.sh 12` 후 `python3 tools/balance_report.py balance-out bal-xyz`.
+
 ## 걷기 리그
 
 등불지기는 16방향(그린 방향 9개, 서쪽은 좌우 반전)으로 돌고, 방향마다 그림 한 장으로 걷습니다. 비어 있는 팔은 따로 떼어 어깨를 축으로 돌며, 방망이·방울·붓·부적·등불을 그 손에 쥐고 씁니다(`tools/process.py`의 `ARM` 표). `tools/process.py` 가 방향별로 발이 가장 모인 그림을 고르고, 치마 밑단과 발(연이·막쇠·두억은 갈색 짚신 — 두억은 옷자락 밑으로 드러난 청록 발목까지 —, 단비는 흰 버선을 색으로 구분)을 떼어 `*_body` · `*_foot` 그림을 만듭니다. 게임은 발 그림을 두 번 그려 옆모습에서는 두 발이 엇갈려 내딛고(먼 발은 조금 어둡게), 앞·뒷모습에서는 좌우 대칭으로 번갈아 들게 하며, 치마는 허리 아래를 가로 띠로 나눠 걸음에 따라 흔들고, 몸은 발이 디딜 때 내려앉습니다.
@@ -99,6 +114,7 @@ python3 -m http.server 8731 --directory horong-demo
 | `tools/process.py` | `raw/img` 원본 그림을 잘라 `assets/sprites.png` · `sprites.json` 그림 묶음으로 만듦 |
 | `tools/sec_audio_art.js`, `tools/sec_render.js` | 그림·소리 로딩, 렌더링 코드 원본 — `splice.py` 가 `index.html` 에 끼워 넣음 |
 | `tools/splice.py` | 위 두 파일과 그림 묶음 좌표를 `index.html` 에 합치고 내용 해시 이름의 그림 묶음 사본을 만듦 |
+| `tools/balance.js`, `tools/balance.sh`, `tools/balance_report.py` | 밸런스 확인: 봇으로 여러 판 돌리고 요약 |
 | `raw/img`, `raw/sfx` | 생성한 원본 그림(OpenAI gpt-image-2)과 효과음(ElevenLabs) |
 | `concept-art/` | 키아트 · 인게임 목업 |
 

@@ -1127,7 +1127,7 @@ const FIRE_T = 420;
 const MOVE = { acc: 0.05, dec: 0.07, steer: 0 };   // 이동 곡선 시간상수(초): 플레이어 가속·감속. 요괴 조향은 0(즉시) — 0.08~0.18초는 봇 승률을 크게 떨어뜨림, 대신 화면 위치·방향만 부드럽게 보간             // 7분부터 도깨비불이 화염구를 던짐             // 주먹밥은 30초에 한 번까지만 떨어짐 (처치 수에 비례한 회복 차단)
 const RING = { n: 56, rows: 2, gap: 36, hp: 3, knock: 0.3, scale: 1.2, spd: 62, life: 45 };   // 포위진: 두 겹 원진이 소환 지점으로 조여 옴 → 뚫고 나가야 함
 const lateSpd = t => 1 + Math.max(0, t - 420) / 60 * 0.10;   // 7분 이후 일반 요괴 이동 속도 분당 +10%
-const normHp = t => 1 + t / 60 * 0.38 + Math.max(0, t - 300) / 60 * 0.25 + Math.max(0, t - 420) / 60 * 0.7;   // 일반 요괴 체력: 분당 +38%, 5분부터 +63%, 7분 이후 +133% (5분부터는 보물상자 3~5개를 상쇄)
+const normHp = t => 1 + t / 60 * 0.32 + Math.max(0, t - 300) / 60 * 0.25 + Math.max(0, t - 420) / 60 * 0.7;   // 일반 요괴 체력: 분당 +32%, 5분 이후 +57%, 7분 이후 +127% (밸런스 봇: 첫 기울기 +38%면 처음 하는 사람이 1탄 3~5분에 거의 다 쓰러짐)
 const lightR = () => (2 + 5 * P.light / 100) * M * P.lightRadiusMult * (PG.on && PG.bright ? 2.4 : 1);   // the light is your sight: 7m at full, 2m when it's out
 const pickR = () => (2.5 + 4.5 * P.light / 100) * M * P.lightRadiusMult;   // loot pull keeps the gentler curve, so a dim lantern isn't also a starving one
 const pLv = id => { const x = P.passives.find(p => p.id === id); return x ? x.lv : 0; };
@@ -1198,7 +1198,7 @@ function titleScene() {
 /* ---------- enemies ---------- */
 function makeEnemy(type, x, y, extra) {
   const d = ED[type], t = G ? dT() : 0;
-  const hpS = (d.boss || d.elite) ? 1 + t / 600 : normHp(t);
+  const hpS = (d.boss || d.elite) ? 1 + t / 600 : normHp(t) * (stg() === 2 ? 1.4 : 1);   // 2탄 일반 요괴 ×1.4: 1탄 빌드를 들고 와도 산길이 거저가 되지 않게
   const e = { id: ++EID, type, spr: d.spr || type, x, y, r: d.r, hp: d.hp * hpS, maxHp: d.hp * hpS, spd: d.spd * rnd(0.92, 1.08) * ((d.boss || d.elite || d.big) ? 1 : Math.min(lateSpd(t), stg() === 2 ? 1.45 : 9)),
     dmg: d.dmg * ((d.boss || d.elite) ? 1 : (1 + t / 60 * 0.12) * (stg() === 2 ? 1.35 : 1)), xp: d.xp, el: d.el, ai: d.ai || 'chase', hc: {}, kx: 0, ky: 0,
     flash: 0, stun: 0, slow: 0, burn: 0, burnTick: 0, st: 'walk', stT: rnd(1, 3), scale: 1, elite: !!d.elite, boss: !!d.boss,
@@ -1213,7 +1213,8 @@ function makeEnemy(type, x, y, extra) {
     act: undefined, pose: undefined, prevPose: undefined, poseT: undefined, cd: undefined, ghT: undefined, dashCd: undefined, orbCd: undefined,
     cloned: undefined, leaveT: undefined, rd: undefined, lastFx: undefined, blinkCd: undefined, orb: undefined, running: undefined,
     mad: undefined, stepN: undefined, armorT: undefined, ang: undefined, trail: undefined, segs: undefined, beamCd: undefined, slT: undefined,
-    cs: undefined, seq: undefined };
+    cs: undefined, seq: undefined, dtx: undefined, hits0: undefined, ghost: undefined, ghostHit: undefined, ringId: undefined,
+    first: undefined, spill: undefined, jk: undefined, jkT: undefined, dropT: undefined, coinT: undefined };
   e.normal = !e.big; if (e.normal && e.ai === 'chase') e.lead = Math.random() < 0.35 ? rnd(0.25, 0.6) : 0;
   if (extra) Object.assign(e, extra);
   enemies.push(e); return e;
