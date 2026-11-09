@@ -160,7 +160,7 @@ function drawBoss(e) {
 // 16 views, 22.5° apart: E, ESE, SE, SSE, S, SSW … (west side mirrors the east drawings; S and N keep the last side)
 const OCT = [['', 1], ['_ese', 1], ['_se', 1], ['_sse', 1], ['_s', 0], ['_sse', -1], ['_se', -1], ['_ese', -1], ['', -1], ['_ene', -1], ['_ne', -1], ['_nne', -1], ['_n', 0], ['_nne', 1], ['_ne', 1], ['_ene', 1]];
 function playerView() {
-  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
+  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' || P.spr === 'makswe' || P.spr === 'kkoma' ? P.spr : 'yeoni', name = who + o[0], fr = SPR[name];
   return { name, frames: fr && fr[0] ? fr : SPR[P.spr], flip: o[1] || P.side || 1, ax: fr && ART.meta.ax ? ART.meta.ax[name] || 0 : 0 };
 }
 // Cut-out walk rig: each view keeps ONE drawing (META.rig picks it and finds the skirt hem and the gap between
@@ -176,7 +176,7 @@ function footPhase(u) {   // unit stride profile: stance slides front→back lin
 }
 function walkPose() {
   const v = playerView(), sp = Math.min(1, P.spd01 || 0), th = (P.walk || 0) * STEP_K, u1 = ((th / TAU) % 1 + 1) % 1;
-  const R = ART.ok && ART.meta.rig ? ART.meta.rig[v.name] : null, mode = RIGMODE[v.name.replace(/^(yeoni|danbi)/, '')] || 'side';
+  const R = ART.ok && ART.meta.rig ? ART.meta.rig[v.name] : null, mode = RIGMODE[v.name.replace(/^(yeoni|danbi|makswe|kkoma)/, '')] || 'side';
   const bob = (1 - Math.cos(4 * Math.PI * u1)) * 0.5 * 1.3 * sp;                       // up while the feet pass, down on contact
   const sway = (mode === 'front' || mode === 'back' ? 0.9 : mode === 'side' ? 0 : 0.5) * Math.sin(TAU * u1) * sp;   // weight over the stance foot
   const base = R ? R.base : 0;
@@ -632,6 +632,23 @@ function render() {
       else if (p.k === 'club' && ICON.club) { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); dI(ICON.club, -15, -15, 30, 30); ctx.restore(); }
     }
     if (any2) screenT(); }
+  { let any3 = false;   // 노름판: four 윷 sticks tumble up and land; the flat (light) side counts
+    for (const q of poiList) {
+      if (q.t !== 'mat' || !q.spin) continue; const k = G.t - q.spin; if (k > 2.6 || !inView(q.x, q.y, 80)) continue;
+      if (!any3) { worldT(); any3 = true; }
+      const fl = Math.min(1, k / 0.8), a = k > 2.1 ? 1 - (k - 2.1) / 0.5 : 1; ctx.globalAlpha = clamp(a, 0, 1);
+      for (let i = 0; i < 4; i++) {
+        const land = fl >= 1 && q.yut, x = q.x + (i - 1.5) * (land ? 13 : 9 + fl * 6), y = q.y - 22 - Math.sin(fl * Math.PI) * 74 - (land ? 0 : 8);
+        const flat = land ? q.yut[i] : Math.floor(k * 14 + i) % 2;
+        ctx.save(); ctx.translate(x, y); ctx.rotate(land ? (i - 1.5) * 0.12 : k * 13 + i * 1.4);
+        ctx.fillStyle = flat ? '#ead6a4' : '#6b3a1a'; ctx.strokeStyle = '#1a0e06'; ctx.lineWidth = 1.5;
+        ctx.fillRect(-3.5, -14, 7, 28); ctx.strokeRect(-3.5, -14, 7, 28);
+        if (!flat) { ctx.strokeStyle = '#c9925a'; ctx.beginPath(); ctx.moveTo(-1.5, -8); ctx.lineTo(1.5, -4); ctx.moveTo(-1.5, 2); ctx.lineTo(1.5, 6); ctx.stroke(); }
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (any3) screenT(); }
   if (G.sky && G.sky.length && SPR.skylantern) {   // 풍등 float above the dark: they are lights
     worldT(); const sp = (stg() === 2 && SPR.lotus) || SPR.skylantern, w = SW(sp), h = SH(sp);
     for (const l of G.sky) { if (!inView(l.x, l.y, 60)) continue; const a = Math.min(1, l.t / 1.5, (l.life - l.t) / 2); ctx.globalAlpha = 0.95 * a; dI(sp, l.x - w / 2 + Math.sin(G.t * 0.9 + l.ph) * 3, l.y - 40 - h / 2 + Math.sin(G.t * 1.5 + l.ph) * 4, w, h); }
@@ -655,7 +672,21 @@ function render() {
   PF('overlays');
   // damage text
   for (const t of texts) {
-    const [sx, sy] = toScreen(t.x, t.y); ctx.globalAlpha = 1 - Math.max(0, t.t - 0.35) / 0.35;
+    const [sx, sy] = toScreen(t.x, t.y); ctx.globalAlpha = clamp(1 - Math.max(0, t.t - ((t.life || 0.7) - 0.35)) / 0.35, 0, 1);
+    if (t.crit) {   // crits, 일격 and call-outs: display face, bigger pop, a slight tilt
+      const pop = t.t < 0.12 ? 2.1 - t.t / 0.12 * 1.1 : 1, size = Math.round(13 * 1.6 * (t.sz || 1) * (t.big ? 1.25 : 1) * Math.max(0.85, ZOOM) * pop);
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(t.rot || 0);
+      ctx.font = `700 ${size}px ${FD}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(26,11,5,0.92)'; ctx.strokeText(t.v, 0, 0);
+      if (t.big) { ctx.shadowColor = 'rgba(255,200,90,0.8)'; ctx.shadowBlur = 12; }
+      ctx.fillStyle = t.col; ctx.fillText(t.v, 0, 0); ctx.shadowBlur = 0;
+      if (t.big) {   // 일격: a red seal beside the number
+        const w = ctx.measureText(t.v).width, s = Math.round(size * 0.82), x0 = -w / 2 - s - 5;
+        ctx.save(); ctx.translate(x0 + s / 2, 0); ctx.rotate(-0.12); ctx.fillStyle = '#b8452f'; ctx.fillRect(-s / 2, -s / 2, s, s);
+        ctx.strokeStyle = '#2a0d07'; ctx.lineWidth = 2; ctx.strokeRect(-s / 2, -s / 2, s, s);
+        ctx.font = `700 ${Math.round(s * 0.42)}px ${FD}`; ctx.fillStyle = '#ffe9d0'; ctx.fillText('일격', 0, 1); ctx.restore();
+      }
+      ctx.restore(); continue;
+    }
     const big = t.v.length > 2 || t.col !== '#efe6d2', pop = t.t < 0.09 ? 1.5 - t.t / 0.09 * 0.5 : 1;   // pop in, then settle
     const size = Math.round((big ? 13 : 11.5) * Math.max(0.85, ZOOM));
     drawText(t.v, sx, sy, `700 ${size}px ${FB}`, t.col, 'center', 'middle', DMG_STROKE, pop);
@@ -781,6 +812,8 @@ function drawGlows() {
     }
   }
   worldT();
+  // 금빛 도깨비: a gold aura that shows even in the dark, so it can be chased
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead && inView(e.x, e.y, 60)) { ctx.globalAlpha = (e.inLight ? 0.22 : 0.55) + 0.15 * Math.sin(G.t * 7); dI(GL.sun, e.x - 42, e.y - 62, 84, 84); ctx.globalAlpha = 1; }   // fainter in the light, where its body shows
   // 달걀귀신 돌진 예고
   for (const e of enemies) if (e.type === 'egg' && e.st === 'wind' && !e.dead) { ctx.globalAlpha = 0.75; dI(GL.gold, e.x - 22, e.y - 34, 44, 44); }
   ctx.globalAlpha = 1;
@@ -1114,6 +1147,9 @@ function drawHUD() {
   const xw = W - sl - sr - 24, x0 = sl + 12;
   ctx.fillStyle = 'rgba(6,7,12,0.6)'; ctx.fillRect(x0 - 1, st + 5, xw + 2, 7);
   bar(x0, st + 6, xw, 5, P.xp / P.xpNext, '#58b39c');
+  if (P.xp / P.xpNext >= 0.9 && !REDUCED) {   // a level-up is near: the bar breathes
+    ctx.globalAlpha = 0.35 + 0.3 * Math.sin(G.t * 8); ctx.fillStyle = '#b6ffe9'; ctx.shadowColor = '#7fe0c4'; ctx.shadowBlur = 10;
+    ctx.fillRect(x0, st + 5, xw * clamp(P.xp / P.xpNext, 0, 1), 7); ctx.shadowBlur = 0; ctx.globalAlpha = 1; }
   // timer
   if (PG.on) { txt('놀이터', W / 2, st + 40, 22, '#f2a93b', 'center', FD, 700); txt(PG.scale === 1 ? 'WASD · 방향키로 걷기 · 0 정지 · . 한 프레임' : PG.scale ? `시간 ${PG.scale}×` : '시간 정지', W / 2, st + 57, 11.5, '#a39a86', 'center'); }
   else { const SG = STAGES[stg()], bn = ED[SG.boss].name;
@@ -1125,7 +1161,8 @@ function drawHUD() {
     const bw = Math.min(380, W - sl - sr - 40), bx = W / 2 - bw / 2;
     txt(ED[b.type].name, bx, by - 3, 12, '#efe6d2', 'left', FD, 700);
     txt(`${ED[b.type].el} 원소${b.leaveT > 0 ? ` · ${Math.ceil(b.leaveT)}초 뒤 물러감` : ''}`, bx + bw, by - 3, 11, b.leaveT > 0 && b.leaveT < 20 ? '#ff6b5a' : EL_COLOR[ED[b.type].el], 'right');
-    bar(bx, by + 2, bw, 6, b.hp / b.maxHp, '#c8463a'); by += 22;
+    bar(bx, by + 2, bw, 6, (b.ghost ?? b.hp) / b.maxHp, 'rgba(255,236,214,0.85)');   // the chunk just lost stays pale, then drains
+    ctx.fillStyle = '#c8463a'; ctx.fillRect(bx, by + 2, bw * clamp(b.hp / b.maxHp, 0, 1), 6); by += 22;
   }
   // left block: lantern icon + bars
   const lx0 = sl + 12; let ly = narrow ? Math.max(st + 86, by + 8) : st + 26;
@@ -1157,10 +1194,12 @@ function drawHUD() {
   const sy = H - sb - 14 - 30 - 6 - 40;
   P.weapons.forEach((w, i) => { const D = WEAPONS[w.id]; slot(lx0 + i * 44, sy, 40, ICON[w.id], D.glyph, w.evo ? '#f2a93b' : EL_COLOR[D.el], w.evo ? '진' : `${w.lv}`, w.evo); });
   P.passives.forEach((p, i) => slot(lx0 + i * 34, sy + 46, 30, ICON[p.id], PASSIVES[p.id].glyph, 'rgba(239,230,210,0.3)', `${p.lv}`, false));
+  drawBurst();
   // indicators
   let nj = null, nd = 1e9; for (const j of jars) { const d = Math.hypot(j.x - P.x, j.y - P.y); if (d < nd) { nd = d; nj = j; } }
   if (nj) edgeArrow(nj.x, nj.y, '#f2a93b', `기름 ${Math.round(nd / M)}m`);
   for (const d of drops) if (d.k === 'chest') { edgeArrow(d.x, d.y, '#e0607e', '보물상자'); break; }
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead) { edgeArrow(e.x, e.y, '#ffd36a', '금 도깨비'); gobRing(e); }
   for (const d of drops) if (d.k === 'magnet' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#9fd0ff', '지남철'); break; }
   for (const d of drops) if (d.k === 'ginseng' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#7fe0a0', '산삼'); break; }
   for (const b of G.bosses) edgeArrow(b.x, b.y, '#c8463a', ED[b.type].name);
@@ -1172,6 +1211,8 @@ function drawHUD() {
     ctx.strokeStyle = 'rgba(239,230,210,0.25)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(joy.ox, joy.oy, 46, 0, TAU); ctx.stroke();
     ctx.fillStyle = 'rgba(242,169,59,0.45)'; ctx.beginPath(); ctx.arc(joy.ox + dx * m, joy.oy + dy * m, 18, 0, TAU); ctx.fill();
   }
+  if (G.state === 'chest') return;   // the chest reveal owns the middle of the screen
+  drawChain(); drawStamp();
   // banner
   if (G.banner) {
     const b = G.banner, a = Math.min(1, b.t / 0.3, (b.dur - b.t) / 0.5);
@@ -1184,6 +1225,56 @@ function drawHUD() {
     if (b.sub) txt(b.sub, W / 2, yb + 21, 12.5, '#f2a93b', 'center');
     ctx.globalAlpha = 1;
   }
+  drawCut();
+}
+// 연참 counter (right, middle): the number grows and warms with the chain; the bar under it is the time left to keep it going
+function drawChain() {
+  const C = G.kc, rx = W - SAFE.r - 18, narrow = W < 900; let cy = Math.round(H * 0.36);
+  if (C && C.n >= 10) {
+    const n = C.n, lvl = n >= 500 ? 3 : n >= 250 ? 2 : n >= 100 ? 1 : 0, col = ['#efe6d2', '#f2c27a', '#ffc65a', '#ffe08a'][lvl];
+    const size = Math.round((narrow ? 30 : 40) + Math.min(28, Math.log2(n / 10 + 1) * 6)), k = clamp((G.t - C.last) / 0.12, 0, 1), s = 1 + (1 - k) * 0.08;
+    txt('연참', rx, cy - size * 0.8 - 8, 12.5, '#f2c27a', 'right', FB, 700);
+    ctx.save(); ctx.translate(rx, cy); ctx.scale(s, s); ctx.font = `700 ${size}px ${FD}`; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(26,11,5,0.9)'; ctx.strokeText(fmtN(n), 0, 0);
+    if (lvl >= 2 || (C.step && C.step.t < 0.5)) { ctx.shadowColor = 'rgba(242,169,59,0.8)'; ctx.shadowBlur = C.step && C.step.t < 0.5 ? 26 : 14; }
+    ctx.fillStyle = col; ctx.fillText(fmtN(n), 0, 0); ctx.restore();
+    const left = clamp(1 - (G.t - C.last) / kcWin(n), 0, 1), bw = narrow ? 96 : 130;
+    ctx.fillStyle = 'rgba(239,230,210,0.14)'; ctx.fillRect(rx - bw, cy + 8, bw, 3); ctx.fillStyle = left < 0.3 ? '#ff8a5a' : '#f2a93b'; ctx.fillRect(rx - bw * left, cy + 8, bw * left, 3);
+    const nx = KC_STEPS.find(q => q[0] > n);
+    txt(nx ? `다음 ${fmtN(nx[0])} · ${nx[1]}` : `판 최고 ${fmtN(C.best)}`, rx, cy + 26, 11, '#a39a86', 'right');
+    cy += 46;
+  } else if (C && C.end) {   // the chain broke: say how far it went
+    const a = clamp(Math.min(C.end.t / 0.1, (1.3 - C.end.t) / 0.4), 0, 1); ctx.globalAlpha = a;
+    txt(`연참 ${fmtN(C.end.n)} · 끝`, rx, cy, narrow ? 18 : 22, '#efe6d2', 'right', FD, 700);
+    if (C.end.best) txt('판 최고', rx, cy + 20, 12, '#ffd27a', 'right', FB, 700);
+    ctx.globalAlpha = 1; cy += 46;
+  }
+  if (G.shinT > G.t) {   // 신명 (연참 250): a gold tag while it lasts
+    const label = `신명 · 공격력 +20% · ${Math.ceil(G.shinT - G.t)}초`; ctx.font = `700 12.5px ${FB}`; const w = ctx.measureText(label).width + 18;
+    ctx.fillStyle = 'rgba(42,22,6,0.8)'; ctx.fillRect(rx - w, cy - 14, w, 22); ctx.strokeStyle = '#f2a93b'; ctx.lineWidth = 1; ctx.strokeRect(rx - w + 0.5, cy - 13.5, w - 1, 21);
+    txt(label, rx - 9, cy + 1.5, 12.5, '#ffd27a', 'right', FB, 700);
+  }
+}
+// 천 마리 퇴치: a red seal stamped high on the screen every 1,000 kills
+function drawStamp() {
+  const S = G.stamp; if (!S) return;
+  const k = S.n / 1000, word = (k < 10 ? ['', '', '이', '삼', '사', '오', '육', '칠', '팔', '구'].at(k) : String(k)) + '천';
+  const sc = S.t < 0.14 ? 1.8 - S.t / 0.14 * 0.8 : 1, a = S.t > 1.2 ? 1 - (S.t - 1.2) / 0.4 : 1, x = W / 2, y = Math.max(SAFE.t + 108, H * 0.15), s = 64;   // above the banner band
+  ctx.save(); ctx.globalAlpha = clamp(a, 0, 1); ctx.translate(x, y); ctx.scale(sc, sc); ctx.rotate(-0.08);
+  ctx.fillStyle = '#b8452f'; ctx.fillRect(-s / 2, -s / 2, s, s); ctx.strokeStyle = '#ffe2c8'; ctx.lineWidth = 2; ctx.strokeRect(-s / 2 + 5, -s / 2 + 5, s - 10, s - 10);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `700 ${word.length > 1 ? 22 : 30}px ${FD}`; ctx.fillStyle = '#ffe9d0'; ctx.fillText(word, 0, 1); ctx.restore();
+  ctx.globalAlpha = clamp(a, 0, 1); txt(`${fmtN(S.n)} 마리 퇴치 · 엽전 +10`, x, y + s / 2 + 24, 13, '#ffd27a', 'center', FD, 700); ctx.globalAlpha = 1;
+}
+// a short centre call-out for the big moments (오행 원환, 신명)
+function drawCut() {
+  const c = G.cut; if (!c) return;
+  const sc = c.t < 0.12 ? 1.5 - c.t / 0.12 * 0.5 : 1, a = Math.min(1, c.t / 0.06, (c.dur - c.t) / 0.3), y = H * 0.3 + (G.banner ? 74 : 0), size = W < 900 ? 30 : 42;   // under a banner if one is up
+  ctx.save(); ctx.globalAlpha = clamp(a, 0, 1);
+  const bg = ctx.createLinearGradient(0, 0, W, 0); bg.addColorStop(0, 'rgba(6,7,12,0)'); bg.addColorStop(0.5, 'rgba(6,7,12,0.55)'); bg.addColorStop(1, 'rgba(6,7,12,0)');
+  ctx.fillStyle = bg; ctx.fillRect(0, y - size, W, size * 1.4);
+  ctx.translate(W / 2, y); ctx.scale(sc, sc); ctx.font = `700 ${size}px ${FD}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(26,11,5,0.9)'; ctx.strokeText(c.title, 0, 0); ctx.shadowColor = 'rgba(255,214,120,0.8)'; ctx.shadowBlur = 18; ctx.fillStyle = c.col; ctx.fillText(c.title, 0, 0);
+  ctx.restore();
 }
 function slot(x, y, s, icon, glyph, col, lv, evo) {
   ctx.fillStyle = 'rgba(11,13,22,0.82)'; ctx.fillRect(x, y, s, s);
@@ -1207,10 +1298,40 @@ function drawPentagon(cx, cy) {
     ctx.strokeStyle = on ? 'rgba(6,7,12,0.6)' : 'rgba(239,230,210,0.25)'; ctx.lineWidth = 1; ctx.stroke();
     txt(e, x, y + 3.5, 9.5, on ? '#140c08' : '#a39a86', 'center', FB, 700);
   });
-  if (P.ohaeng) txt(`쓸어 버리기 ${Math.ceil(G.ohaengT)}초`, cx + 32, cy + 4, 11, '#efe6d2');
+  if (P.ohaeng) {
+    const k = clamp(1 - G.ohaengT / 20, 0, 1), soon = G.ohaengT < 3, pulse = soon && !REDUCED ? 0.5 + 0.5 * Math.sin(G.t * 14) : 0;
+    ctx.strokeStyle = 'rgba(239,230,210,0.12)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, 31, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = soon ? '#ffe9a8' : '#f2a93b'; ctx.lineWidth = 3 + pulse * 2; if (soon) { ctx.shadowColor = '#ffd27a'; ctx.shadowBlur = 8 + pulse * 10; }
+    ctx.beginPath(); ctx.arc(cx, cy, 31, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke(); ctx.shadowBlur = 0;
+    txt(`쓸어 버리기 ${Math.ceil(G.ohaengT)}초`, cx + 38, cy + 4, 11, soon ? '#ffe9a8' : '#efe6d2', 'left', FB, soon ? 700 : 400);
+  }
   else txt(P.links.length ? `기운 ${P.links.length}줄 이어짐` : '무기의 기운', cx + 32, cy - 2, 11, P.links.length ? '#f2a93b' : '#a39a86');
   if (!P.ohaeng) txt('눌러서 설명', cx + 32, cy + 12, 10.5, '#7d7564');
   G.pentaHit = [cx, cy];   // tap target for the 오행 guide
+}
+// 호롱 터뜨리기 button (bottom right): the ring fills as it charges; full with light to spare, it pulses. Tap or Space.
+function drawBurst() {
+  const r = W < 900 ? 28 : 34, cx = W - SAFE.r - r - 22, cy = H - SAFE.b - r - 34, k = clamp(P.burst || 0, 0, 1), full = k >= 1, lit = P.light >= BURST.cost, ready = full && lit, warn = G.burstWarn > 0;
+  G.burstHit = [cx, cy, r + 10];
+  const pulse = ready && !REDUCED ? 0.5 + 0.5 * Math.sin(G.t * 6) : 0;
+  if (ready && GL.sun) { ctx.globalAlpha = 0.3 + 0.35 * pulse + (warn ? 0.3 : 0); dI(GL.sun, cx - r * 2, cy - r * 2, r * 4, r * 4); ctx.globalAlpha = 1; }
+  ctx.fillStyle = 'rgba(20,12,4,0.86)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(239,230,210,0.14)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = warn ? (Math.sin(G.t * 30) > 0 ? '#fff0c0' : '#ff9a4a') : ready ? '#ffe9a8' : full ? '#a3786a' : '#f2a93b';
+  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke();
+  if (ICON.hollong) { ctx.globalAlpha = ready ? 1 : 0.5; const s = r * 1.25; dI(ICON.hollong, cx - s / 2, cy - s / 2 - 1, s, s); ctx.globalAlpha = 1; }
+  const label = warn ? '터진다!' : ready ? (meta.burstAuto !== false ? '자동 · Space' : 'Space') : full ? '빛 25 필요' : `${Math.floor(k * 100)}%`;
+  txt(label, cx, cy + r + 15, 11.5, warn || ready ? '#ffd27a' : full ? '#ff9a7a' : '#a39a86', 'center', FB, 700);
+  if (ready) txt('호롱 터뜨리기', cx, cy - r - 8, 11, '#ffd27a', 'center', FB, 700);
+}
+// the time left to catch a gold goblin, as a ring over its head
+function gobRing(e) {
+  const [sx, sy] = toScreen(e.x, e.y - 58); if (sx < 0 || sx > W || sy < 0 || sy > H) return;
+  const k = clamp(e.life / 15, 0, 1), r = 15, warn = e.life < 4;
+  ctx.fillStyle = 'rgba(26,18,6,0.85)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(239,230,210,0.18)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = warn ? '#ff8a5a' : '#ffd27a'; ctx.beginPath(); ctx.arc(sx, sy, r, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke();
+  txt(String(Math.ceil(e.life)), sx, sy + 5, 13, warn ? '#ffb38a' : '#ffe2a0', 'center', FD, 700);
 }
 function edgeArrow(wx, wy, col, label) {
   const [sx, sy] = toScreen(wx, wy);

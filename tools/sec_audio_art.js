@@ -58,7 +58,7 @@ function applyArtScale() {
     if (!c) return c; const o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const g = o.getContext('2d');
     g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(0, 0, o.width, o.height); o._s = c._s; return o;
   };
-  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; SPR[who + v + '_footD'] = dim(A[who + v + '_foot']); if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot (and its darker far copy)
+  for (const who of ['yeoni', 'danbi', 'makswe', 'kkoma']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; SPR[who + v + '_footD'] = dim(A[who + v + '_foot']); if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot (and its darker far copy)
   SPR.player = SPR.yeoni;
   for (const k in FXSRC) FX[k] = FXSRC[k].slice();   // effects keep source resolution: they are drawn at many sizes
   for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae', 'stonelamp', 'sansin', 'spring', 'pagoda', 'offering', 'herbs', 'lotus', 'tbell', 'sonkaksi', 'grim', 'yagwang', 'crow', 'mangtae', 'totem', 'jangsan', 'jangsan_p1', 'jangsan_p2', 'jangsan_p3', 'dueok', 'dueok_p1', 'dueok_p2', 'dueok_p3', 'bulga', 'bulga_p1', 'bulga_p2', 'bulga_p3']) SPR[k] = A[k];
@@ -68,6 +68,11 @@ function applyArtScale() {
     const k = n.slice(0, -2), c = A[n], o = off[k] || [0, 0];
     c._ox = o[0] / 2; c._oy = o[1] / 2; EMIS[k] = c;   // offset of the cropped glow inside the full sprite, world units
   }
+  // 금빛 도깨비: the red goblin recoloured gold (hue and saturation from gold, shading kept), same flash and eye glow
+  if (SPR.dokkaebi) { const c = SPR.dokkaebi, o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const g = o.getContext('2d');
+    g.drawImage(c, 0, 0); g.globalCompositeOperation = 'color'; g.fillStyle = '#e8b43a'; g.fillRect(0, 0, o.width, o.height);
+    g.globalCompositeOperation = 'destination-in'; g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,226,140,0.2)'; g.fillRect(0, 0, o.width, o.height);
+    o._s = c._s; SPR.goldgob = o; SPRF.goldgob = SPRF.dokkaebi; if (EMIS.dokkaebi) EMIS.goldgob = EMIS.dokkaebi; }
   FIRE = [0, 1, 2, 3].map(i => A['fire' + i]); FOX = [0, 1, 2, 3].map(i => A['fox' + i]);
   packAtlas();
 }
@@ -110,8 +115,9 @@ function buildInk() {
 
 /* ---------- audio ---------- */
 let AC = null, muted = false, sfxBus = null, bgm = null; const sfxLast = {}, BUF = {};
-const SFX_FILE = { hit: 'hit', pick: 'gem', oil: 'oil', jar: 'jar', level: 'levelup', bell: 'bell', swing: 'swing', slam: 'slam', shoot: 'shoot', hurt: 'hurt', chest: 'chest', boss: 'boss', dark: 'dark', win: 'rooster', lose: 'lose', evolve: 'evolve', beam: 'beam', card: 'card', charm: 'charm', bossdie: 'bossdie', magnet: 'magnet', heal: 'heal' };
-const SFX_VOL = { hit: 0.3, pick: 0.36, oil: 0.6, jar: 0.8, level: 0.7, bell: 0.4, swing: 0.3, slam: 0.5, shoot: 0.26, hurt: 0.7, chest: 0.8, boss: 0.9, dark: 0.7, win: 0.9, lose: 0.8, evolve: 0.85, beam: 0.65, card: 0.5, charm: 0.6, bossdie: 0.8, magnet: 0.85, heal: 0.6 };
+const SFX_FILE = { hit: 'hit', pick: 'gem', oil: 'oil', jar: 'jar', level: 'levelup', bell: 'bell', swing: 'swing', slam: 'slam', shoot: 'shoot', hurt: 'hurt', chest: 'chest', boss: 'boss', dark: 'dark', win: 'rooster', lose: 'lose', evolve: 'evolve', beam: 'beam', card: 'card', charm: 'charm', bossdie: 'bossdie', magnet: 'magnet', heal: 'heal',
+  kill: 'kill', gembig: 'gem', drumroll: 'drumroll', tick: 'tick', gong: 'gong', stamp: 'stamp', yut: 'yut', kkwaeng: 'kkwaeng' };   // 연참·상자 공개·노름판 (국악 타악기)
+const SFX_VOL = { hit: 0.3, pick: 0.36, oil: 0.6, jar: 0.8, level: 0.7, bell: 0.4, swing: 0.3, slam: 0.5, shoot: 0.26, hurt: 0.7, chest: 0.8, boss: 0.9, dark: 0.7, win: 0.9, lose: 0.8, evolve: 0.85, beam: 0.65, card: 0.5, charm: 0.6, bossdie: 0.8, magnet: 0.85, heal: 0.6, kill: 0.2, gembig: 0.5, drumroll: 0.7, tick: 0.55, gong: 0.75, stamp: 0.9, yut: 0.7, kkwaeng: 0.45 };
 function audioOn() {
   if (!AC) {
     try { AC = new (window.AudioContext || window.webkitAudioContext)(); sfxBus = AC.createGain(); sfxBus.gain.value = 0.85; sfxBus.connect(AC.destination); loadSfx(); }
@@ -146,16 +152,19 @@ function tone(freq, dur, type, vol, slide = 0, delay = 0) {
 }
 function sfx(n, v = 0) {
   if (!AC || muted) return;
-  const lim = { hit: 0.05, pick: 0.055, shoot: 0.09, bell: 0.1, swing: 0.1, slam: 0.12, oil: 0.08, bossdie: 0.2, card: 0.05, hurt: 0.12 }[n] || 0;
+  const lim = { hit: 0.05, pick: 0.055, shoot: 0.09, bell: 0.1, swing: 0.1, slam: 0.12, oil: 0.08, bossdie: 0.2, card: 0.05, hurt: 0.12, kill: 0.07, gembig: 0.12, tick: 0.03, kkwaeng: 0.15, gong: 0.4 }[n] || 0;
   const now = AC.currentTime; if (lim && sfxLast[n] && now - sfxLast[n] < lim) return; sfxLast[n] = now;
   if (BUF[n]) {
     let rate = 1;
     if (n === 'pick') rate = 1 + Math.min(v, 24) * 0.035;
     else if (n === 'hit' || n === 'swing' || n === 'shoot' || n === 'slam') rate = rnd(0.92, 1.08);
+    else if (n === 'kill') rate = 0.9 + Math.min(v, 300) / 300 * 0.5 + rnd(-0.03, 0.03);   // the soul pop climbs with the 연참
+    else if (n === 'tick') rate = 1 + Math.min(v, 6) * 0.09;   // each chest slot stops a step higher
+    else if (n === 'gembig') rate = 1.9;
     try { playBuf(n, rate, 1); } catch (e) {}
     return;
   }
-  const alias = { jar: 'oil', evolve: 'chest', bossdie: 'slam', charm: 'hurt', card: 'pick', beam: 'slam' };
+  const alias = { jar: 'oil', evolve: 'chest', bossdie: 'slam', charm: 'hurt', card: 'pick', beam: 'slam', kill: 'pick', gembig: 'pick', drumroll: 'boss', tick: 'hit', gong: 'win', stamp: 'slam', yut: 'card', kkwaeng: 'bell' };
   if (alias[n]) n = alias[n];
   try {
     switch (n) {

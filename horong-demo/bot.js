@@ -32,6 +32,7 @@ window.__run = (seconds, opt = {}) => {
     }
     if (H.G.state === 'peddler') { const b2 = [...document.querySelectorAll('#ped-list button')].find(x => !x.disabled && /주먹밥|들기름/.test(x.textContent)); if (b2 && P0().hp < P0().maxHp * 0.6) b2.click(); document.querySelector('#btn-ped-close').click(); }
     if (H.G.state === 'guide') document.querySelector('#btn-oh-close').click();
+    if (H.G.state === 'chest') H.chestClose();   // 보물상자 공개: the items were applied on open, the reveal is only a show
     if (H.G.state !== 'play') break;
     const P = H.P, t = H.G.t;
     let tx = null, ty = null;
@@ -104,7 +105,7 @@ window.__run = (seconds, opt = {}) => {
   return m;
 };
 window.__newRun = (char = 'yeoni') => {
-  const sel = [...document.querySelectorAll('.char')].find(b => b.textContent.includes(char === 'danbi' ? '단비' : '연이'));
+  const sel = [...document.querySelectorAll('.char')].find(b => b.textContent.includes({ danbi: '단비', makswe: '막쇠', dueok: '두억' }[char] || '연이'));
   if (sel) sel.click();
   document.querySelector('#btn-start').click();
 };
@@ -118,7 +119,7 @@ window.__batch = (n, cfgs) => {
       __newRun(ch); const r = __run(600, { mode: 'avoid', jarAt: 60, ...o });
       const dm = r.dmgMin.split(' ').map(s => +s.split(':')[1].split('/')[0]);
       const sum = (a, b) => dm.slice(a, b).reduce((x, y) => x + y, 0);
-      rs.push({ win: r.end.t >= 600, t: Math.round(r.end.t), lv: r.end.lv, d03: sum(0, 3), d36: sum(3, 6), d6: sum(6, 7), d710: sum(7, 10), cause: r.end.cause, evo: (r.end.weapons.match(/\*/g) || []).length,
+      rs.push({ win: r.end.t >= 600 || r.end.state === 'clear', t: Math.round(r.end.t), lv: r.end.lv, d03: sum(0, 3), d36: sum(3, 6), d6: sum(6, 7), d710: sum(7, 10), cause: r.end.cause, evo: (r.end.weapons.match(/\*/g) || []).length,
         boss: Object.entries(r.boss).map(([k, v]) => k.split('@')[0][0] + k.split('@')[1] + ':' + v.split(' ')[0][0] + (v.split(' ')[1] || '').split('.')[0]).join(','), late: r.dmgMin.split(' ').slice(6).join(' ') });
     }
     const wins = rs.filter(r => r.win).length, evoR = rs.filter(r => r.evo >= 1);

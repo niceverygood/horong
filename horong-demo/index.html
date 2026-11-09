@@ -55,7 +55,7 @@ h2{margin:0;font-family:var(--font-display);font-size:28px;line-height:1.2;text-
 .shop-icon{grid-row:span 3;width:40px;height:40px}
 .char b{font-family:var(--font-display);font-size:18px}
 .char span{font-size:12.5px;color:var(--hanji-dim)}
-.char em{font-style:normal;font-size:13px;color:var(--amber)}
+.char em{font-style:normal;font-size:13px;color:var(--amber);word-break:keep-all}
 .char[aria-pressed="true"]{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
 .char.locked{opacity:.42;cursor:default}
 .char.locked em{color:var(--hanji-dim)}
@@ -139,6 +139,116 @@ body.pg-on #btn-pause,body.pg-on #btn-mute{display:none}
   #pg{top:auto;left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));width:auto;max-height:46vh}
 }
 @media (prefers-reduced-motion: reduce){.card{transition:none}.card:hover{transform:none}}
+/* 보물상자 공개 (복주머니 뽑기): light colour foretells the size (white 1 · blue 3 · gold 5), then the slots stop one by one */
+#chest{--gl:255,244,220;cursor:pointer;background:radial-gradient(ellipse at 50% 42%,rgba(11,13,22,.28),rgba(6,7,12,.93) 68%)}
+#chest[data-glow="b"]{--gl:150,195,255}
+#chest[data-glow="g"]{--gl:255,214,120}
+.chest-stage{position:relative;margin:auto;width:min(760px,100%);display:grid;justify-items:center;gap:14px}
+.chest-rays{position:absolute;left:50%;top:150px;width:900px;height:900px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 8deg,rgba(var(--gl),.16) 0 7deg,rgba(var(--gl),0) 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 25%,transparent 55%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 25%,transparent 55%);animation:chestspin 16s linear infinite}
+.chest-pillar{position:absolute;left:50%;top:-40px;width:160px;height:260px;pointer-events:none;transform:translateX(-50%);background:linear-gradient(90deg,rgba(var(--gl),0),rgba(var(--gl),.55) 50%,rgba(var(--gl),0));filter:blur(6px)}
+.chest-head{position:relative;text-align:center;min-height:84px}
+.chest-head .label{letter-spacing:.3em;color:#f2c27a}
+#chest-title{margin:4px 0 0;font-family:var(--font-display);font-size:clamp(30px,6vw,48px);line-height:1.15;background:linear-gradient(180deg,#fff6d8,rgb(var(--gl)) 55%,#e89a30);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px rgba(var(--gl),.6)) drop-shadow(0 3px 0 #2a1606)}
+.chest-box{position:relative;width:170px;height:170px}
+.chest-glow{position:absolute;left:50%;top:50%;width:320px;height:320px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(var(--gl),.75),rgba(var(--gl),.25) 40%,rgba(var(--gl),0) 70%)}
+#chest-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 22px rgba(var(--gl),.9)) brightness(1.12);animation:chestshake .11s linear infinite alternate}
+#chest.opened #chest-img{animation:none}
+#chest-gain{position:absolute;left:100%;top:34px;margin-left:10px;font-family:var(--font-display);font-size:32px;color:#ffd27a;white-space:nowrap;text-shadow:0 2px 0 #1a0b05,0 0 14px rgba(255,200,90,.6)}
+#chest-coins{position:absolute;inset:0;pointer-events:none}
+#chest-coins i{position:absolute;left:50%;top:45%;width:28px;height:26px;background-size:contain;background-repeat:no-repeat;filter:drop-shadow(0 0 6px rgba(255,210,110,.9));animation:coinfly .95s ease-out forwards}
+.chest-slots{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.cslot{position:relative;box-sizing:border-box;width:118px;height:140px;display:grid;justify-items:center;align-content:start;gap:4px;padding-top:14px;overflow:hidden;background:var(--bujeok);color:var(--bujeok-ink);box-shadow:inset 0 0 0 3px var(--bujeok),inset 0 0 0 5px var(--bujeok-red)}
+.cslot img{width:50px;height:50px;object-fit:contain}
+.cslot b{font-family:var(--font-display);font-size:14.5px;white-space:nowrap}
+.cslot span{font-size:12.5px;font-weight:700;color:var(--bujeok-red)}
+.cslot .tag{position:absolute;left:0;top:0;padding:1px 8px;background:var(--bujeok-red);color:#ffe9d0;font-family:var(--font-display);font-size:12px;font-weight:700}
+.cslot.evo{box-shadow:inset 0 0 0 3px var(--bujeok),inset 0 0 0 5px var(--bujeok-red),0 0 0 2px #ffe6a0,0 0 26px 6px rgba(255,210,110,.8)}
+.cslot.stop{animation:slotpop .22s ease-out}
+.cslot .strip{position:absolute;left:0;right:0;top:-34px;display:grid;justify-items:center;gap:14px;filter:blur(1.6px);opacity:.85;animation:slotroll .3s linear infinite}
+.cslot.spin::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,var(--bujeok) 0,rgba(230,211,154,0) 30%,rgba(230,211,154,0) 70%,var(--bujeok) 100%)}
+.chest-hint{margin:0;font-size:12.5px;color:var(--hanji-dim)}
+#chest.ready .chest-hint{color:var(--hanji)}
+@keyframes chestspin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes chestshake{from{transform:translate(-2px,0) rotate(-2deg)}to{transform:translate(2px,-1px) rotate(2deg)}}
+@keyframes slotroll{from{transform:translateY(-64px)}to{transform:translateY(0)}}
+@keyframes slotpop{from{transform:scale(1.12)}to{transform:scale(1)}}
+@keyframes coinfly{from{transform:translate(-50%,-50%) scale(.6);opacity:1}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1);opacity:0}}
+@media (max-width:560px){.cslot{width:96px;height:124px;padding-top:10px}.cslot b{font-size:13px}.chest-box{width:130px;height:130px}#chest-gain{font-size:26px}}
+@media (prefers-reduced-motion: reduce){#chest-img,.chest-rays,.cslot .strip,.cslot.stop{animation:none}}
+/* 부적 등급: 청 (+2) · 금 (+3, 체력 회복). Cards flip in one after another; a rare one glows in its slot first and turns last */
+.card-wrap{position:relative}
+.card-wrap.flip .card{animation:cardflip .22s ease-out backwards;animation-delay:var(--fd,0s)}
+.card .rank{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:2px 10px;font:700 12.5px/1.2 var(--font-display)}
+.rar-b .card{box-shadow:inset 0 0 0 3px var(--bujeok),inset 0 0 0 5px #3b6fe0,0 0 0 2px #9cc0ff,0 0 22px 4px rgba(90,150,255,.55)}
+.rar-b .rank{background:#2e5fc8;color:#e8f0ff;box-shadow:0 0 0 2px #0d1d44}
+.rar-g .card{background:linear-gradient(115deg,#f3df9e 0%,#f3df9e 38%,#fff6d6 46%,#f3df9e 54%,#ecd38a 100%);box-shadow:inset 0 0 0 3px #f3df9e,inset 0 0 0 5px #c8901e,0 0 0 2px #ffe6a0,0 0 34px 8px rgba(255,200,90,.75)}
+.rar-g .rank{background:linear-gradient(180deg,#ffe9a8,#e8a93a);color:#3a1d04;box-shadow:0 0 0 2px #5a3306,0 0 14px rgba(255,210,110,.8)}
+.rar-b.flip::before,.rar-g.flip::before{content:'';position:absolute;left:0;right:0;top:0;height:178px;pointer-events:none;border-radius:2px;animation:preglow .5s ease-out both;animation-delay:calc(var(--fd,0s) - .25s)}
+.rar-b.flip::before{box-shadow:0 0 26px 6px rgba(90,150,255,.8)}
+.rar-g.flip::before{box-shadow:0 0 34px 10px rgba(255,200,90,.9)}
+#levelup.gold{box-shadow:inset 0 0 0 3px rgba(255,214,120,.55),inset 0 0 140px 30px rgba(255,190,80,.38)}
+@keyframes cardflip{from{transform:perspective(600px) rotateY(90deg);opacity:.2}to{transform:perspective(600px) rotateY(0);opacity:1}}
+@keyframes preglow{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+/* 결산: numbers count up, records get a 新 seal, damage by weapon, and the next goals with what this run added */
+#over .panel{width:min(900px,100%)}
+#btn-again{padding-inline:30px;font-size:16px}
+.stat{position:relative}
+.stat .seal{position:relative;display:inline-block;vertical-align:middle;margin:-6px 0 0 8px;width:28px;height:28px;background:var(--bujeok-red);color:#ffe9d0;font:700 16px/28px var(--font-display);text-align:center;border-radius:3px;font-style:normal;box-shadow:0 0 0 2px #2a0d07,0 0 0 4px rgba(184,69,47,.35);animation:sealin .25s ease-out both}
+.over-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px}
+.over-grid:empty{display:none}
+.ocol{display:grid;gap:9px;align-content:start}
+.oh{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--hanji-dim)}
+.wrow{display:grid;grid-template-columns:24px minmax(0,1.3fr) minmax(50px,1fr) 108px;gap:8px;align-items:center;font-size:13px}
+.wrow img,.wrow .noicon{width:24px;height:24px;object-fit:contain}
+.wn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wn em{font-style:normal;margin-left:6px;padding:1px 6px;background:var(--amber);color:var(--amber-ink);font-size:11.5px;font-weight:700}
+.wb{height:9px;background:rgba(239,230,210,.08)}
+.wb i{display:block;height:100%;width:var(--w);background:rgba(242,169,59,.45);animation:wgrow .7s ease-out both;animation-delay:var(--d,0s)}
+.wrow.top .wb i{background:var(--amber)}
+.wv{font-variant-numeric:tabular-nums;color:var(--hanji-dim);white-space:nowrap;text-align:right}
+.wrow.top .wv{color:#ffd27a}
+.goal{display:grid;gap:5px}
+.gh{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--hanji-dim)}
+.gh b{color:var(--hanji)}
+.gv{color:#ffd27a;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gb{position:relative;height:8px;background:rgba(239,230,210,.08)}
+.gb i{position:absolute;top:0;bottom:0;left:0}
+.gb .old{background:rgba(88,179,156,.55)}
+.gb .new{background:#7fe0c4;box-shadow:0 0 8px rgba(127,224,196,.8);animation:wgrow .8s ease-out .5s both}
+.gn{font-size:12px;color:#7fe0c4}
+@keyframes wgrow{from{width:0}}
+@keyframes sealin{from{transform:rotate(-12deg) scale(2.2);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:1}}
+@media (max-width:720px){.over-grid{grid-template-columns:1fr}}
+/* 업적·도감 쪽지 (top right, over everything), the 업적·도감 book, locked shop rows */
+#toasts{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 104px);z-index:40;display:grid;gap:8px;justify-items:end;pointer-events:none}
+.toast{display:flex;gap:10px;align-items:center;width:min(290px,calc(100vw - 24px));padding:9px 12px;background:var(--bujeok);color:var(--bujeok-ink);box-shadow:inset 0 0 0 2px var(--bujeok),inset 0 0 0 4px var(--bujeok-red),0 6px 18px rgba(0,0,0,.5);animation:toastin .28s ease-out both}
+.toast.out{animation:toastout .4s ease-in both}
+.toast .seal{flex:none;width:34px;height:34px;display:grid;place-items:center;background:var(--bujeok-red);color:#ffe9d0;font:700 13px/1 var(--font-display);border-radius:3px}
+.toast b{display:block;font:700 16px/1.25 var(--font-display)}
+.toast span{display:block;font-size:12.5px;line-height:1.35}
+@keyframes toastin{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastout{to{transform:translateX(40px);opacity:0}}
+#book .panel{width:min(920px,100%)}
+.tabs{display:flex;gap:8px}
+.tabs .btn[aria-pressed="true"]{border-color:var(--amber);color:var(--amber)}
+.ach-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.ach{display:grid;grid-template-columns:34px 1fr;gap:4px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line);color:var(--hanji-dim);font-size:12.5px}
+.ach .seal{grid-row:span 2;width:34px;height:34px;display:grid;place-items:center;border-radius:3px;background:rgba(239,230,210,.08);color:var(--hanji-dim);font:700 13px/1 var(--font-display)}
+.ach b{color:var(--hanji);font:700 15px/1.3 var(--font-display)}
+.ach.done{border-color:rgba(184,69,47,.6)}
+.ach.done .seal{background:var(--bujeok-red);color:#ffe9d0}
+.ach em{grid-column:2;font-style:normal;color:#ffd27a}
+.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.mon{display:grid;gap:4px;align-content:start;padding:10px;border:1px solid var(--line);font-size:12px;color:var(--hanji-dim)}
+.mon img{width:100%;height:76px;object-fit:contain}
+.mon.unseen img{filter:brightness(0) opacity(.55)}
+.mon b{color:var(--hanji);font:700 15px/1.25 var(--font-display)}
+.mon .stars{color:#ffd27a;letter-spacing:2px}
+.mon p{margin:0;line-height:1.45;color:var(--hanji)}
+.mon.unseen p,.mon .tease{color:var(--hanji-dim)}
+.shop-item.locked{opacity:.55}
+@media (prefers-reduced-motion: reduce){.toast,.toast.out{animation:none}}
+@media (prefers-reduced-motion: reduce){.card-wrap.flip .card,.rar-b.flip::before,.rar-g.flip::before,.wb i,.gb .new,.stat .seal{animation:none}}
 </style>
 
 <canvas id="game" aria-label="호롱 백귀야행 게임 화면"></canvas>
@@ -160,12 +270,14 @@ body.pg-on #btn-pause,body.pg-on #btn-mute{display:none}
       <button id="btn-shop" class="btn" type="button">주막 · 엽전 <span id="coin-title">0</span>냥</button>
       <button id="btn-pg" class="btn ghost" type="button">놀이터 · 움직임 시험</button>
       <button id="btn-oh-title" class="btn ghost" type="button">오행이란?</button>
+      <button id="btn-book" class="btn ghost" type="button">업적 · 요괴 도감</button>
     </div>
     <ul class="keys">
       <li><b>이동</b>WASD · 방향키 · 화면 끌기</li>
       <li><b>일시정지</b>Esc</li>
       <li><b>소리</b>M</li>
       <li><b>카드 고르기</b>1–4</li>
+      <li><b>호롱 터뜨리기</b>Space · 오른쪽 아래 버튼</li>
     </ul>
   </div>
 </div>
@@ -196,6 +308,28 @@ body.pg-on #btn-pause,body.pg-on #btn-mute{display:none}
   </div>
 </div>
 
+<div id="toasts" aria-live="polite"></div>
+
+<div id="book" class="overlay" hidden>
+  <div class="panel">
+    <div class="brand"><span class="label">기록</span><h2>업적 · 요괴 도감</h2></div>
+    <div class="tabs"><button id="tab-ach" class="btn ghost" type="button" aria-pressed="true">업적</button><button id="tab-dex" class="btn ghost" type="button" aria-pressed="false">요괴 도감</button></div>
+    <p id="book-lede" class="lede"></p>
+    <div id="book-body"></div>
+    <div class="row"><button id="btn-book-close" class="btn primary" type="button">돌아가기</button></div>
+  </div>
+</div>
+
+<div id="chest" class="overlay" hidden>
+  <div class="chest-stage">
+    <div class="chest-rays"></div><div class="chest-pillar"></div>
+    <div class="chest-head"><span id="chest-src" class="label">보물상자</span><h2 id="chest-title"></h2></div>
+    <div class="chest-box"><div class="chest-glow"></div><img id="chest-img" alt=""><b id="chest-gain"></b><div id="chest-coins"></div></div>
+    <div id="chest-slots" class="chest-slots"></div>
+    <p id="chest-hint" class="chest-hint"></p>
+  </div>
+</div>
+
 <div id="levelup" class="overlay" hidden>
   <div class="panel">
     <div class="brand"><span class="label">레벨 업 · 부적 한 장을 고르세요</span><h2 id="lv-title">레벨 2</h2><span id="lv-meta" class="label"></span></div>
@@ -223,6 +357,7 @@ body.pg-on #btn-pause,body.pg-on #btn-mute{display:none}
     <div class="brand"><span id="over-label" class="label">결과</span><h2 id="over-title">호롱불이 꺼졌다</h2></div>
     <p id="over-lede" class="lede"></p>
     <div id="over-stats" class="stats"></div>
+    <div id="over-detail" class="over-grid"></div>
     <div class="row">
       <button id="btn-again" class="btn primary" type="button">다시 나서기</button>
       <button id="btn-over-shop" class="btn" type="button">주막</button>
@@ -302,8 +437,8 @@ const ELN = { '목': '나무', '화': '불', '토': '흙', '금': '쇠', '수': 
 const CHARS = [
   { id: 'yeoni', name: '연이', role: '등불지기', weapon: 'hollong', perk: '빛 감소 −25%', mods: { lightDecay: 0.75 } },
   { id: 'danbi', name: '단비', role: '무녀', weapon: 'bell', perk: '레벨업 선택지 4장', mods: { choices: 4 } },
-  { id: 'makswe', name: '막쇠', role: '포졸', locked: '정식판 · 1스테이지 10분 생존' },
-  { id: 'dueok', name: '두억', role: '꼬마 도깨비', locked: '정식판 · 엽전 누적 5,000냥' },
+  { id: 'makswe', name: '막쇠', role: '포졸', weapon: 'yukmo', perk: '체력 +30% · 맞으면 밀쳐냄', mods: { hp: 1.3, shove: 1 }, unlock: () => meta.clear1 > 0 },   // 1탄을 깨면 열림 (업적 '첫 동틀')
+  { id: 'dueok', name: '두억', role: '꼬마 도깨비', weapon: 'club', perk: '엽전 +50% · 행운 +20%', mods: { coin: 1.5, luck: 1.2 }, unlock: () => (meta.coinsTotal || 0) >= 5000 },   // 엽전 누적 5,000냥으로 열림 (업적 '엽전 오천 냥')
 ];
 
 const WEAPONS = {
@@ -346,6 +481,13 @@ const SHOP = [
   { id: 'spd', name: '가벼운 짚신', desc: '이동 속도 +4%', max: 3, base: 50 },
   { id: 'xp', name: '서당 공부', desc: '경험치 +5%', max: 5, base: 60 },
   { id: 'revive', name: '수호 부적', desc: '쓰러지면 한 번 되살아남', max: 1, base: 300 },
+  // opened by 업적 (도파민 보강 3차)
+  { id: 'gat2', name: '두꺼운 갓', desc: '받는 피해 −1', max: 2, base: 80, ach: 'dawn1' },
+  { id: 'lamp', name: '큰 등잔', desc: '빛 반경 +5%', max: 3, base: 70, ach: 'greed' },
+  { id: 'seal', name: '봉인 도장', desc: '레벨업 봉인 +1회', max: 2, base: 60, ach: 'chain500' },
+  { id: 'purse', name: '엽전 꾸러미', desc: '판에서 얻는 엽전 +10%', max: 3, base: 80, ach: 'kills3000' },
+  { id: 'card', name: '부적 한 장 더', desc: '레벨업 다시 뽑기 +1회', max: 3, base: 60, ach: 'card10' },
+  { id: 'wick', name: '호롱 심지', desc: '호롱 터뜨리기 충전 +10%', max: 3, base: 70, ach: 'dawn2' },
 ];
 const shopCost = (s, lv) => Math.round(s.base * Math.pow(1.5, lv));
 
@@ -354,6 +496,7 @@ const ED = {
   egg: { name: '달걀귀신', hp: 16, spd: 42, dmg: 9, r: 11, xp: 2, el: '토', ai: 'egg', eyes: [], ghost: true },
   water: { name: '물귀신', hp: 28, spd: 40, dmg: 7, r: 12, xp: 3, el: '토', eyes: [[3, -12]], eye: 'b' },
   dokkaebi: { name: '붉은 도깨비', hp: 22, spd: 56, dmg: 9, r: 11, xp: 3, el: '토', eyes: [[-4, -6], [4, -6]], eye: 'w' },
+  goldgob: { name: '금빛 도깨비', spr: 'goldgob', hp: 90, spd: 122, dmg: 0, r: 12, xp: 10, el: '금', ai: 'goldgob', eyes: [[-4, -6], [4, -6]], eye: 'w' },
   saja: { name: '갓 쓴 귀신', hp: 40, spd: 36, dmg: 11, r: 12, xp: 4, el: '토', eyes: [[-3, -14], [3, -14]], eye: 'w' },
   wisp: { name: '도깨비불', hp: 6, spd: 88, dmg: 5, r: 8, xp: 1, el: '화', eyes: [[0, -4]], eye: 'b' },
   gseun: { name: '그슨대', hp: 450, spd: 34, dmg: 14, r: 24, xp: 40, el: '토', ai: 'gseun', elite: true, eyes: [[-6, -46], [6, -46]], eye: 'w' },
@@ -377,7 +520,7 @@ const ED = {
 
 /* ---------- meta save ---------- */
 const SAVE_KEY = 'horong-demo-v1';
-let meta = { coins: 0, up: { hp: 0, atk: 0, light: 0, spd: 0, xp: 0, revive: 0 }, best: 0, wins: 0 };
+let meta = { coins: 0, up: { hp: 0, atk: 0, light: 0, spd: 0, xp: 0, revive: 0, gat2: 0, lamp: 0, seal: 0, purse: 0, card: 0, wick: 0 }, best: 0, wins: 0, ach: {}, kills: {} };
 function loadMeta() {
   try { const s = localStorage.getItem(SAVE_KEY); if (s) { const o = JSON.parse(s); meta = { ...meta, ...o, up: { ...meta.up, ...(o.up || {}) } }; } } catch (e) {}
 }
@@ -705,14 +848,16 @@ function updatePois(dt) {
       if (d < 130) { P.inFire = true; P.light = Math.min(100, P.light + 4 * dt); }
       if (Math.random() < dt * 9 && inView(p.x, p.y, 40)) addPart({ k: 'ember', x: p.x + rnd(-14, 14), y: p.y - 30, vx: rnd(-14, 14), vy: rnd(-70, -40), life: rnd(0.6, 1.0), max: 1, gl: 'fire', size: rnd(6, 10), drag: 1.2 });
     } else if (p.t === 'mat' && !p.used && d < 46) {
-      p.used = true; p.spin = G.t; sfx('card'); addText(p.x, p.y - 40, '윷을 던진다!', '#ffd27a');
+      p.used = true; p.spin = G.t; sfx('yut'); addText(p.x, p.y - 40, '윷을 던진다!', '#ffd27a');
     } else if (p.t === 'peddler') {
       if (d > 100) p.armed = true;
       else if (d < 62 && p.armed && G.state === 'play') { p.armed = false; openPeddler(p); }
     }
     if (p.t === 'mat' && p.spin && G.t - p.spin > 0.8 && !p.done) {
       p.done = true; const r = Math.random();
-      if (r < 0.25) { banner('윷놀이 대박!', '모가 나왔다 · 엽전과 지남철'); for (let i = 0; i < 30; i++) drops.push({ k: 'coin', x: p.x + rnd(-50, 50), y: p.y + rnd(-30, 30), v: 1 }); dropItem('magnet', p.x, p.y + 30); sfx('chest'); fx({ k: 'rays', x: p.x, y: p.y - 20, r: 200, n: 12, col: '255,226,150', dur: 0.9, rot: rnd(0, TAU) }); }
+      p.yut = r < 0.25 ? [0, 0, 0, 0] : r < 0.7 ? [1, 1, 1, 0] : [1, 0, 0, 0];   // the sticks land: 모 (all round side up) · 걸 · 빽도
+      addText(p.x, p.y - 74, r < 0.25 ? '모!' : r < 0.7 ? '걸' : '빽도!', r < 0.7 ? '#ffd27a' : '#ff8a6a', { crit: true, life: 1.2 });
+      if (r < 0.25) { unlockAch('mo'); banner('윷놀이 대박!', '모가 나왔다 · 엽전과 지남철'); for (let i = 0; i < 30; i++) drops.push({ k: 'coin', x: p.x + rnd(-50, 50), y: p.y + rnd(-30, 30), v: 1 }); dropItem('magnet', p.x, p.y + 30); sfx('chest'); fx({ k: 'rays', x: p.x, y: p.y - 20, r: 200, n: 12, col: '255,226,150', dur: 0.9, rot: rnd(0, TAU) }); }
       else if (r < 0.7) { addText(p.x, p.y - 50, '걸 · 엽전 12냥', '#ffd27a'); for (let i = 0; i < 12; i++) drops.push({ k: 'coin', x: p.x + rnd(-40, 40), y: p.y + rnd(-20, 20), v: 1 }); sfx('pick', 12); }
       else { banner('도깨비 노름에서 졌다', '판을 엎은 도깨비들이 덤벼듭니다'); sfx('boss'); G.shake = Math.max(G.shake, 5);
         for (let i = 0; i < 12; i++) { const a = i * TAU / 12; const e = makeEnemy(stg() === 2 ? 'yagwang' : 'dokkaebi', P.x + Math.cos(a) * 190, P.y + Math.sin(a) * 150); e.atkCd = rnd(0.6, 2); burst(e.x, e.y, '#c8463a', 6); } }
@@ -767,7 +912,7 @@ function buyPeddler(i) {
 function closePeddler() { if (G.state !== 'peddler') return; showOnly(null); G.state = 'play'; }
 
 /* ---------- art (generated sprite atlas) ---------- */
-const ATLAS = {"frames":{"fx_ring":[0,0,509,512],"fx_circle":[511,0,445,448],"fx_pillar0":[958,0,90,384],"fx_pillar1":[1050,0,90,384],"fx_pillar2":[1142,0,90,384],"fx_pillar3":[1234,0,90,384],"fx_pillar4":[1326,0,90,384],"fx_pillar5":[1418,0,90,384],"fx_pillar6":[1510,0,90,384],"fx_pillar7":[1602,0,90,384],"fx_claw0":[1694,0,136,256],"fx_claw1":[1832,0,136,256],"fx_claw2":[0,514,136,256],"fx_claw3":[138,514,136,256],"fx_claw4":[276,514,136,256],"fx_claw5":[414,514,136,256],"fx_claw6":[552,514,136,256],"fx_claw7":[690,514,136,256],"fx_geyser0":[828,514,144,256],"fx_geyser1":[974,514,144,256],"fx_geyser2":[1120,514,144,256],"fx_geyser3":[1266,514,144,256],"fx_geyser4":[1412,514,144,256],"fx_geyser5":[1558,514,144,256],"fx_geyser6":[1704,514,144,256],"fx_geyser7":[1850,514,144,256],"dueok_p1":[0,772,181,247],"gseun_p1":[183,772,143,243],"gumiho":[328,772,290,241],"gumiho_e":[620,772,289,241],"gseun":[911,772,122,230],"stall":[1035,772,250,226],"fx_slash0":[1287,772,190,224],"fx_slash1":[1479,772,190,224],"fx_slash2":[1671,772,190,224],"fx_slash3":[0,1021,190,224],"fx_slash4":[192,1021,190,224],"fx_slash5":[384,1021,190,224],"fx_slash6":[576,1021,190,224],"fx_slash7":[768,1021,190,224],"fx_slam0":[960,1021,288,224],"fx_slam1":[1250,1021,288,224],"fx_slam2":[1540,1021,288,224],"fx_slam3":[0,1247,288,224],"fx_slam4":[290,1247,288,224],"fx_slam5":[580,1247,288,224],"fx_slam6":[870,1247,288,224],"fx_slam7":[1160,1247,288,224],"fx_soul0":[1450,1247,199,224],"fx_soul1":[1651,1247,199,224],"fx_soul2":[0,1473,199,224],"fx_soul3":[201,1473,199,224],"fx_soul4":[402,1473,199,224],"fx_soul5":[603,1473,199,224],"fx_soul6":[804,1473,199,224],"fx_soul7":[1005,1473,199,224],"fx_fire0":[1206,1473,224,216],"fx_fire1":[1432,1473,224,216],"fx_fire2":[1658,1473,224,216],"fx_fire3":[0,1699,224,216],"fx_fire4":[226,1699,224,216],"fx_fire5":[452,1699,224,216],"fx_fire6":[678,1699,224,216],"fx_fire7":[904,1699,224,216],"gumiho_p3":[1130,1699,297,216],"dueok":[1429,1699,172,215],"gumiho_p1":[1603,1699,280,208],"jangsan_p3":[0,1917,291,206],"bulga_p1":[293,1917,327,205],"dueok_p2":[622,1917,233,202],"shrine":[857,1917,151,200],"dueok_p3":[1010,1917,212,194],"fx_hit0":[1224,1917,192,186],"fx_hit1":[1418,1917,192,186],"fx_hit2":[1612,1917,192,186],"fx_hit3":[1806,1917,192,186],"fx_hit4":[0,2125,192,186],"fx_hit5":[194,2125,192,186],"fx_hit6":[388,2125,192,186],"fx_hit7":[582,2125,192,186],"bulga_p3":[776,2125,195,183],"gumiho_r0":[973,2125,369,181],"gumiho_r1":[1344,2125,369,181],"gumiho_r2":[0,2313,369,181],"gumiho_r3":[371,2313,369,181],"gumiho_r4":[742,2313,369,181],"gumiho_r5":[1113,2313,369,181],"tree":[1484,2313,160,180],"bulga":[1646,2313,320,172],"sansin":[0,2496,123,170],"sotdae":[125,2496,66,170],"jangsan_p1":[193,2496,279,169],"gumiho_p2":[474,2496,326,168],"gseun_p2":[802,2496,231,166],"jangsan":[1035,2496,300,164],"jangsan_p2":[1337,2496,332,163],"bulga_p2":[1671,2496,336,163],"bulga_e":[0,2668,244,162],"gumiho_p0":[246,2668,327,160],"tbell":[575,2668,116,160],"fx_ink0":[693,2668,200,153],"fx_ink1":[895,2668,200,153],"fx_ink2":[1097,2668,200,153],"fx_ink3":[1299,2668,200,153],"fx_ink4":[1501,2668,200,153],"fx_ink5":[1703,2668,200,153],"fx_ink6":[0,2832,200,153],"fx_ink7":[202,2832,200,153],"imugi":[404,2832,150,150],"pagoda":[556,2832,96,150],"post":[654,2832,124,150],"jangsan_e":[780,2832,258,145],"imugi_p2":[1040,2832,142,141],"herbs":[1184,2832,108,140],"jangseung":[1294,2832,90,140],"well":[1386,2832,151,140],"peddler":[1539,2832,141,140],"imugi_p0":[1682,2832,161,139],"bonfire":[1845,2832,120,138],"gseun_p3":[0,2987,236,137],"cart":[238,2987,150,137],"imugi_p3":[390,2987,150,134],"imugi_p1":[542,2987,142,133],"spring":[686,2987,113,130],"stonelamp":[801,2987,67,130],"cairn":[870,2987,82,130],"jars":[954,2987,200,126],"offering":[1156,2987,120,116],"yeoni_se0":[1278,2987,76,109],"yeoni_se1":[1356,2987,76,109],"yeoni_se2":[1434,2987,76,109],"yeoni_se3":[1512,2987,76,109],"yeoni_se_body":[1590,2987,76,109],"yeoni_s0":[1668,2987,64,109],"yeoni_s1":[1734,2987,64,109],"yeoni_s2":[1800,2987,64,109],"yeoni_s3":[1866,2987,64,109],"yeoni_s_body":[1932,2987,64,109],"yeoni_n0":[0,3126,61,109],"yeoni_n1":[63,3126,61,109],"yeoni_n2":[126,3126,61,109],"yeoni_n3":[189,3126,61,109],"yeoni_n_body":[252,3126,61,109],"danbi_ne0":[315,3126,70,109],"danbi_ne1":[387,3126,70,109],"danbi_ne2":[459,3126,70,109],"danbi_ne3":[531,3126,70,109],"danbi_ne_body":[603,3126,70,109],"mat":[675,3126,150,109],"danbi0":[827,3126,70,108],"danbi1":[899,3126,70,108],"danbi2":[971,3126,70,108],"danbi3":[1043,3126,70,108],"yeoni_ese0":[1115,3126,76,108],"yeoni_ese1":[1193,3126,76,108],"yeoni_ese2":[1271,3126,76,108],"yeoni_ese3":[1349,3126,76,108],"yeoni_ese_body":[1427,3126,76,108],"yeoni_sse0":[1505,3126,70,108],"yeoni_sse1":[1577,3126,70,108],"yeoni_sse2":[1649,3126,70,108],"yeoni_sse3":[1721,3126,70,108],"yeoni_sse_body":[1793,3126,70,108],"yeoni_ene0":[1865,3126,71,108],"yeoni_ene1":[1938,3126,71,108],"yeoni_ene2":[0,3237,71,108],"yeoni_ene3":[73,3237,71,108],"yeoni_ene_body":[146,3237,71,108],"yeoni_ne0":[219,3237,77,108],"yeoni_ne1":[298,3237,77,108],"yeoni_ne2":[377,3237,77,108],"yeoni_ne3":[456,3237,77,108],"yeoni_ne_body":[535,3237,77,108],"yeoni_nne0":[614,3237,62,108],"yeoni_nne1":[678,3237,62,108],"yeoni_nne2":[742,3237,62,108],"yeoni_nne3":[806,3237,62,108],"yeoni_nne_body":[870,3237,62,108],"danbi_body":[934,3237,70,108],"danbi_ese0":[1006,3237,68,108],"danbi_ese1":[1076,3237,68,108],"danbi_ese2":[1146,3237,68,108],"danbi_ese3":[1216,3237,68,108],"danbi_ese_body":[1286,3237,68,108],"danbi_se0":[1356,3237,76,108],"danbi_se1":[1434,3237,76,108],"danbi_se2":[1512,3237,76,108],"danbi_se3":[1590,3237,76,108],"danbi_se_body":[1668,3237,76,108],"danbi_sse0":[1746,3237,70,108],"danbi_sse1":[1818,3237,70,108],"danbi_sse2":[1890,3237,70,108],"danbi_sse3":[1962,3237,70,108],"danbi_sse_body":[0,3347,70,108],"danbi_s0":[72,3347,68,108],"danbi_s1":[142,3347,68,108],"danbi_s2":[212,3347,68,108],"danbi_s3":[282,3347,68,108],"danbi_s_body":[352,3347,68,108],"danbi_ene0":[422,3347,67,108],"danbi_ene1":[491,3347,67,108],"danbi_ene2":[560,3347,67,108],"danbi_ene3":[629,3347,67,108],"danbi_ene_body":[698,3347,67,108],"danbi_nne0":[767,3347,65,108],"danbi_nne1":[834,3347,65,108],"danbi_nne2":[901,3347,65,108],"danbi_nne3":[968,3347,65,108],"danbi_nne_body":[1035,3347,65,108],"yeoni0":[1102,3347,76,107],"yeoni1":[1180,3347,76,107],"yeoni2":[1258,3347,76,107],"yeoni3":[1336,3347,76,107],"yeoni_body":[1414,3347,76,107],"danbi_n0":[1492,3347,63,107],"danbi_n1":[1557,3347,63,107],"danbi_n2":[1622,3347,63,107],"danbi_n3":[1687,3347,63,107],"danbi_n_body":[1752,3347,63,107],"mangtae":[1817,3347,89,94],"saja":[1908,3347,70,90],"fx_beam0":[0,3457,512,86],"fx_beam1":[514,3457,512,86],"fx_beam2":[1028,3457,512,86],"fx_beam3":[0,3545,512,86],"grim":[514,3545,95,86],"water":[611,3545,71,84],"totem":[684,3545,50,84],"sonkaksi":[736,3545,60,82],"gseun_e":[798,3545,53,81],"dokkaebi":[853,3545,91,80],"seg":[946,3545,94,79],"egg":[1042,3545,60,76],"japgwi":[1104,3545,70,74],"crow":[1176,3545,80,70],"lotus":[1258,3545,61,70],"chest":[1321,3545,64,67],"jar":[1387,3545,56,66],"water_e":[1445,3545,51,64],"skylantern":[1498,3545,49,64],"i_hollong":[1549,3545,64,64],"i_bell":[1615,3545,64,64],"i_club":[1681,3545,64,64],"i_yukmo":[1747,3545,64,64],"i_ink":[1813,3545,64,64],"i_talisman":[1879,3545,64,64],"i_oiljar":[1945,3545,64,64],"i_shoes":[0,3633,64,64],"i_gat":[66,3633,64,64],"i_redink":[132,3633,64,64],"i_mirror":[198,3633,64,64],"i_rice":[264,3633,64,64],"yagwang":[330,3633,49,60],"fire0":[381,3633,43,60],"fire1":[426,3633,43,60],"fire2":[471,3633,43,60],"fire3":[516,3633,43,60],"fox0":[561,3633,40,60],"fox1":[603,3633,40,60],"fox2":[645,3633,40,60],"fox3":[687,3633,40,60],"wisp":[729,3633,36,58],"wisp_e":[767,3633,36,58],"imugi_e":[805,3633,51,55],"ginseng":[858,3633,48,54],"magnet":[908,3633,50,48],"rice":[960,3633,32,43],"dokkaebi_e":[994,3633,58,42],"gem3":[1054,3633,29,42],"saja_e":[1085,3633,27,39],"yeoni_ese_arm":[1114,3633,11,38],"talisman":[1127,3633,32,38],"yeoni_se_arm":[1161,3633,9,37],"yeoni_sse_arm":[1172,3633,11,37],"grim_e":[1185,3633,28,37],"yeoni_arm":[1215,3633,10,36],"yeoni_nne_arm":[1227,3633,11,36],"danbi_ese_arm":[1240,3633,11,36],"danbi_nne_arm":[1253,3633,11,36],"yeoni_s_arm":[1266,3633,11,35],"yeoni_n_arm":[1279,3633,13,35],"danbi_sse_arm":[1294,3633,11,35],"danbi_arm":[1307,3633,12,34],"danbi_se_arm":[1321,3633,11,34],"danbi_n_arm":[1334,3633,13,34],"gem2":[1349,3633,19,34],"danbi_s_arm":[1370,3633,14,32],"danbi_ene_arm":[1386,3633,12,30],"dueok_e":[1400,3633,23,29],"danbi_ne_arm":[1425,3633,11,28],"gem1":[1438,3633,21,28],"oil":[1461,3633,22,28],"coin":[1485,3633,30,28],"totem_e":[1517,3633,23,27],"yeoni_ne_foot":[1542,3633,13,18],"japgwi_e":[1557,3633,26,17],"mangtae_e":[1585,3633,13,16],"yeoni_n_foot":[1600,3633,11,15],"yeoni_s_foot":[1613,3633,13,14],"yeoni_foot":[1628,3633,17,13],"yeoni_ene_foot":[1647,3633,15,13],"danbi_ne_foot":[1664,3633,14,13],"yeoni_se_foot":[1680,3633,15,11],"danbi_foot":[1697,3633,14,11],"danbi_n_foot":[1713,3633,11,11],"yeoni_ese_foot":[1726,3633,15,10],"yeoni_sse_foot":[1743,3633,16,10],"danbi_ese_foot":[1761,3633,14,10],"crow_e":[1777,3633,10,10],"yeoni_nne_foot":[1789,3633,16,9],"danbi_sse_foot":[1807,3633,13,9],"danbi_s_foot":[1822,3633,10,9],"danbi_nne_foot":[1834,3633,13,9],"danbi_se_foot":[1849,3633,12,8],"danbi_ene_foot":[1863,3633,13,8],"yagwang_e":[1878,3633,1,1]},"meta":{"lantern":[7.7,-33.9],"bells":[5.7,-33.4],"ax":{"yeoni":1.9,"yeoni_ese":2.0,"yeoni_se":2.0,"yeoni_sse":1.2,"yeoni_s":1.3,"yeoni_ene":2.1,"yeoni_ne":2.5,"yeoni_nne":0.6,"yeoni_n":1.0,"danbi":-2.0,"danbi_ese":-2.2,"danbi_se":-2.1,"danbi_sse":-2.2,"danbi_s":-1.8,"danbi_ene":-1.7,"danbi_ne":-0.2,"danbi_nne":-1.3,"danbi_n":-1.4},"lamp":{"yeoni":[6.4,-32.9],"yeoni_ese":[6.5,-33.1],"yeoni_se":[7.0,-32.6],"yeoni_sse":[4.4,-34.6],"yeoni_s":[3.7,-36.3],"yeoni_ene":[9.1,-31.6],"yeoni_ne":[9.9,-31.1],"yeoni_nne":[7.8,-27.3],"yeoni_n":[7.6,-25.8],"danbi":[3.7,-32.9],"danbi_ese":[3.5,-33.9],"danbi_se":[6.3,-33.8],"danbi_sse":[3.6,-34.0],"danbi_s":[4.2,-32.1],"danbi_ene":[12.6,-46.0],"danbi_ne":[12.5,-42.6],"danbi_nne":[11.7,-45.4],"danbi_n":[10.4,-44.2]},"lampF":{"yeoni":[[6.4,-32.9],[6.7,-33.1],[6.3,-34.0],[6.1,-33.8]],"yeoni_ese":[[6.5,-33.1],[6.5,-33.1],[6.5,-33.1],[6.5,-33.1]],"yeoni_se":[[7.0,-32.6],[7.2,-32.3],[7.0,-33.4],[6.8,-32.7]],"yeoni_sse":[[4.4,-34.6],[4.4,-34.6],[4.4,-34.6],[4.4,-34.6]],"yeoni_s":[[3.7,-36.3],[3.8,-35.2],[3.6,-34.7],[3.9,-36.3]],"yeoni_ene":[[9.1,-31.6],[9.1,-31.6],[9.1,-31.6],[9.1,-31.6]],"yeoni_ne":[[9.9,-31.1],[10.6,-32.5],[10.6,-32.4],[9.8,-33.0]],"yeoni_nne":[[7.8,-27.3],[7.8,-27.3],[7.8,-27.3],[7.8,-27.3]],"yeoni_n":[[7.6,-25.8],[5.8,-24.9],[7.0,-25.1],[7.0,-25.2]],"danbi":[[3.7,-32.9],[3.7,-36.1],[6.5,-35.9],[5.0,-37.0]],"danbi_ese":[[3.5,-33.9],[3.5,-33.9],[3.5,-33.9],[3.5,-33.9]],"danbi_se":[[6.3,-33.8],[5.1,-32.7],[5.8,-33.0],[7.7,-36.3]],"danbi_sse":[[3.6,-34.0],[3.6,-34.0],[3.6,-34.0],[3.6,-34.0]],"danbi_s":[[4.2,-32.1],[4.3,-32.6],[5.8,-34.9],[5.8,-34.2]],"danbi_ene":[[12.6,-46.0],[12.6,-46.0],[12.6,-46.0],[12.6,-46.0]],"danbi_ne":[[12.5,-42.6],[11.8,-43.5],[11.9,-43.2],[11.8,-44.3]],"danbi_nne":[[11.7,-45.4],[11.7,-45.4],[11.7,-45.4],[11.7,-45.4]],"danbi_n":[[10.4,-44.2],[10.1,-43.8],[10.6,-42.7],[10.4,-43.9]]},"rig":{"yeoni":{"base":2,"hem":96,"split":41,"w":76,"h":107,"fx":[16,58],"arm":{"s":[28,38],"h":[27,66],"o":[23,35],"src":"yeoni"},"fo":[42,94],"fc":38.1,"sep":34.4,"gy":107,"fw":17,"n":2},"yeoni_ese":{"base":0,"hem":101,"split":37,"w":76,"h":108,"fx":[17,58],"arm":{"s":[27,38],"h":[29,67],"o":[23,34],"src":"yeoni_ese"},"fo":[16,98],"fc":36.6,"sep":27.8,"gy":108,"fw":15,"n":2},"yeoni_se":{"base":3,"hem":96,"split":46,"w":76,"h":109,"fx":[26,61],"arm":{"s":[28,39],"h":[28,67],"o":[24,35],"src":"yeoni_se"},"fo":[47,97],"fc":47.3,"sep":35.8,"gy":108,"fw":15,"n":2},"yeoni_sse":{"base":0,"hem":101,"split":33,"w":70,"h":108,"fx":[13,54],"arm":{"s":[25,38],"h":[23,66],"o":[19,34],"src":"yeoni_sse"},"fo":[39,97],"fc":33.0,"sep":27.7,"gy":107,"fw":16,"n":2},"yeoni_s":{"base":0,"hem":95,"split":36,"w":64,"h":109,"fx":[22,48],"arm":{"s":[20,38],"h":[17,64],"o":[14,34],"src":"yeoni_s"},"fo":[23,94],"fc":31.6,"sep":0,"gy":108,"fw":13,"n":1},"yeoni_ene":{"base":0,"hem":97,"split":35,"w":71,"h":108,"fx":[17,54],"arm":{"s":[28,40],"h":[24,68],"src":"yeoni_n","borrow":true,"o":[20,38]},"fo":[17,95],"fc":33.3,"sep":23.0,"gy":108,"fw":15,"n":2},"yeoni_ne":{"base":1,"hem":95,"split":30,"w":77,"h":108,"fx":[17,46],"arm":{"s":[31,41],"h":[27,69],"src":"yeoni_n","borrow":true,"o":[23,39]},"fo":[17,90],"fc":31.6,"sep":32.5,"gy":108,"fw":13,"n":2},"yeoni_nne":{"base":0,"hem":103,"split":26,"w":62,"h":108,"fx":[11,42],"arm":{"s":[10,37],"h":[7,65],"o":[4,34],"src":"yeoni_nne"},"fo":[29,98],"fc":26.5,"sep":20.1,"gy":107,"fw":16,"n":2},"yeoni_n":{"base":0,"hem":99,"split":24,"w":61,"h":109,"fx":[14,34],"arm":{"s":[14,37],"h":[10,65],"o":[6,35],"src":"yeoni_n"},"fo":[25,94],"fc":30.8,"sep":12.7,"gy":109,"fw":11,"n":2},"danbi":{"base":3,"hem":94,"split":27,"w":70,"h":108,"fx":[20,50],"arm":{"s":[18,46],"h":[19,69],"o":[13,41],"src":"danbi"},"fo":[38,97],"fc":32.7,"sep":37.1,"gy":108,"fw":14,"n":2},"danbi_ese":{"base":0,"hem":99,"split":32,"w":68,"h":108,"fx":[8,49],"arm":{"s":[17,46],"h":[17,71],"o":[12,41],"src":"danbi_ese"},"fo":[37,98],"fc":29.3,"sep":30.3,"gy":108,"fw":14,"n":2},"danbi_se":{"base":0,"hem":95,"split":26,"w":76,"h":108,"fx":[17,49],"arm":{"s":[19,47],"h":[19,70],"o":[14,42],"src":"danbi_se"},"fo":[38,100],"fc":34.4,"sep":23.1,"gy":108,"fw":12,"n":2},"danbi_sse":{"base":0,"hem":99,"split":32,"w":70,"h":108,"fx":[10,49],"arm":{"s":[15,46],"h":[15,70],"o":[10,41],"src":"danbi_sse"},"fo":[37,99],"fc":30.1,"sep":28.9,"gy":108,"fw":13,"n":2},"danbi_s":{"base":3,"hem":94,"split":21,"w":68,"h":108,"fx":[15,41],"arm":{"s":[13,45],"h":[10,66],"o":[5,40],"src":"danbi_s"},"fo":[26,99],"fc":30.5,"sep":0,"gy":108,"fw":10,"n":1},"danbi_ene":{"base":0,"hem":99,"split":28,"w":67,"h":108,"fx":[6,45],"arm":{"s":[14,49],"h":[11,70],"o":[7,45],"src":"danbi_ene"},"fo":[33,100],"fc":25.2,"sep":28.5,"gy":108,"fw":13,"n":2},"danbi_ne":{"base":1,"hem":95,"split":30,"w":70,"h":109,"fx":[17,45],"arm":{"s":[15,49],"h":[12,70],"o":[9,46],"src":"danbi_ne"},"fo":[17,96],"fc":32.0,"sep":30.5,"gy":109,"fw":14,"n":2},"danbi_nne":{"base":0,"hem":100,"split":27,"w":65,"h":108,"fx":[7,47],"arm":{"s":[11,45],"h":[8,72],"o":[5,41],"src":"danbi_nne"},"fo":[35,99],"fc":26.9,"sep":30.7,"gy":108,"fw":13,"n":2},"danbi_n":{"base":3,"hem":94,"split":22,"w":63,"h":107,"fx":[18,35],"arm":{"s":[12,45],"h":[8,71],"o":[4,42],"src":"danbi_n"},"fo":[22,96],"fc":26.5,"sep":0,"gy":107,"fw":11,"n":1}},"stonelampLamp":[0.2,-36.9],"jarsLamp":[48.2,-39.4],"postLamp":[21.2,-36.9],"emisOff":{"japgwi":[34,26],"water":[20,20],"dokkaebi":[21,0],"saja":[31,30],"wisp":[0,0],"gseun":[33,38],"gumiho":[1,0],"imugi":[97,43],"grim":[38,25],"yagwang":[43,38],"crow":[51,36],"mangtae":[40,34],"totem":[22,18],"jangsan":[30,0],"dueok":[123,98],"bulga":[54,10]}}};
+const ATLAS = {"frames":{"fx_ring":[0,0,509,512],"fx_circle":[511,0,445,448],"fx_pillar0":[958,0,90,384],"fx_pillar1":[1050,0,90,384],"fx_pillar2":[1142,0,90,384],"fx_pillar3":[1234,0,90,384],"fx_pillar4":[1326,0,90,384],"fx_pillar5":[1418,0,90,384],"fx_pillar6":[1510,0,90,384],"fx_pillar7":[1602,0,90,384],"fx_claw0":[1694,0,136,256],"fx_claw1":[1832,0,136,256],"fx_claw2":[0,514,136,256],"fx_claw3":[138,514,136,256],"fx_claw4":[276,514,136,256],"fx_claw5":[414,514,136,256],"fx_claw6":[552,514,136,256],"fx_claw7":[690,514,136,256],"fx_geyser0":[828,514,144,256],"fx_geyser1":[974,514,144,256],"fx_geyser2":[1120,514,144,256],"fx_geyser3":[1266,514,144,256],"fx_geyser4":[1412,514,144,256],"fx_geyser5":[1558,514,144,256],"fx_geyser6":[1704,514,144,256],"fx_geyser7":[1850,514,144,256],"dueok_p1":[0,772,181,247],"gseun_p1":[183,772,143,243],"gumiho":[328,772,290,241],"gumiho_e":[620,772,289,241],"gseun":[911,772,122,230],"stall":[1035,772,250,226],"fx_slash0":[1287,772,190,224],"fx_slash1":[1479,772,190,224],"fx_slash2":[1671,772,190,224],"fx_slash3":[0,1021,190,224],"fx_slash4":[192,1021,190,224],"fx_slash5":[384,1021,190,224],"fx_slash6":[576,1021,190,224],"fx_slash7":[768,1021,190,224],"fx_slam0":[960,1021,288,224],"fx_slam1":[1250,1021,288,224],"fx_slam2":[1540,1021,288,224],"fx_slam3":[0,1247,288,224],"fx_slam4":[290,1247,288,224],"fx_slam5":[580,1247,288,224],"fx_slam6":[870,1247,288,224],"fx_slam7":[1160,1247,288,224],"fx_soul0":[1450,1247,199,224],"fx_soul1":[1651,1247,199,224],"fx_soul2":[0,1473,199,224],"fx_soul3":[201,1473,199,224],"fx_soul4":[402,1473,199,224],"fx_soul5":[603,1473,199,224],"fx_soul6":[804,1473,199,224],"fx_soul7":[1005,1473,199,224],"fx_fire0":[1206,1473,224,216],"fx_fire1":[1432,1473,224,216],"fx_fire2":[1658,1473,224,216],"fx_fire3":[0,1699,224,216],"fx_fire4":[226,1699,224,216],"fx_fire5":[452,1699,224,216],"fx_fire6":[678,1699,224,216],"fx_fire7":[904,1699,224,216],"gumiho_p3":[1130,1699,297,216],"dueok":[1429,1699,172,215],"gumiho_p1":[1603,1699,280,208],"jangsan_p3":[0,1917,291,206],"bulga_p1":[293,1917,327,205],"dueok_p2":[622,1917,233,202],"shrine":[857,1917,151,200],"dueok_p3":[1010,1917,212,194],"fx_hit0":[1224,1917,192,186],"fx_hit1":[1418,1917,192,186],"fx_hit2":[1612,1917,192,186],"fx_hit3":[1806,1917,192,186],"fx_hit4":[0,2125,192,186],"fx_hit5":[194,2125,192,186],"fx_hit6":[388,2125,192,186],"fx_hit7":[582,2125,192,186],"bulga_p3":[776,2125,195,183],"gumiho_r0":[973,2125,369,181],"gumiho_r1":[1344,2125,369,181],"gumiho_r2":[0,2313,369,181],"gumiho_r3":[371,2313,369,181],"gumiho_r4":[742,2313,369,181],"gumiho_r5":[1113,2313,369,181],"tree":[1484,2313,160,180],"bulga":[1646,2313,320,172],"sansin":[0,2496,123,170],"sotdae":[125,2496,66,170],"jangsan_p1":[193,2496,279,169],"gumiho_p2":[474,2496,326,168],"gseun_p2":[802,2496,231,166],"jangsan":[1035,2496,300,164],"jangsan_p2":[1337,2496,332,163],"bulga_p2":[1671,2496,336,163],"bulga_e":[0,2668,244,162],"gumiho_p0":[246,2668,327,160],"tbell":[575,2668,116,160],"fx_ink0":[693,2668,200,153],"fx_ink1":[895,2668,200,153],"fx_ink2":[1097,2668,200,153],"fx_ink3":[1299,2668,200,153],"fx_ink4":[1501,2668,200,153],"fx_ink5":[1703,2668,200,153],"fx_ink6":[0,2832,200,153],"fx_ink7":[202,2832,200,153],"imugi":[404,2832,150,150],"pagoda":[556,2832,96,150],"post":[654,2832,124,150],"jangsan_e":[780,2832,258,145],"imugi_p2":[1040,2832,142,141],"herbs":[1184,2832,108,140],"jangseung":[1294,2832,90,140],"well":[1386,2832,151,140],"peddler":[1539,2832,141,140],"imugi_p0":[1682,2832,161,139],"bonfire":[1845,2832,120,138],"gseun_p3":[0,2987,236,137],"cart":[238,2987,150,137],"imugi_p3":[390,2987,150,134],"imugi_p1":[542,2987,142,133],"spring":[686,2987,113,130],"stonelamp":[801,2987,67,130],"cairn":[870,2987,82,130],"jars":[954,2987,200,126],"offering":[1156,2987,120,116],"yeoni_se0":[1278,2987,76,109],"yeoni_se1":[1356,2987,76,109],"yeoni_se2":[1434,2987,76,109],"yeoni_se3":[1512,2987,76,109],"yeoni_se_body":[1590,2987,76,109],"yeoni_s0":[1668,2987,64,109],"yeoni_s1":[1734,2987,64,109],"yeoni_s2":[1800,2987,64,109],"yeoni_s3":[1866,2987,64,109],"yeoni_s_body":[1932,2987,64,109],"yeoni_n0":[0,3126,61,109],"yeoni_n1":[63,3126,61,109],"yeoni_n2":[126,3126,61,109],"yeoni_n3":[189,3126,61,109],"yeoni_n_body":[252,3126,61,109],"danbi_ne0":[315,3126,70,109],"danbi_ne1":[387,3126,70,109],"danbi_ne2":[459,3126,70,109],"danbi_ne3":[531,3126,70,109],"danbi_ne_body":[603,3126,70,109],"kkoma_ne0":[675,3126,74,109],"kkoma_ne1":[751,3126,74,109],"kkoma_ne2":[827,3126,74,109],"kkoma_ne3":[903,3126,74,109],"kkoma_ne_body":[979,3126,74,109],"mat":[1055,3126,150,109],"danbi0":[1207,3126,70,108],"danbi1":[1279,3126,70,108],"danbi2":[1351,3126,70,108],"danbi3":[1423,3126,70,108],"makswe0":[1495,3126,85,108],"makswe1":[1582,3126,85,108],"makswe2":[1669,3126,85,108],"makswe3":[1756,3126,85,108],"yeoni_ese0":[1843,3126,76,108],"yeoni_ese1":[1921,3126,76,108],"yeoni_ese2":[0,3237,76,108],"yeoni_ese3":[78,3237,76,108],"yeoni_ese_body":[156,3237,76,108],"yeoni_sse0":[234,3237,70,108],"yeoni_sse1":[306,3237,70,108],"yeoni_sse2":[378,3237,70,108],"yeoni_sse3":[450,3237,70,108],"yeoni_sse_body":[522,3237,70,108],"yeoni_ene0":[594,3237,71,108],"yeoni_ene1":[667,3237,71,108],"yeoni_ene2":[740,3237,71,108],"yeoni_ene3":[813,3237,71,108],"yeoni_ene_body":[886,3237,71,108],"yeoni_ne0":[959,3237,77,108],"yeoni_ne1":[1038,3237,77,108],"yeoni_ne2":[1117,3237,77,108],"yeoni_ne3":[1196,3237,77,108],"yeoni_ne_body":[1275,3237,77,108],"yeoni_nne0":[1354,3237,62,108],"yeoni_nne1":[1418,3237,62,108],"yeoni_nne2":[1482,3237,62,108],"yeoni_nne3":[1546,3237,62,108],"yeoni_nne_body":[1610,3237,62,108],"danbi_body":[1674,3237,70,108],"danbi_ese0":[1746,3237,68,108],"danbi_ese1":[1816,3237,68,108],"danbi_ese2":[1886,3237,68,108],"danbi_ese3":[1956,3237,68,108],"danbi_ese_body":[0,3347,68,108],"danbi_se0":[70,3347,76,108],"danbi_se1":[148,3347,76,108],"danbi_se2":[226,3347,76,108],"danbi_se3":[304,3347,76,108],"danbi_se_body":[382,3347,76,108],"danbi_sse0":[460,3347,70,108],"danbi_sse1":[532,3347,70,108],"danbi_sse2":[604,3347,70,108],"danbi_sse3":[676,3347,70,108],"danbi_sse_body":[748,3347,70,108],"danbi_s0":[820,3347,68,108],"danbi_s1":[890,3347,68,108],"danbi_s2":[960,3347,68,108],"danbi_s3":[1030,3347,68,108],"danbi_s_body":[1100,3347,68,108],"danbi_ene0":[1170,3347,67,108],"danbi_ene1":[1239,3347,67,108],"danbi_ene2":[1308,3347,67,108],"danbi_ene3":[1377,3347,67,108],"danbi_ene_body":[1446,3347,67,108],"danbi_nne0":[1515,3347,65,108],"danbi_nne1":[1582,3347,65,108],"danbi_nne2":[1649,3347,65,108],"danbi_nne3":[1716,3347,65,108],"danbi_nne_body":[1783,3347,65,108],"makswe_body":[1850,3347,85,108],"makswe_ese0":[1937,3347,65,108],"makswe_ese1":[0,3457,65,108],"makswe_ese2":[67,3457,65,108],"makswe_ese3":[134,3457,65,108],"makswe_ese_body":[201,3457,65,108],"makswe_se0":[268,3457,71,108],"makswe_se1":[341,3457,71,108],"makswe_se2":[414,3457,71,108],"makswe_se3":[487,3457,71,108],"makswe_se_body":[560,3457,71,108],"makswe_sse0":[633,3457,65,108],"makswe_sse1":[700,3457,65,108],"makswe_sse2":[767,3457,65,108],"makswe_sse3":[834,3457,65,108],"makswe_sse_body":[901,3457,65,108],"makswe_s0":[968,3457,56,108],"makswe_s1":[1026,3457,56,108],"makswe_s2":[1084,3457,56,108],"makswe_s3":[1142,3457,56,108],"makswe_s_body":[1200,3457,56,108],"makswe_ene0":[1258,3457,66,108],"makswe_ene1":[1326,3457,66,108],"makswe_ene2":[1394,3457,66,108],"makswe_ene3":[1462,3457,66,108],"makswe_ene_body":[1530,3457,66,108],"makswe_ne0":[1598,3457,70,108],"makswe_ne1":[1670,3457,70,108],"makswe_ne2":[1742,3457,70,108],"makswe_ne3":[1814,3457,70,108],"makswe_ne_body":[1886,3457,70,108],"makswe_nne0":[1958,3457,63,108],"makswe_nne1":[0,3567,63,108],"makswe_nne2":[65,3567,63,108],"makswe_nne3":[130,3567,63,108],"makswe_nne_body":[195,3567,63,108],"makswe_n0":[260,3567,57,108],"makswe_n1":[319,3567,57,108],"makswe_n2":[378,3567,57,108],"makswe_n3":[437,3567,57,108],"makswe_n_body":[496,3567,57,108],"kkoma_ese0":[555,3567,67,108],"kkoma_ese1":[624,3567,67,108],"kkoma_ese2":[693,3567,67,108],"kkoma_ese3":[762,3567,67,108],"kkoma_ese_body":[831,3567,67,108],"kkoma_sse0":[900,3567,67,108],"kkoma_sse1":[969,3567,67,108],"kkoma_sse2":[1038,3567,67,108],"kkoma_sse3":[1107,3567,67,108],"kkoma_sse_body":[1176,3567,67,108],"kkoma_ene0":[1245,3567,63,108],"kkoma_ene1":[1310,3567,63,108],"kkoma_ene2":[1375,3567,63,108],"kkoma_ene3":[1440,3567,63,108],"kkoma_ene_body":[1505,3567,63,108],"kkoma_nne0":[1570,3567,65,108],"kkoma_nne1":[1637,3567,65,108],"kkoma_nne2":[1704,3567,65,108],"kkoma_nne3":[1771,3567,65,108],"kkoma_nne_body":[1838,3567,65,108],"kkoma_n0":[1905,3567,67,108],"kkoma_n1":[1974,3567,67,108],"kkoma_n2":[0,3677,67,108],"kkoma_n3":[69,3677,67,108],"kkoma_n_body":[138,3677,67,108],"yeoni0":[207,3677,76,107],"yeoni1":[285,3677,76,107],"yeoni2":[363,3677,76,107],"yeoni3":[441,3677,76,107],"yeoni_body":[519,3677,76,107],"danbi_n0":[597,3677,63,107],"danbi_n1":[662,3677,63,107],"danbi_n2":[727,3677,63,107],"danbi_n3":[792,3677,63,107],"danbi_n_body":[857,3677,63,107],"kkoma_se0":[922,3677,73,107],"kkoma_se1":[997,3677,73,107],"kkoma_se2":[1072,3677,73,107],"kkoma_se3":[1147,3677,73,107],"kkoma_se_body":[1222,3677,73,107],"kkoma_s0":[1297,3677,54,107],"kkoma_s1":[1353,3677,54,107],"kkoma_s2":[1409,3677,54,107],"kkoma_s3":[1465,3677,54,107],"kkoma_s_body":[1521,3677,54,107],"kkoma0":[1577,3677,74,106],"kkoma1":[1653,3677,74,106],"kkoma2":[1729,3677,74,106],"kkoma3":[1805,3677,74,106],"kkoma_body":[1881,3677,74,106],"mangtae":[1957,3677,89,94],"saja":[0,3787,70,90],"fx_beam0":[72,3787,512,86],"fx_beam1":[586,3787,512,86],"fx_beam2":[1100,3787,512,86],"fx_beam3":[0,3879,512,86],"grim":[514,3879,95,86],"water":[611,3879,71,84],"totem":[684,3879,50,84],"sonkaksi":[736,3879,60,82],"gseun_e":[798,3879,53,81],"dokkaebi":[853,3879,91,80],"seg":[946,3879,94,79],"egg":[1042,3879,60,76],"japgwi":[1104,3879,70,74],"crow":[1176,3879,80,70],"lotus":[1258,3879,61,70],"chest":[1321,3879,64,67],"jar":[1387,3879,56,66],"water_e":[1445,3879,51,64],"skylantern":[1498,3879,49,64],"i_hollong":[1549,3879,64,64],"i_bell":[1615,3879,64,64],"i_club":[1681,3879,64,64],"i_yukmo":[1747,3879,64,64],"i_ink":[1813,3879,64,64],"i_talisman":[1879,3879,64,64],"i_oiljar":[1945,3879,64,64],"i_shoes":[0,3967,64,64],"i_gat":[66,3967,64,64],"i_redink":[132,3967,64,64],"i_mirror":[198,3967,64,64],"i_rice":[264,3967,64,64],"yagwang":[330,3967,49,60],"fire0":[381,3967,43,60],"fire1":[426,3967,43,60],"fire2":[471,3967,43,60],"fire3":[516,3967,43,60],"fox0":[561,3967,40,60],"fox1":[603,3967,40,60],"fox2":[645,3967,40,60],"fox3":[687,3967,40,60],"wisp":[729,3967,36,58],"wisp_e":[767,3967,36,58],"imugi_e":[805,3967,51,55],"ginseng":[858,3967,48,54],"magnet":[908,3967,50,48],"rice":[960,3967,32,43],"dokkaebi_e":[994,3967,58,42],"gem3":[1054,3967,29,42],"makswe_ese_arm":[1085,3967,12,40],"makswe_se_arm":[1099,3967,16,39],"makswe_sse_arm":[1117,3967,15,39],"kkoma_arm":[1134,3967,19,39],"kkoma_ese_arm":[1155,3967,21,39],"kkoma_sse_arm":[1178,3967,20,39],"saja_e":[1200,3967,27,39],"yeoni_ese_arm":[1229,3967,11,38],"kkoma_ne_arm":[1242,3967,15,38],"kkoma_n_arm":[1259,3967,15,38],"talisman":[1276,3967,32,38],"yeoni_se_arm":[1310,3967,9,37],"yeoni_sse_arm":[1321,3967,11,37],"kkoma_se_arm":[1334,3967,20,37],"grim_e":[1356,3967,28,37],"yeoni_arm":[1386,3967,10,36],"yeoni_nne_arm":[1398,3967,11,36],"danbi_ese_arm":[1411,3967,11,36],"danbi_nne_arm":[1424,3967,11,36],"makswe_arm":[1437,3967,11,36],"makswe_s_arm":[1450,3967,14,36],"makswe_n_arm":[1466,3967,14,36],"kkoma_s_arm":[1482,3967,15,36],"kkoma_ene_arm":[1499,3967,15,36],"kkoma_nne_arm":[1516,3967,16,36],"yeoni_s_arm":[1534,3967,11,35],"yeoni_n_arm":[1547,3967,13,35],"danbi_sse_arm":[1562,3967,11,35],"danbi_arm":[1575,3967,12,34],"danbi_se_arm":[1589,3967,11,34],"danbi_n_arm":[1602,3967,13,34],"gem2":[1617,3967,19,34],"danbi_s_arm":[1638,3967,14,32],"makswe_ene_arm":[1654,3967,13,32],"makswe_nne_arm":[1669,3967,14,31],"danbi_ene_arm":[1685,3967,12,30],"makswe_ne_arm":[1699,3967,12,30],"dueok_e":[1713,3967,23,29],"danbi_ne_arm":[1738,3967,11,28],"gem1":[1751,3967,21,28],"oil":[1774,3967,22,28],"coin":[1798,3967,30,28],"totem_e":[1830,3967,23,27],"yeoni_ne_foot":[1855,3967,13,18],"japgwi_e":[1870,3967,26,17],"kkoma_s_foot":[1898,3967,13,16],"kkoma_n_foot":[1913,3967,12,16],"mangtae_e":[1927,3967,13,16],"yeoni_n_foot":[1942,3967,11,15],"kkoma_ne_foot":[1955,3967,15,15],"yeoni_s_foot":[1972,3967,13,14],"makswe_ne_foot":[1987,3967,14,14],"makswe_nne_foot":[2003,3967,14,14],"makswe_n_foot":[2019,3967,11,14],"kkoma_se_foot":[0,4033,16,14],"yeoni_foot":[18,4033,17,13],"yeoni_ene_foot":[37,4033,15,13],"danbi_ne_foot":[54,4033,14,13],"makswe_ene_foot":[70,4033,15,13],"kkoma_foot":[87,4033,17,13],"makswe_ese_foot":[106,4033,13,12],"makswe_s_foot":[121,4033,13,12],"kkoma_nne_foot":[136,4033,17,12],"yeoni_se_foot":[155,4033,15,11],"danbi_foot":[172,4033,14,11],"danbi_n_foot":[188,4033,11,11],"makswe_foot":[201,4033,15,11],"makswe_sse_foot":[218,4033,16,11],"kkoma_ene_foot":[236,4033,17,11],"yeoni_ese_foot":[255,4033,15,10],"yeoni_sse_foot":[272,4033,16,10],"danbi_ese_foot":[290,4033,14,10],"makswe_se_foot":[306,4033,15,10],"crow_e":[323,4033,10,10],"yeoni_nne_foot":[335,4033,16,9],"danbi_sse_foot":[353,4033,13,9],"danbi_s_foot":[368,4033,10,9],"danbi_nne_foot":[380,4033,13,9],"kkoma_ese_foot":[395,4033,16,9],"kkoma_sse_foot":[413,4033,17,9],"danbi_se_foot":[432,4033,12,8],"danbi_ene_foot":[446,4033,13,8],"yagwang_e":[461,4033,1,1]},"meta":{"lantern":[7.7,-33.9],"bells":[5.7,-33.4],"ax":{"yeoni":1.9,"yeoni_ese":2.0,"yeoni_se":2.0,"yeoni_sse":1.2,"yeoni_s":1.3,"yeoni_ene":2.1,"yeoni_ne":2.5,"yeoni_nne":0.6,"yeoni_n":1.0,"danbi":-2.0,"danbi_ese":-2.2,"danbi_se":-2.1,"danbi_sse":-2.2,"danbi_s":-1.8,"danbi_ene":-1.7,"danbi_ne":-0.2,"danbi_nne":-1.3,"danbi_n":-1.4,"makswe":4.9,"makswe_ese":0.9,"makswe_se":1.9,"makswe_sse":0.3,"makswe_s":-0.2,"makswe_ene":1.1,"makswe_ne":1.6,"makswe_nne":0.8,"makswe_n":-0.2,"kkoma":0.8,"kkoma_ese":-0.3,"kkoma_se":0.1,"kkoma_sse":-0.4,"kkoma_s":0.0,"kkoma_ene":0.2,"kkoma_ne":0.4,"kkoma_nne":0.1,"kkoma_n":-0.4},"lamp":{"yeoni":[6.4,-32.9],"yeoni_ese":[6.5,-33.1],"yeoni_se":[7.0,-32.6],"yeoni_sse":[4.4,-34.6],"yeoni_s":[3.7,-36.3],"yeoni_ene":[9.1,-31.6],"yeoni_ne":[9.9,-31.1],"yeoni_nne":[7.8,-27.3],"yeoni_n":[7.6,-25.8],"danbi":[3.7,-32.9],"danbi_ese":[3.5,-33.9],"danbi_se":[6.3,-33.8],"danbi_sse":[3.6,-34.0],"danbi_s":[4.2,-32.1],"danbi_ene":[12.6,-46.0],"danbi_ne":[12.5,-42.6],"danbi_nne":[11.7,-45.4],"danbi_n":[10.4,-44.2],"makswe":[8.1,-33.5],"makswe_ese":[3.8,-33.2],"makswe_se":[5.1,-33.0],"makswe_sse":[2.7,-32.4],"makswe_s":[1.1,-33.9],"makswe_ene":[6.9,-28.8],"makswe_ne":[8.2,-31.1],"makswe_nne":[6.6,-28.9],"makswe_n":[7.0,-31.2],"kkoma":[13.1,-25.4],"kkoma_ese":[9.2,-22.3],"kkoma_se":[12.6,-22.9],"kkoma_sse":[10.7,-22.1],"kkoma_s":[8.3,-20.6],"kkoma_ene":[10.1,-24.6],"kkoma_ne":[13.2,-27.9],"kkoma_nne":[11.2,-25.0],"kkoma_n":[11.9,-21.2]},"lampF":{"yeoni":[[6.4,-32.9],[6.7,-33.1],[6.3,-34.0],[6.1,-33.8]],"yeoni_ese":[[6.5,-33.1],[6.5,-33.1],[6.5,-33.1],[6.5,-33.1]],"yeoni_se":[[7.0,-32.6],[7.2,-32.3],[7.0,-33.4],[6.8,-32.7]],"yeoni_sse":[[4.4,-34.6],[4.4,-34.6],[4.4,-34.6],[4.4,-34.6]],"yeoni_s":[[3.7,-36.3],[3.8,-35.2],[3.6,-34.7],[3.9,-36.3]],"yeoni_ene":[[9.1,-31.6],[9.1,-31.6],[9.1,-31.6],[9.1,-31.6]],"yeoni_ne":[[9.9,-31.1],[10.6,-32.5],[10.6,-32.4],[9.8,-33.0]],"yeoni_nne":[[7.8,-27.3],[7.8,-27.3],[7.8,-27.3],[7.8,-27.3]],"yeoni_n":[[7.6,-25.8],[5.8,-24.9],[7.0,-25.1],[7.0,-25.2]],"danbi":[[3.7,-32.9],[3.7,-36.1],[6.5,-35.9],[5.0,-37.0]],"danbi_ese":[[3.5,-33.9],[3.5,-33.9],[3.5,-33.9],[3.5,-33.9]],"danbi_se":[[6.3,-33.8],[5.1,-32.7],[5.8,-33.0],[7.7,-36.3]],"danbi_sse":[[3.6,-34.0],[3.6,-34.0],[3.6,-34.0],[3.6,-34.0]],"danbi_s":[[4.2,-32.1],[4.3,-32.6],[5.8,-34.9],[5.8,-34.2]],"danbi_ene":[[12.6,-46.0],[12.6,-46.0],[12.6,-46.0],[12.6,-46.0]],"danbi_ne":[[12.5,-42.6],[11.8,-43.5],[11.9,-43.2],[11.8,-44.3]],"danbi_nne":[[11.7,-45.4],[11.7,-45.4],[11.7,-45.4],[11.7,-45.4]],"danbi_n":[[10.4,-44.2],[10.1,-43.8],[10.6,-42.7],[10.4,-43.9]],"makswe":[[8.1,-33.5],[7.6,-34.1],[7.6,-33.8],[7.3,-33.3]],"makswe_ese":[[3.8,-33.2],[3.8,-33.2],[3.8,-33.2],[3.8,-33.2]],"makswe_se":[[5.1,-33.0],[4.0,-33.6],[4.5,-33.8],[5.2,-33.4]],"makswe_sse":[[2.7,-32.4],[2.7,-32.4],[2.7,-32.4],[2.7,-32.4]],"makswe_s":[[1.1,-33.9],[1.5,-34.6],[1.5,-33.5],[1.6,-34.6]],"makswe_ene":[[6.9,-28.8],[6.9,-28.8],[6.9,-28.8],[6.9,-28.8]],"makswe_ne":[[8.2,-31.1],[7.1,-29.9],[9.3,-31.2],[8.6,-30.5]],"makswe_nne":[[6.6,-28.9],[6.6,-28.9],[6.6,-28.9],[6.6,-28.9]],"makswe_n":[[7.0,-31.2],[7.1,-30.9],[7.1,-30.9],[8.1,-31.0]],"kkoma":[[13.1,-25.4],[13.8,-23.1],[13.8,-23.8],[12.9,-24.3]],"kkoma_ese":[[9.2,-22.3],[9.2,-22.3],[9.2,-22.3],[9.2,-22.3]],"kkoma_se":[[12.6,-22.9],[12.6,-23.4],[10.9,-25.2],[13.7,-23.8]],"kkoma_sse":[[10.7,-22.1],[10.7,-22.1],[10.7,-22.1],[10.7,-22.1]],"kkoma_s":[[8.3,-20.6],[8.4,-19.8],[8.3,-19.8],[8.3,-18.7]],"kkoma_ene":[[10.1,-24.6],[10.1,-24.6],[10.1,-24.6],[10.1,-24.6]],"kkoma_ne":[[13.2,-27.9],[12.3,-28.2],[13.8,-27.1],[13.3,-28.7]],"kkoma_nne":[[11.2,-25.0],[11.2,-25.0],[11.2,-25.0],[11.2,-25.0]],"kkoma_n":[[11.9,-21.2],[12.1,-21.1],[12.0,-21.1],[12.4,-22.1]]},"rig":{"yeoni":{"base":2,"hem":96,"split":41,"w":76,"h":107,"fx":[16,58],"arm":{"s":[28,38],"h":[27,66],"o":[23,35],"src":"yeoni"},"fo":[42,94],"fc":38.1,"sep":34.4,"gy":107,"fw":17,"n":2},"yeoni_ese":{"base":0,"hem":101,"split":37,"w":76,"h":108,"fx":[17,58],"arm":{"s":[27,38],"h":[29,67],"o":[23,34],"src":"yeoni_ese"},"fo":[16,98],"fc":36.6,"sep":27.8,"gy":108,"fw":15,"n":2},"yeoni_se":{"base":3,"hem":96,"split":46,"w":76,"h":109,"fx":[26,61],"arm":{"s":[28,39],"h":[28,67],"o":[24,35],"src":"yeoni_se"},"fo":[47,97],"fc":47.3,"sep":35.8,"gy":108,"fw":15,"n":2},"yeoni_sse":{"base":0,"hem":101,"split":33,"w":70,"h":108,"fx":[13,54],"arm":{"s":[25,38],"h":[23,66],"o":[19,34],"src":"yeoni_sse"},"fo":[39,97],"fc":33.0,"sep":27.7,"gy":107,"fw":16,"n":2},"yeoni_s":{"base":0,"hem":95,"split":36,"w":64,"h":109,"fx":[22,48],"arm":{"s":[20,38],"h":[17,64],"o":[14,34],"src":"yeoni_s"},"fo":[23,94],"fc":31.6,"sep":0,"gy":108,"fw":13,"n":1},"yeoni_ene":{"base":0,"hem":97,"split":35,"w":71,"h":108,"fx":[17,54],"arm":{"s":[28,40],"h":[24,68],"src":"yeoni_n","borrow":true,"o":[20,38]},"fo":[17,95],"fc":33.3,"sep":23.0,"gy":108,"fw":15,"n":2},"yeoni_ne":{"base":1,"hem":95,"split":30,"w":77,"h":108,"fx":[17,46],"arm":{"s":[31,41],"h":[27,69],"src":"yeoni_n","borrow":true,"o":[23,39]},"fo":[17,90],"fc":31.6,"sep":32.5,"gy":108,"fw":13,"n":2},"yeoni_nne":{"base":0,"hem":103,"split":26,"w":62,"h":108,"fx":[11,42],"arm":{"s":[10,37],"h":[7,65],"o":[4,34],"src":"yeoni_nne"},"fo":[29,98],"fc":26.5,"sep":20.1,"gy":107,"fw":16,"n":2},"yeoni_n":{"base":0,"hem":99,"split":24,"w":61,"h":109,"fx":[14,34],"arm":{"s":[14,37],"h":[10,65],"o":[6,35],"src":"yeoni_n"},"fo":[25,94],"fc":30.8,"sep":12.7,"gy":109,"fw":11,"n":2},"danbi":{"base":3,"hem":94,"split":27,"w":70,"h":108,"fx":[20,50],"arm":{"s":[18,46],"h":[19,69],"o":[13,41],"src":"danbi"},"fo":[38,97],"fc":32.7,"sep":37.1,"gy":108,"fw":14,"n":2},"danbi_ese":{"base":0,"hem":99,"split":32,"w":68,"h":108,"fx":[8,49],"arm":{"s":[17,46],"h":[17,71],"o":[12,41],"src":"danbi_ese"},"fo":[37,98],"fc":29.3,"sep":30.3,"gy":108,"fw":14,"n":2},"danbi_se":{"base":0,"hem":95,"split":26,"w":76,"h":108,"fx":[17,49],"arm":{"s":[19,47],"h":[19,70],"o":[14,42],"src":"danbi_se"},"fo":[38,100],"fc":34.4,"sep":23.1,"gy":108,"fw":12,"n":2},"danbi_sse":{"base":0,"hem":99,"split":32,"w":70,"h":108,"fx":[10,49],"arm":{"s":[15,46],"h":[15,70],"o":[10,41],"src":"danbi_sse"},"fo":[37,99],"fc":30.1,"sep":28.9,"gy":108,"fw":13,"n":2},"danbi_s":{"base":3,"hem":94,"split":21,"w":68,"h":108,"fx":[15,41],"arm":{"s":[13,45],"h":[10,66],"o":[5,40],"src":"danbi_s"},"fo":[26,99],"fc":30.5,"sep":0,"gy":108,"fw":10,"n":1},"danbi_ene":{"base":0,"hem":99,"split":28,"w":67,"h":108,"fx":[6,45],"arm":{"s":[14,49],"h":[11,70],"o":[7,45],"src":"danbi_ene"},"fo":[33,100],"fc":25.2,"sep":28.5,"gy":108,"fw":13,"n":2},"danbi_ne":{"base":1,"hem":95,"split":30,"w":70,"h":109,"fx":[17,45],"arm":{"s":[15,49],"h":[12,70],"o":[9,46],"src":"danbi_ne"},"fo":[17,96],"fc":32.0,"sep":30.5,"gy":109,"fw":14,"n":2},"danbi_nne":{"base":0,"hem":100,"split":27,"w":65,"h":108,"fx":[7,47],"arm":{"s":[11,45],"h":[8,72],"o":[5,41],"src":"danbi_nne"},"fo":[35,99],"fc":26.9,"sep":30.7,"gy":108,"fw":13,"n":2},"danbi_n":{"base":3,"hem":94,"split":22,"w":63,"h":107,"fx":[18,35],"arm":{"s":[12,45],"h":[8,71],"o":[4,42],"src":"danbi_n"},"fo":[22,96],"fc":26.5,"sep":0,"gy":107,"fw":11,"n":1},"makswe":{"base":2,"hem":100,"split":46,"w":85,"h":108,"fx":[29,63],"arm":{"s":[28,40],"h":[27,67],"o":[23,37],"src":"makswe"},"fo":[49,97],"fc":47.6,"sep":23.8,"gy":108,"fw":15,"n":2},"makswe_ese":{"base":0,"hem":102,"split":26,"w":65,"h":108,"fx":[8,44],"arm":{"s":[20,40],"h":[19,69],"o":[14,35],"src":"makswe_ese"},"fo":[7,96],"fc":25.3,"sep":25.9,"gy":108,"fw":13,"n":2},"makswe_se":{"base":0,"hem":97,"split":24,"w":71,"h":108,"fx":[13,47],"arm":{"s":[21,40],"h":[16,69],"o":[11,36],"src":"makswe_se"},"fo":[33,98],"fc":29.0,"sep":22.9,"gy":108,"fw":15,"n":2},"makswe_sse":{"base":0,"hem":103,"split":26,"w":65,"h":108,"fx":[7,46],"arm":{"s":[14,40],"h":[10,69],"o":[5,36],"src":"makswe_sse"},"fo":[31,97],"fc":25.4,"sep":27.1,"gy":108,"fw":16,"n":2},"makswe_s":{"base":2,"hem":96,"split":27,"w":56,"h":108,"fx":[12,35],"arm":{"s":[10,40],"h":[6,67],"o":[2,36],"src":"makswe_s"},"fo":[15,96],"fc":22.9,"sep":10.6,"gy":108,"fw":13,"n":2},"makswe_ene":{"base":0,"hem":101,"split":25,"w":66,"h":108,"fx":[9,42],"arm":{"s":[14,42],"h":[9,64],"o":[7,38],"src":"makswe_ene"},"fo":[8,95],"fc":25.4,"sep":26.4,"gy":108,"fw":15,"n":2},"makswe_ne":{"base":0,"hem":96,"split":28,"w":70,"h":108,"fx":[14,39],"arm":{"s":[14,42],"h":[10,64],"o":[8,39],"src":"makswe_ne"},"fo":[14,94],"fc":27.0,"sep":24.4,"gy":108,"fw":14,"n":2},"makswe_nne":{"base":0,"hem":99,"split":25,"w":63,"h":108,"fx":[10,40],"arm":{"s":[12,42],"h":[7,64],"o":[4,38],"src":"makswe_nne"},"fo":[9,94],"fc":24.2,"sep":24.3,"gy":108,"fw":14,"n":2},"makswe_n":{"base":1,"hem":98,"split":27,"w":57,"h":108,"fx":[10,34],"arm":{"s":[9,40],"h":[6,66],"o":[1,36],"src":"makswe_n"},"fo":[16,94],"fc":21.6,"sep":0,"gy":108,"fw":11,"n":1},"kkoma":{"base":2,"hem":97,"split":35,"w":74,"h":106,"fx":[20,51],"arm":{"s":[28,44],"h":[22,70],"o":[16,38],"src":"kkoma"},"fo":[36,93],"fc":28.1,"sep":38.8,"gy":106,"fw":17,"n":2},"kkoma_ese":{"base":0,"hem":100,"split":26,"w":67,"h":108,"fx":[6,46],"arm":{"s":[18,45],"h":[10,71],"o":[4,39],"src":"kkoma_ese"},"fo":[31,96],"fc":25.3,"sep":27.8,"gy":105,"fw":16,"n":2},"kkoma_se":{"base":3,"hem":95,"split":30,"w":73,"h":107,"fx":[12,49],"arm":{"s":[23,45],"h":[15,69],"o":[10,39],"src":"kkoma_se"},"fo":[34,92],"fc":31.3,"sep":26.0,"gy":106,"fw":16,"n":2},"kkoma_sse":{"base":0,"hem":100,"split":25,"w":67,"h":108,"fx":[4,46],"arm":{"s":[16,45],"h":[9,71],"o":[3,39],"src":"kkoma_sse"},"fo":[31,97],"fc":24.5,"sep":29.6,"gy":106,"fw":17,"n":2},"kkoma_s":{"base":2,"hem":95,"split":28,"w":54,"h":107,"fx":[15,35],"arm":{"s":[12,44],"h":[7,70],"o":[3,39],"src":"kkoma_s"},"fo":[16,91],"fc":24.0,"sep":0,"gy":107,"fw":13,"n":1},"kkoma_ene":{"base":0,"hem":98,"split":22,"w":63,"h":108,"fx":[3,42],"arm":{"s":[11,44],"h":[5,70],"o":[2,39],"src":"kkoma_ene"},"fo":[26,97],"fc":23.4,"sep":24.8,"gy":108,"fw":17,"n":2},"kkoma_ne":{"base":3,"hem":95,"split":25,"w":74,"h":109,"fx":[13,43],"arm":{"s":[14,45],"h":[9,72],"o":[5,40],"src":"kkoma_ne"},"fo":[12,93],"fc":22.3,"sep":23.3,"gy":108,"fw":15,"n":2},"kkoma_nne":{"base":0,"hem":102,"split":23,"w":65,"h":108,"fx":[3,43],"arm":{"s":[11,44],"h":[5,69],"o":[1,39],"src":"kkoma_nne"},"fo":[28,96],"fc":24.5,"sep":26.1,"gy":108,"fw":17,"n":2},"kkoma_n":{"base":3,"hem":96,"split":23,"w":67,"h":108,"fx":[13,35],"arm":{"s":[12,45],"h":[7,74],"o":[3,41],"src":"kkoma_n"},"fo":[24,92],"fc":29.5,"sep":0,"gy":108,"fw":12,"n":1}},"stonelampLamp":[0.2,-36.9],"jarsLamp":[48.2,-39.4],"postLamp":[21.2,-36.9],"emisOff":{"japgwi":[34,26],"water":[20,20],"dokkaebi":[21,0],"saja":[31,30],"wisp":[0,0],"gseun":[33,38],"gumiho":[1,0],"imugi":[97,43],"grim":[38,25],"yagwang":[43,38],"crow":[51,36],"mangtae":[40,34],"totem":[22,18],"jangsan":[30,0],"dueok":[123,98],"bulga":[54,10]}}};
 const ART = { ok: false, meta: {}, src: null, d: 0 }; const EMIS = {}, ICON = {}, ICONURL = {}; let FIRE = null, FOX = null, INK = null, groundImg = null, groundImg2 = null;
 const SW = s => s.width * (s._s || 1), SH = s => s.height * (s._s || 1);
 // Flipbook VFX (Meshy gpt-image-2 sheets, luminance-keyed, drawn additively). Hit sparks are tinted per element.
@@ -793,7 +938,7 @@ function buildFx(src) {
 const FLOAT = new Set(['egg', 'water', 'wisp', 'saja', 'gseun', 'sonkaksi', 'grim', 'crow']);
 function loadImg(src) { return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
 async function loadArt() {
-  const [atlas, tile] = await Promise.all([loadImg('assets/sprites-86a3f49718.png'), loadImg('assets/ground.jpg')]);
+  const [atlas, tile] = await Promise.all([loadImg('assets/sprites-d863398505.png'), loadImg('assets/ground.jpg')]);
   loadImg('assets/ground2.jpg').then(t2 => { groundPat2 = ctx.createPattern(t2, 'repeat'); if (groundPat2 && groundPat2.setTransform && window.DOMMatrix) { groundPat2.setTransform(new DOMMatrix([0.5, 0, 0, 0.5 * 0.62, 0, 0])); groundImg2 = t2; } }, () => {});   // 2탄 floor, not needed to start
   const src = {};
   for (const n in ATLAS.frames) {
@@ -826,7 +971,7 @@ function applyArtScale() {
     if (!c) return c; const o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const g = o.getContext('2d');
     g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(0, 0, o.width, o.height); o._s = c._s; return o;
   };
-  for (const who of ['yeoni', 'danbi']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; SPR[who + v + '_footD'] = dim(A[who + v + '_foot']); if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot (and its darker far copy)
+  for (const who of ['yeoni', 'danbi', 'makswe', 'kkoma']) for (const v of ['', '_ese', '_se', '_sse', '_s', '_ene', '_ne', '_nne', '_n']) { SPR[who + v] = [0, 1, 2, 3].map(i => A[who + v + i]); SPR[who + v + '_body'] = A[who + v + '_body']; SPR[who + v + '_foot'] = A[who + v + '_foot']; SPR[who + v + '_footD'] = dim(A[who + v + '_foot']); if (A[who + v + '_arm']) SPR[who + v + '_arm'] = A[who + v + '_arm']; }   // walk rig: feetless body + one foot (and its darker far copy)
   SPR.player = SPR.yeoni;
   for (const k in FXSRC) FX[k] = FXSRC[k].slice();   // effects keep source resolution: they are drawn at many sizes
   for (const k of ['japgwi', 'egg', 'water', 'dokkaebi', 'saja', 'wisp', 'gseun', 'gumiho', 'imugi', 'seg', 'gem1', 'gem2', 'gem3', 'oil', 'coin', 'rice', 'chest', 'jar', 'talisman', 'magnet', 'ginseng', 'gseun_p1', 'gseun_p2', 'gseun_p3', 'gumiho_p0', 'gumiho_p1', 'gumiho_p2', 'gumiho_p3', 'gumiho_r0', 'gumiho_r1', 'gumiho_r2', 'gumiho_r3', 'gumiho_r4', 'gumiho_r5', 'imugi_p0', 'imugi_p1', 'imugi_p2', 'imugi_p3', 'stall', 'jars', 'post', 'cart', 'tree', 'jangseung', 'shrine', 'well', 'bonfire', 'cairn', 'mat', 'peddler', 'skylantern', 'sotdae', 'stonelamp', 'sansin', 'spring', 'pagoda', 'offering', 'herbs', 'lotus', 'tbell', 'sonkaksi', 'grim', 'yagwang', 'crow', 'mangtae', 'totem', 'jangsan', 'jangsan_p1', 'jangsan_p2', 'jangsan_p3', 'dueok', 'dueok_p1', 'dueok_p2', 'dueok_p3', 'bulga', 'bulga_p1', 'bulga_p2', 'bulga_p3']) SPR[k] = A[k];
@@ -836,6 +981,11 @@ function applyArtScale() {
     const k = n.slice(0, -2), c = A[n], o = off[k] || [0, 0];
     c._ox = o[0] / 2; c._oy = o[1] / 2; EMIS[k] = c;   // offset of the cropped glow inside the full sprite, world units
   }
+  // 금빛 도깨비: the red goblin recoloured gold (hue and saturation from gold, shading kept), same flash and eye glow
+  if (SPR.dokkaebi) { const c = SPR.dokkaebi, o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const g = o.getContext('2d');
+    g.drawImage(c, 0, 0); g.globalCompositeOperation = 'color'; g.fillStyle = '#e8b43a'; g.fillRect(0, 0, o.width, o.height);
+    g.globalCompositeOperation = 'destination-in'; g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,226,140,0.2)'; g.fillRect(0, 0, o.width, o.height);
+    o._s = c._s; SPR.goldgob = o; SPRF.goldgob = SPRF.dokkaebi; if (EMIS.dokkaebi) EMIS.goldgob = EMIS.dokkaebi; }
   FIRE = [0, 1, 2, 3].map(i => A['fire' + i]); FOX = [0, 1, 2, 3].map(i => A['fox' + i]);
   packAtlas();
 }
@@ -878,8 +1028,9 @@ function buildInk() {
 
 /* ---------- audio ---------- */
 let AC = null, muted = false, sfxBus = null, bgm = null; const sfxLast = {}, BUF = {};
-const SFX_FILE = { hit: 'hit', pick: 'gem', oil: 'oil', jar: 'jar', level: 'levelup', bell: 'bell', swing: 'swing', slam: 'slam', shoot: 'shoot', hurt: 'hurt', chest: 'chest', boss: 'boss', dark: 'dark', win: 'rooster', lose: 'lose', evolve: 'evolve', beam: 'beam', card: 'card', charm: 'charm', bossdie: 'bossdie', magnet: 'magnet', heal: 'heal' };
-const SFX_VOL = { hit: 0.3, pick: 0.36, oil: 0.6, jar: 0.8, level: 0.7, bell: 0.4, swing: 0.3, slam: 0.5, shoot: 0.26, hurt: 0.7, chest: 0.8, boss: 0.9, dark: 0.7, win: 0.9, lose: 0.8, evolve: 0.85, beam: 0.65, card: 0.5, charm: 0.6, bossdie: 0.8, magnet: 0.85, heal: 0.6 };
+const SFX_FILE = { hit: 'hit', pick: 'gem', oil: 'oil', jar: 'jar', level: 'levelup', bell: 'bell', swing: 'swing', slam: 'slam', shoot: 'shoot', hurt: 'hurt', chest: 'chest', boss: 'boss', dark: 'dark', win: 'rooster', lose: 'lose', evolve: 'evolve', beam: 'beam', card: 'card', charm: 'charm', bossdie: 'bossdie', magnet: 'magnet', heal: 'heal',
+  kill: 'kill', gembig: 'gem', drumroll: 'drumroll', tick: 'tick', gong: 'gong', stamp: 'stamp', yut: 'yut', kkwaeng: 'kkwaeng' };   // 연참·상자 공개·노름판 (국악 타악기)
+const SFX_VOL = { hit: 0.3, pick: 0.36, oil: 0.6, jar: 0.8, level: 0.7, bell: 0.4, swing: 0.3, slam: 0.5, shoot: 0.26, hurt: 0.7, chest: 0.8, boss: 0.9, dark: 0.7, win: 0.9, lose: 0.8, evolve: 0.85, beam: 0.65, card: 0.5, charm: 0.6, bossdie: 0.8, magnet: 0.85, heal: 0.6, kill: 0.2, gembig: 0.5, drumroll: 0.7, tick: 0.55, gong: 0.75, stamp: 0.9, yut: 0.7, kkwaeng: 0.45 };
 function audioOn() {
   if (!AC) {
     try { AC = new (window.AudioContext || window.webkitAudioContext)(); sfxBus = AC.createGain(); sfxBus.gain.value = 0.85; sfxBus.connect(AC.destination); loadSfx(); }
@@ -914,16 +1065,19 @@ function tone(freq, dur, type, vol, slide = 0, delay = 0) {
 }
 function sfx(n, v = 0) {
   if (!AC || muted) return;
-  const lim = { hit: 0.05, pick: 0.055, shoot: 0.09, bell: 0.1, swing: 0.1, slam: 0.12, oil: 0.08, bossdie: 0.2, card: 0.05, hurt: 0.12 }[n] || 0;
+  const lim = { hit: 0.05, pick: 0.055, shoot: 0.09, bell: 0.1, swing: 0.1, slam: 0.12, oil: 0.08, bossdie: 0.2, card: 0.05, hurt: 0.12, kill: 0.07, gembig: 0.12, tick: 0.03, kkwaeng: 0.15, gong: 0.4 }[n] || 0;
   const now = AC.currentTime; if (lim && sfxLast[n] && now - sfxLast[n] < lim) return; sfxLast[n] = now;
   if (BUF[n]) {
     let rate = 1;
     if (n === 'pick') rate = 1 + Math.min(v, 24) * 0.035;
     else if (n === 'hit' || n === 'swing' || n === 'shoot' || n === 'slam') rate = rnd(0.92, 1.08);
+    else if (n === 'kill') rate = 0.9 + Math.min(v, 300) / 300 * 0.5 + rnd(-0.03, 0.03);   // the soul pop climbs with the 연참
+    else if (n === 'tick') rate = 1 + Math.min(v, 6) * 0.09;   // each chest slot stops a step higher
+    else if (n === 'gembig') rate = 1.9;
     try { playBuf(n, rate, 1); } catch (e) {}
     return;
   }
-  const alias = { jar: 'oil', evolve: 'chest', bossdie: 'slam', charm: 'hurt', card: 'pick', beam: 'slam' };
+  const alias = { jar: 'oil', evolve: 'chest', bossdie: 'slam', charm: 'hurt', card: 'pick', beam: 'slam', kill: 'pick', gembig: 'pick', drumroll: 'boss', tick: 'hit', gong: 'win', stamp: 'slam', yut: 'card', kkwaeng: 'bell' };
   if (alias[n]) n = alias[n];
   try {
     switch (n) {
@@ -953,6 +1107,17 @@ const xpFor = l => l < 10 ? 4 + (l - 1) * 6 : l < 25 ? 58 + (l - 10) * 11 : 223 
 const WSLOTS = 5, PSLOTS = 4;   // 체험판은 무기 6종·패시브 6종이라 칸을 줄여 선택을 강제
 const WARM = 60, GREED = 30;    // 빛 3구간: 60 이상 온기(회복), 30 이하 탐욕(경험치·엽전 ×2)
 const RICE_CD = 20;
+const CRIT = 0.05, ICHI = 100;   // every weapon crits 5% of the time (×2, 붉은 인주 +5%/Lv); a crit of 100+ is called out as 일격
+// 연참 (kill chain): a kill inside the window keeps it going. A flat 2s window never broke once the crowd thickened (bot: one chain
+// of 2,149 for the whole run), so it tightens from 2s at 50 to 1s at 300 and up.
+const kcWin = n => n < 50 ? 2 : Math.max(1, 2 - (n - 50) / 250);
+const KC_STEPS = [[50, '빛 +5'], [100, '엽전 비'], [250, '신명'], [500, '지남철'], [1000, '보물상자']];
+const SHIN = 1.2;   // 신명 (연참 250): all damage ×1.2 for 10s
+const CHEST_ODDS = { elite: [0.70, 0.25, 0.05], mid: [0, 0.70, 0.30], final: [0, 0, 1] };   // chance of 1 · 3 · 5 items
+const CHEST_COINS = { 1: 5, 3: 12, 5: 30 };
+// 호롱 터뜨리기: spend 25 light to blast everything within 6m. Fills in ~70s (faster with kills; at 50s the bot's runs got much easier). Auto by default: when full and a
+// crowd (12+) or a boss is in reach, a 1s warning and it goes off by itself; Space or the bottom-right button fires it at once.
+const BURST = { cost: 25, R: 6 * M, fill: 70, perKill: 0.0005, boss: 0.08, crowd: 12 };   // halved after the bot run: the new sources together doubled a run's 엽전
 const FEET = 12;   // the drawings stand 12px below their position: floor effects are centred there
 // 놀이터 (playground): no clock, no waves; spawn anything, force any attack, slow time, inspect the walk cycle.
 const PG = { on: false, god: true, immortal: false, keep: false, target: {}, weapons: true, freeze: false, auto: true, mobAtk: true, hit: false, lead: true, bright: false, scale: 1, zoom: 1, spd: 1, walk: null, wT: 0, step: 0 };
@@ -962,21 +1127,22 @@ const FIRE_T = 420;
 const MOVE = { acc: 0.05, dec: 0.07, steer: 0 };   // 이동 곡선 시간상수(초): 플레이어 가속·감속. 요괴 조향은 0(즉시) — 0.08~0.18초는 봇 승률을 크게 떨어뜨림, 대신 화면 위치·방향만 부드럽게 보간             // 7분부터 도깨비불이 화염구를 던짐             // 주먹밥은 30초에 한 번까지만 떨어짐 (처치 수에 비례한 회복 차단)
 const RING = { n: 56, rows: 2, gap: 36, hp: 3, knock: 0.3, scale: 1.2, spd: 62, life: 45 };   // 포위진: 두 겹 원진이 소환 지점으로 조여 옴 → 뚫고 나가야 함
 const lateSpd = t => 1 + Math.max(0, t - 420) / 60 * 0.10;   // 7분 이후 일반 요괴 이동 속도 분당 +10%
-const normHp = t => 1 + t / 60 * 0.38 + Math.max(0, t - 420) / 60 * 0.7;   // 일반 요괴 체력: 분당 +38%, 7분 이후 분당 +108%
+const normHp = t => 1 + t / 60 * 0.38 + Math.max(0, t - 300) / 60 * 0.25 + Math.max(0, t - 420) / 60 * 0.7;   // 일반 요괴 체력: 분당 +38%, 5분부터 +63%, 7분 이후 +133% (5분부터는 보물상자 3~5개를 상쇄)
 const lightR = () => (2 + 5 * P.light / 100) * M * P.lightRadiusMult * (PG.on && PG.bright ? 2.4 : 1);   // the light is your sight: 7m at full, 2m when it's out
 const pickR = () => (2.5 + 4.5 * P.light / 100) * M * P.lightRadiusMult;   // loot pull keeps the gentler curve, so a dim lantern isn't also a starving one
 const pLv = id => { const x = P.passives.find(p => p.id === id); return x ? x.lv : 0; };
+const luckLv = () => pLv('pouch') + ((P.char.mods.luck || 1) - 1) * 4;   // 복주머니 levels, plus 두억's 행운 +20% (= 0.8 level of the pouch's +25%)
 
 function recalc() {
   const ratio = P.maxHp ? P.hp / P.maxHp : 1;
-  P.maxHp = 100 + meta.up.hp * 10;
+  P.maxHp = Math.round((100 + meta.up.hp * 10) * (P.char.mods.hp || 1));
   P.hp = Math.min(P.maxHp, ratio * P.maxHp);
-  P.armor = pLv('gat');
+  P.armor = pLv('gat') + (meta.up.gat2 || 0);
   P.regen = pLv('rice') * 0.3;
   P.speedMult = (1 + pLv('shoes') * 0.08) * (1 + meta.up.spd * 0.04);
   P.cdMult = 1 - pLv('mirror') * 0.08;
   P.projMult = 1 + pLv('redink') * 0.10;
-  P.lightRadiusMult = 1 + pLv('oiljar') * 0.08;
+  P.lightRadiusMult = (1 + pLv('oiljar') * 0.08) * (1 + (meta.up.lamp || 0) * 0.05);
   P.dmgMult = 1 + meta.up.atk * 0.05;
   P.xpMult = 1 + meta.up.xp * 0.05;
   P.lightDecay = (P.char.mods.lightDecay || 1) * (1 - meta.up.light * 0.05);
@@ -1005,8 +1171,8 @@ function addPassive(id) { P.passives.push({ id, lv: 1 }); recalc(); }
 
 function newRun(charId, pg) {
   const ch = CHARS.find(c => c.id === charId); lastChar = charId; PG.on = !!pg; PG.deaths = 0; resize();
-  P = { x: 0, y: 0, r: 11, char: ch, spr: ch.id === 'danbi' ? 'danbi' : 'player', hp: 100, maxHp: 0, light: 100, level: 1, xp: 0, xpNext: xpFor(1),
-    weapons: [], passives: [], banned: new Set(), rerolls: 3, bans: 2, coins: 0, kills: 0, iframe: 0, slowT: 0, charmT: 0,
+  P = { x: 0, y: 0, r: 11, char: ch, dmgBy: {}, killBy: {}, spr: ch.id === 'danbi' ? 'danbi' : ch.id === 'makswe' ? 'makswe' : ch.id === 'dueok' ? 'kkoma' : 'player', hp: 100, maxHp: 0, light: 100, level: 1, xp: 0, xpNext: xpFor(1),
+    weapons: [], passives: [], banned: new Set(), rerolls: 3 + (meta.up.card || 0), bans: 2 + (meta.up.seal || 0), coins: 0, kills: 0, iframe: 0, slowT: 0, charmT: 0,
     face: { x: 1, y: 0 }, fx: 1, fs: 1, d: 0, dw: 0, side: 1, dT: 0, vx: 0, vy: 0, spd01: 0, moving: false, pending: 0, revive: meta.up.revive > 0 ? 1 : 0, greedSeen: false, darkSeen: false };
   recalc(); P.hp = P.maxHp;
   addWeapon(ch.weapon); propCache.clear(); obsKey = '';   // a new run starts on the 1탄 map
@@ -1091,10 +1257,11 @@ function spawnBoss(type, at) {
 }
 function spawnRing() {
   const R0 = Math.max(VW, VH) + 20, hpS = normHp(dT()) * RING.hp, cx = P.x, cy = P.y;
+  const ring = { id: (G.ringId = (G.ringId || 0) + 1), n: RING.rows * RING.n, k: 0, cx, cy, t0: G.t, done: false }; (G.rings = G.rings || []).push(ring);
   for (let row = 0; row < RING.rows; row++) for (let i = 0; i < RING.n; i++) {
     const a = (i + row * 0.5) * TAU / RING.n, R = R0 + row * RING.gap, type = (i + row) % 3 === 0 ? (stg() === 2 ? 'totem' : 'dokkaebi') : (stg() === 2 ? 'mangtae' : 'saja'), d = ED[type];
     G.ringFx = { cx, cy, t: 0 };
-    makeEnemy(type, cx + Math.cos(a) * R, cy + Math.sin(a) * R, { ai: 'ring', cx, cy, ring: true, normal: false, hp: d.hp * hpS, maxHp: d.hp * hpS, r: d.r * RING.scale, scale: RING.scale, spd: RING.spd * lateSpd(dT()), life: RING.life, xp: d.xp * 2, oil: 0.15 });
+    makeEnemy(type, cx + Math.cos(a) * R, cy + Math.sin(a) * R, { ai: 'ring', cx, cy, ring: true, ringId: ring.id, normal: false, hp: d.hp * hpS, maxHp: d.hp * hpS, r: d.r * RING.scale, scale: RING.scale, spd: RING.spd * lateSpd(dT()), life: RING.life, xp: d.xp * 2, oil: 0.15 });
   }
 }
 function spawnParade() {
@@ -1162,17 +1329,21 @@ function hurtEnemy(e, base, w, opt) {
   if (e.armorT > G.t) d *= 0.25;
   if (e.inLight) d *= 1.2;
   if (blessLeft('atk') > 0) d *= 1.3;
+  if (G.shinT > G.t) d *= SHIN;   // 신명
   if (e.wardT > G.t) d *= 1.5;
   if (P.moveT > 2 && pLv('shoes')) d *= 1 + 0.04 * pLv('shoes');
-  let crit = false; if (pLv('redink') && Math.random() < 0.05 * pLv('redink')) { d *= 2; crit = true; }   // 붉은 인주: 치명타
+  let crit = false; if (Math.random() < (w ? CRIT : 0) + 0.05 * pLv('redink')) { d *= 2; crit = true; }   // 치명타: weapon hits 5%, 붉은 인주 +5%/Lv on anything
   d = Math.max(1, Math.round(d));
-  e.hp -= d; e.flash = 0.08; if (PG.on && PG.immortal) e.hp = Math.max(1, e.hp);
+  const hp0 = e.hp; e.hp -= d; e.flash = 0.08; if (PG.on && PG.immortal) e.hp = Math.max(1, e.hp);
+  { const by = P.dmgBy || (P.dmgBy = {}), key = w && WEAPONS[w.id] ? w.id : 'etc'; by[key] = (by[key] || 0) + Math.min(d, Math.max(0, hp0)); }   // 결산: damage by weapon
+  if (e.type === 'goldgob' && (e.coinT || 0) < G.t) { e.coinT = G.t + 0.25; drops.push({ k: 'coin', x: e.x + rnd(-12, 12), y: e.y + rnd(-8, 8), v: 1 }); }   // every hit knocks a coin loose
+  if (e.boss) e.ghostHit = G.t;   // the boss bar keeps the lost chunk pale for a moment
   const hy = e.y - e.r * 0.8 * e.scale, hcol = w && WEAPONS[w.id] ? EL_COLOR[WEAPONS[w.id].el] : '#fff0d0';
   { const tk = w && WEAPONS[w.id] ? EL_TINT[WEAPONS[w.id].el] : null, big = d >= 30 || e.big;
     if (effects.length < 100) fx({ k: 'fb', a: tk ? 'hit_' + tk : 'hit', x: e.x + rnd(-5, 5), y: hy, s: big ? 66 : 40, dur: big ? 0.26 : 0.2, rot: rnd(0, TAU) });
     if (big && effects.length < 100) fx({ k: 'fb', a: 'hit', x: e.x, y: hy, s: 30, dur: 0.12, rot: rnd(0, TAU) }); }
   if (d >= 20 && Math.random() < (e.big ? 0.8 : 0.35)) sparks(e.x, hy, hcol, e.big ? 5 : 2, 120, 260);
-  addText(e.x + rnd(-6, 6), e.y - e.r * e.scale - 4, crit ? `${d}!` : d, crit ? '#ff9a4a' : d >= 60 ? '#ffd27a' : '#efe6d2');
+  dmgText(e, d, crit);
   sfx('hit');
   if (opt && opt.knock && !e.big) { const dx = e.x - P.x, dy = e.y - P.y, l = Math.hypot(dx, dy) || 1, k = opt.knock * 4 * (e.ring ? RING.knock : 1); e.kx += dx / l * k; e.ky += dy / l * k; }
   if (e.hp <= 0) killEnemy(e, w);
@@ -1181,11 +1352,12 @@ function killEnemy(e, w) {
   if (e.dead) return; e.dead = true;
   if (e.segs) e.segs.forEach(s => { s.dead = true; burst(s.x, s.y, '#2f6a70', 6); });
   if (e.silent) return;
-  P.kills++;
+  P.kills++; onKill(e);
+  { const by = P.killBy || (P.killBy = {}), key = w && WEAPONS[w.id] ? w.id : 'etc'; by[key] = (by[key] || 0) + 1; }
   if (e.xp > 0) dropGem(e.x, e.y, e.xp);
   if (e.elite || e.boss) G.hitstop = 0.12;
-  if (Math.random() < e.oil) drops.push({ k: 'oil', x: e.x + rnd(-6, 6), y: e.y + rnd(-6, 6), life: 30 });
-  const luck = 1 + 0.25 * pLv('pouch');   // 복주머니
+  if (Math.random() < e.oil) { drops.push({ k: 'oil', x: e.x + rnd(-6, 6), y: e.y + rnd(-6, 6), life: 30 }); if (e.ai === 'parade') G.paradeOil = (G.paradeOil || 0) + 1; }
+  const luck = 1 + 0.25 * luckLv();   // 복주머니 (+ 두억의 행운)
   if (Math.random() < 0.05 * luck) drops.push({ k: 'coin', x: e.x + rnd(-8, 8), y: e.y + rnd(-8, 8), v: 1 });
   if (G.t >= (G.riceT || 0) && Math.random() < 0.012 * luck) { dropItem('rice', e.x, e.y); G.riceT = G.t + RICE_CD; }
   if (G.t >= (G.magT ?? 25) && Math.random() < (G.t - (G.magLast ?? 0) > 100 ? 0.05 : 0.004) * luck) dropItem('magnet', e.x, e.y);   // pity timer: one at least every ~100s
@@ -1195,8 +1367,17 @@ function killEnemy(e, w) {
     if (e.big && effects.length < 140) fx({ k: 'fb', a: 'hit', x: e.x, y: cy, s: 150, dur: 0.24, rot: rnd(0, TAU) });
     if (e.big || parts.length < 300) sparks(e.x, cy, kc, e.big ? 22 : 3, e.big ? 160 : 90, e.big ? 420 : 230, -30);
     if (e.big) { soul(e.x, cy, true); shock(e.x, cy, 150, '#ffe2a0', 0.5, 7); } }
+  if (e.type === 'goldgob') {   // 금빛 도깨비 caught: the sack bursts (the run's first one always holds a chest)
+    const n = Math.round(rnd(20, 40)), chest = e.first || Math.random() < 0.3;
+    for (let i = 0; i < n; i++) drops.push({ k: 'coin', x: e.x + rnd(-55, 55), y: e.y + rnd(-40, 40), v: 1 });
+    if (chest) drops.push({ k: 'chest', x: e.x, y: e.y, tier: 'elite', src: '금빛 도깨비' });
+    banner('금빛 도깨비를 잡았다!', `엽전 ${n}냥${chest ? ' · 보물상자' : ''}`); sfx('chest'); screenFlash('255,214,120', 0.22, 0.3); G.shake = Math.max(G.shake, 5);
+    fx({ k: 'rays', x: e.x, y: e.y - 20, r: 220, n: 12, col: '255,214,120', dur: 0.9, rot: rnd(0, TAU) }); sparks(e.x, e.y - 16, '#ffd36a', 24, 120, 360, -80);
+    P.gobCaught = (P.gobCaught || 0) + 1; meta.gobTotal = (meta.gobTotal || 0) + 1; if (meta.gobTotal >= 5) unlockAch('gold5');
+  }
+  if (e.boss && e.hits0 !== undefined && (P.hits || 0) === e.hits0) unlockAch('flawless');   // not touched from its arrival to its fall
   if (e.elite || e.boss) {
-    drops.push({ k: 'chest', x: e.x, y: e.y });
+    drops.push({ k: 'chest', x: e.x, y: e.y, tier: !e.boss ? 'elite' : e.type === STAGES[stg()].boss ? 'final' : 'mid', src: `${ED[e.type].name} 퇴치` });
     dropItem('magnet', e.x + 34, e.y + 8); if (e.boss || Math.random() < 0.5) dropItem('ginseng', e.x - 34, e.y + 8);   // sweep the spilled coins
     for (let i = 0; i < (e.boss ? 18 : 10); i++) drops.push({ k: 'coin', x: e.x + rnd(-40, 40), y: e.y + rnd(-40, 40), v: 1 });
     G.shake = Math.max(G.shake, 10); sfx('bossdie'); screenFlash('255,246,220', 0.36, 0.3);
@@ -1429,7 +1610,7 @@ function updatePuddles(dt) {
 /* ---------- level up / chest ---------- */
 function gainXp(v) {
   P.xp += v * P.xpMult * (P.light <= GREED ? 2 : 1) * (blessLeft('xp') > 0 ? 1.5 : 1);
-  while (P.xp >= P.xpNext) { P.xp -= P.xpNext; P.level++; P.xpNext = xpFor(P.level); P.pending++; if (pLv('rice')) P.hp = Math.min(P.maxHp, P.hp + 5 * pLv('rice')); }
+  while (P.xp >= P.xpNext) { P.xp -= P.xpNext; P.level++; P.xpNext = xpFor(P.level); P.pending++; if (pLv('rice')) P.hp = Math.min(P.maxHp, P.hp + 5 * pLv('rice')); if (G.state === 'play' && !PG.on) addText(P.x, P.y - 96, `Lv ${P.level}`, '#7fe0c4', { crit: true, sz: 0.85, life: 1.0 }); }
 }
 function buildOptions(n) {
   const tw = P.weapons.find(w => w.lv >= 4 && !w.trait && TRAITS[w.id]);
@@ -1454,6 +1635,11 @@ function buildOptions0(n) {
   if (!out.length) out.push({ kind: 'heal' }, { kind: 'coin' });
   return out;
 }
+function lvLine(o, max) {   // 'Lv 5 → 7 (+2)' on a rare card; levels past the cap are paid out in 엽전
+  const k = o.rar === 'g' ? 3 : o.rar === 'b' ? 2 : 1, heal = o.rar === 'g' ? ' · 체력 회복' : '';
+  if (o.lv === 0) return (k > 1 ? `새로 얻음 · Lv ${k}` : '새로 얻음') + heal;
+  return `Lv ${o.lv} → ${Math.min(max, o.lv + k)}${k > 1 ? ` (+${k})` : ''}` + heal;
+}
 function optInfo(o) {
   if (o.kind === 't') { const D = WEAPONS[o.id], T2 = TRAITS[o.id][o.tr]; return { tag: '특성', color: '#e6d39a', name: `${D.name} · ${T2[1]}`, lv: '둘 중 하나를 고르세요', desc: T2[2], extra: '한 번 고르면 이번 판 동안 유지됩니다' }; }
   if (o.kind === 'heal') return { tag: '보상', color: '#c8463a', name: '주먹밥', lv: '체력 +30', desc: '든든하게 먹고 다시 걷습니다.' };
@@ -1469,23 +1655,31 @@ function optInfo(o) {
     if (!extra && D.evo && o.lv >= 6) extra = `Lv 8 + ${PASSIVES[D.evo.passive].name} → 보물상자에서 ${D.evo.name}`;
     if (!extra && BEATS[D.el] === '토') extra = `${ELN[D.el]} 기운은 장터의 흙 요괴에게 강함 (피해 +50%)`;
     if (!extra && BEATS['토'] === D.el) extra = `${ELN[D.el]} 기운은 흙 요괴에게 약함 (피해 −20%)`;
-    return { tag: `${ELN[D.el]} 기운`, color: EL_COLOR[D.el], name: D.name, lv: o.lv === 0 ? '새로 얻음' : `Lv ${o.lv} → ${o.lv + 1}`, desc: D.desc[o.lv], extra };
+    return { tag: `${ELN[D.el]} 기운`, color: EL_COLOR[D.el], name: D.name, lv: lvLine(o, 8), desc: D.desc[o.lv], extra };
   }
   const D = PASSIVES[o.id]; let extra = '';
   for (const wid in WEAPONS) { const W2 = WEAPONS[wid]; if (W2.evo && W2.evo.passive === o.id && P.weapons.find(w => w.id === wid && !w.evo)) extra = `${W2.name} 진화 재료 (${W2.evo.name})`; }
-  return { tag: '패시브', color: '#a39a86', name: D.name, lv: o.lv === 0 ? '새로 얻음' : `Lv ${o.lv} → ${o.lv + 1}`, desc: D.desc, extra };
+  return { tag: '패시브', color: '#a39a86', name: D.name, lv: lvLine(o, 5), desc: D.desc, extra };
 }
 function openLevelUp() { G.state = 'levelup'; renderCards(); showOnly('levelup'); sfx('level'); fx({ k: 'fb', a: 'pillar', follow: true, oy: 14, anchor: 'b', s: 240, dur: 0.95 }); fx({ k: 'sigil', follow: true, r: 64, r0: 30, dur: 1.1, spin: 1.6, al: 0.85 }); shock(P.x, P.y - 8, 120, '#ffd27a', 0.45, 5); sparks(P.x, P.y - 20, '#ffe2a0', 16, 80, 240, -140); }
 function renderCards() {
   G.opts = buildOptions(P.choices);
+  { // 부적 등급: at most one rare card per level-up. More cards on the table (단비) and 복주머니 make it likelier.
+    // 청 10% · 금 3%: at the planned 15% · 4% the bot's median run went from 342s to 548s (+15 levels); this keeps it at the 1차 level.
+    const elig = G.opts.map((o, i) => o.kind === 'w' || o.kind === 'p' ? i : -1).filter(i => i >= 0), per = P.choices / 3, lk = luckLv();
+    const pg = (0.03 + 0.01 * lk) * per, pb = (0.10 + 0.03 * lk) * per, r = Math.random();
+    if (elig.length && r < pg + pb) G.opts[pick(elig)].rar = r < pg ? 'g' : 'b';
+  }
   $('#lv-title').textContent = `레벨 ${P.level - P.pending + 1}`;
   $('#lv-meta').textContent = `무기 칸 ${P.weapons.length}/${WSLOTS} · 패시브 칸 ${P.passives.length}/${PSLOTS} · 가진 기운 ${[...P.elements].map(e => ELN[e]).join('·') || '없음'}`;
   const box = $('#cards'); box.textContent = '';
   G.opts.forEach((o, i) => {
-    const info = optInfo(o), wrap = document.createElement('div'); wrap.className = 'card-wrap';
+    const info = optInfo(o), wrap = document.createElement('div'); wrap.className = 'card-wrap' + (o.rar ? ' rar-' + o.rar : '') + (REDUCED ? '' : ' flip');
+    wrap.style.setProperty('--fd', `${(i * 0.08 + (o.rar ? 0.25 : 0)).toFixed(2)}s`);
     const b = document.createElement('button'); b.type = 'button'; b.className = 'card';
     const add = (cls, txt, tag = 'span') => { const s = document.createElement(tag); s.className = cls; s.textContent = txt; b.appendChild(s); return s; };
     add('card-key', String(i + 1));
+    if (o.rar) add('rank', o.rar === 'g' ? '금 부적 · 전설' : '청 부적 · 희귀');
     add('chip', info.tag).style.setProperty('--el', info.color);
     if (ICONURL[o.id]) { const im = document.createElement('img'); im.className = 'card-icon'; im.src = ICONURL[o.id]; im.alt = ''; b.appendChild(im); }
     add('card-name', info.name); add('card-lv', info.lv); add('card-desc', info.desc);
@@ -1500,20 +1694,30 @@ function renderCards() {
     box.appendChild(wrap);
   });
   const rr = $('#btn-reroll'); rr.textContent = `다시 뽑기 (${P.rerolls})`; rr.disabled = P.rerolls <= 0;
+  $('#levelup').classList.toggle('gold', G.opts.some(o => o.rar === 'g'));
+  { const ri = G.opts.findIndex(o => o.rar), o = G.opts[ri]; if (o) setTimeout(() => { if (G.state === 'levelup' && G.opts.includes(o)) sfx(o.rar === 'g' ? 'gong' : 'kkwaeng'); }, (ri * 0.08 + 0.25) * 1000); }
   const first = box.querySelector('.card'); if (first) first.focus({ preventScroll: true });
 }
 function choose(i) {
   const o = G.opts && G.opts[i]; if (!o || G.state !== 'levelup') return;
   sfx('card');
   if (o.kind === 't') { const w = P.weapons.find(x => x.id === o.id); if (w) { w.trait = TRAITS[o.id][o.tr][0]; banner(`특성 · ${TRAITS[o.id][o.tr][1]}`, TRAITS[o.id][o.tr][2]); } }
-  else if (o.kind === 'w') { const w = P.weapons.find(x => x.id === o.id); if (w) w.lv++; else addWeapon(o.id); }
-  else if (o.kind === 'p') { const p = P.passives.find(x => x.id === o.id); if (p) p.lv++; else addPassive(o.id); }
+  else if (o.kind === 'w' || o.kind === 'p') {   // 청 부적 +2, 금 부적 +3 and a full heal
+    const k = o.rar === 'g' ? 3 : o.rar === 'b' ? 2 : 1, max = o.kind === 'w' ? 8 : 5, list = o.kind === 'w' ? P.weapons : P.passives;
+    let it = list.find(x => x.id === o.id), add = k;
+    if (!it) { if (o.kind === 'w') addWeapon(o.id); else addPassive(o.id); it = list.find(x => x.id === o.id); add = k - 1; }
+    const to = Math.min(max, it.lv + add), spill = it.lv + add - to; it.lv = to;
+    if (spill > 0) { P.coins += spill * 5; addText(P.x, P.y - 60, `엽전 +${spill * 5}`, '#ffd27a'); }
+    if (o.rar === 'g') { const h = Math.round(P.maxHp - P.hp); P.hp = P.maxHp; if (h > 0) healFx(true, h); }
+    if (o.rar === 'g') { meta.goldCards = (meta.goldCards || 0) + 1; if (meta.goldCards >= 10) unlockAch('card10'); }
+    if (o.rar) addText(P.x, P.y - 84, o.rar === 'g' ? '금 부적 +3' : '청 부적 +2', o.rar === 'g' ? '#ffe08a' : '#9cc0ff', { crit: true, sz: 0.8, life: 1.1 });
+  }
   else if (o.kind === 'heal') P.hp = Math.min(P.maxHp, P.hp + 30);
   else if (o.kind === 'coin') P.coins += 10;
   const before = P.links.length, done = P.ohaeng; recalc();
   if (P.links.length > before) {   // say what a new link does, in plain words
     const l = P.links.find(l => l[1] === WEAPONS[o.id]?.el || l[0] === WEAPONS[o.id]?.el) || P.links[P.links.length - 1];
-    if (P.ohaeng && !done) banner('다섯 기운이 모였다!', '20초마다 화면의 요괴를 쓸어 버립니다');
+    if (P.ohaeng && !done) { banner('다섯 기운이 모였다!', '20초마다 화면의 요괴를 쓸어 버립니다'); unlockAch('ohaeng'); }
     else banner(`기운이 이어졌다 · ${ELN[l[0]]} → ${ELN[l[1]]}`, `${ELN[l[1]]} 무기 피해 +15% · ${ELN[l[0]]} 무기 더 자주 공격`);
   }
   afterPick();
@@ -1555,29 +1759,321 @@ function chestFx() {
   fx({ k: 'fb', a: 'pillar', follow: true, oy: 14, anchor: 'b', s: 220, dur: 0.9 }); fx({ k: 'sigil', follow: true, r: 80, r0: 30, dur: 1.1, spin: 1.8, al: 0.8 });
   shock(P.x, P.y - 10, 170, '#ffd070', 0.5, 6); sparks(P.x, P.y - 14, '#ffd27a', 22, 140, 360, -80);
 }
-function openChest() {
-  sfx('chest');
-  const cand = P.weapons.filter(w => !w.evo && w.lv >= 8 && WEAPONS[w.id].evo && pLv(WEAPONS[w.id].evo.passive) > 0);
-  if (cand.length) {
-    const w = cand[0]; w.evo = true; recalc();
-    banner(`진화 · ${WEAPONS[w.id].evo.name}`, `${WEAPONS[w.id].name}이(가) 깨어났습니다`);
-    effects.push({ k: 'ohaeng', t: 0, dur: 1.1 }); sfx('evolve'); G.hitstop = 0.12; G.shake = Math.max(G.shake, 7);
-    screenFlash('255,250,235', 0.42, 0.35); fx({ k: 'rays', x: P.x, y: P.y - 14, r: 340, n: 16, col: '255,240,200', dur: 1.4, rot: 0 }); shock(P.x, P.y - 10, 260, '#fff0c0', 0.7, 8);
-    fx({ k: 'fb', a: 'pillar', follow: true, oy: 14, anchor: 'b', s: 340, dur: 1.2 }); fx({ k: 'sigil', follow: true, r: 150, r0: 40, dur: 1.7, spin: 2.4, al: 0.95 });
-    fx({ k: 'fb', a: 'hit', x: P.x, y: P.y - 16, s: 240, dur: 0.3, rot: rnd(0, TAU) }); sparks(P.x, P.y - 14, '#fff0c0', 30, 160, 420, -60); return;
+/* ---------- misc fx ---------- */
+function addText(x, y, v, col, o) { const t = { x, y, v: String(v), t: 0, col, ...o }; texts.push(t); if (texts.length > 48) texts.shift(); return t; }
+const fmtN = n => Math.round(n).toLocaleString('ko-KR');
+// damage numbers: crits pop big and gold (일격 at 100+); quick hits on one enemy add up in one number instead of a pile of small ones
+function dmgText(e, d, crit) {
+  const x = e.x + rnd(-6, 6), y = e.y - e.r * e.scale - 4;
+  if (crit) {
+    const big = d >= ICHI; addText(x, y - 8, fmtN(d) + '!', big ? '#ffe08a' : '#ffc04a', { crit: true, big, rot: rnd(-0.12, 0.06), life: big ? 1.05 : 0.85 });
+    if (big) G.shake = Math.max(G.shake, 3);
+    return;
   }
-  chestFx();
-  const up = [...P.weapons.filter(w => w.lv < 8 && !w.evo).map(w => ({ w })), ...P.passives.filter(p => p.lv < 5).map(p => ({ p }))];
-  if (up.length) {
-    const u = pick(up);
-    if (u.w) { u.w.lv++; banner('보물상자', `${WEAPONS[u.w.id].name} Lv ${u.w.lv}`); }
-    else { u.p.lv++; banner('보물상자', `${PASSIVES[u.p.id].name} Lv ${u.p.lv}`); }
-    recalc();
-  } else { P.coins += 20; banner('보물상자', '엽전 +20'); }
+  const m = e.dtx;
+  if (m && G.t - m.at < 0.2 && G.t - m.born < 0.6 && texts.indexOf(m) >= 0) { m.n += d; m.v = fmtN(m.n); m.col = m.n >= 60 ? '#ffd27a' : '#efe6d2'; m.t = Math.min(m.t, 0.03); m.at = G.t; return; }
+  e.dtx = addText(x, y, fmtN(d), d >= 60 ? '#ffd27a' : '#efe6d2', { n: d, at: G.t, born: G.t });
+}
+/* ---------- 호롱 터뜨리기 ---------- */
+const burstRate = () => 1 + 0.1 * (meta.up.wick || 0);
+function burstTick(dt) {
+  P.burst = Math.min(1, (P.burst || 0) + dt / BURST.fill * burstRate());
+  if (P.burst >= 1 && !P.burstFull) { P.burstFull = true; sfx('bell'); addText(P.x, P.y - 70, '호롱이 가득 찼다', '#ffd27a', { life: 1.1 }); }
+  if (G.burstWarn > 0) { G.burstWarn -= dt; if (G.burstWarn <= 0) { G.burstWarn = 0; fireBurst(); } return; }
+  if (meta.burstAuto !== false && P.burst >= 1 && P.light >= BURST.cost) {
+    let n = 0, big = false; forTargets(P.x, P.y, BURST.R, e => { if (!e.dead && !e.invuln) { n++; if (e.big) big = true; } });
+    if (n >= BURST.crowd || big) {   // worth it: a 1s warning, then it goes off
+      G.burstWarn = 1; sfx('drumroll'); addText(P.x, P.y - 84, '호롱이 달아오른다!', '#ffd27a', { crit: true, sz: 0.8, life: 1.0 });
+      fx({ k: 'sigil', follow: true, r: BURST.R, r0: 40, dur: 1.05, spin: 2.2, al: 0.8 });
+    }
+  }
+}
+function tryBurst() {   // Space / the button
+  if (!G || G.state !== 'play') return;
+  if ((P.burst || 0) < 1) { if (G.t - (G.burstNagT ?? -9) > 1) { G.burstNagT = G.t; addText(P.x, P.y - 70, `아직 ${Math.floor((P.burst || 0) * 100)}%`, '#a39a86'); } return; }
+  if (P.light < BURST.cost) { if (G.t - (G.burstNagT ?? -9) > 1) { G.burstNagT = G.t; addText(P.x, P.y - 70, '빛이 모자라다 (25)', '#ff9a7a'); } return; }
+  fireBurst();
+}
+function fireBurst() {
+  if ((P.burst || 0) < 1 || P.light < BURST.cost || G.state !== 'play') return false;
+  P.burst = 0; P.burstFull = false; G.burstWarn = 0; P.light -= BURST.cost; P.burstN = (P.burstN || 0) + 1;
+  const R = BURST.R, hitBig = new Set(), by = P.dmgBy || (P.dmgBy = {});
+  forTargets(P.x, P.y, R, e => {
+    if (e.dead || e.invuln) return; const t = e.parent || e;
+    if (t.big) { if (hitBig.has(t)) return; hitBig.add(t); const d0 = t.hp; hurtEnemy(t, t.maxHp * BURST.boss, null); by.burst = (by.burst || 0) + Math.max(0, d0 - Math.max(0, t.hp)); }
+    else { by.burst = (by.burst || 0) + Math.max(0, e.hp); killEnemy(e, null); }
+  });
+  for (const d of drops) if (d.k === 'gem' && Math.hypot(d.x - P.x, d.y - P.y) < R * 1.3) d.mag = true;   // the souls it frees fly straight in
+  G.hitstop = 0.12; G.slowT = 0.45; G.shake = Math.max(G.shake, 9); screenFlash('255,236,190', 0.45, 0.6);
+  fx({ k: 'rays', x: P.x, y: P.y - 20, r: 420, n: 22, col: '255,214,140', dur: 1.2, rot: rnd(0, TAU) });
+  fx({ k: 'fb', a: 'fire', x: P.x, y: P.y - 40, s: 420, dur: 0.95 });
+  for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; fx({ k: 'fb', a: 'fire', x: P.x + Math.cos(a) * R * 0.86, y: P.y + Math.sin(a) * R * 0.86 - 20, s: 170, dur: 0.9 }); }
+  for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + 0.3; fx({ k: 'fb', a: 'fire', x: P.x + Math.cos(a) * R * 0.45, y: P.y + Math.sin(a) * R * 0.45 - 20, s: 150, dur: 0.85 }); }
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; fx({ k: 'fb', a: 'hit', x: P.x + Math.cos(a) * R * 0.65, y: P.y + Math.sin(a) * R * 0.65 - 16, s: 150, dur: 0.35, rot: a }); }
+  shock(P.x, P.y - 10, R, '#ffe2a0', 0.55, 12); shock(P.x, P.y - 10, R * 1.25, '#ffb060', 0.8, 7, 0.08);
+  cutIn('호롱 터뜨리기!', '#ffd27a', 1.0); sfx('gong'); sfx('slam');
+  return true;
 }
 
-/* ---------- misc fx ---------- */
-function addText(x, y, v, col) { texts.push({ x, y, v: String(v), t: 0, col }); if (texts.length > 40) texts.shift(); }
+/* ---------- 업적 · 요괴 도감 ---------- */
+const ACH = [
+  { id: 'dawn1', name: '첫 동틀', cond: '1탄 클리어 (이무기 퇴치)', reward: { shop: 'gat2', char: '막쇠' } },
+  { id: 'dawn2', name: '새벽을 맞다', cond: '2탄 불가살이 퇴치', reward: { coins: 100, shop: 'wick' } },
+  { id: 'evolve', name: '깨어난 무기', cond: '무기 하나를 진화', reward: { coins: 30 } },
+  { id: 'ohaeng', name: '다섯 기운', cond: '오행 원환 완성', reward: { coins: 30 } },
+  { id: 'mo', name: '모가 나왔다', cond: '노름판 대박', reward: { coins: 20 } },
+  { id: 'greed', name: '탐욕의 등불지기', cond: '한 판에 탐욕 구간 합계 3분', reward: { shop: 'lamp' } },
+  { id: 'steady', name: '꺼지지 않는 불', cond: '빛이 한 번도 꺼지지 않고 5분', reward: { coins: 30 } },
+  { id: 'chain500', name: '백귀 연참', cond: '연참 500', reward: { shop: 'seal' } },
+  { id: 'kills3000', name: '천 마리의 밤', cond: '한 판에 3,000 처치', reward: { shop: 'purse' } },
+  { id: 'flawless', name: '무사통과', cond: '보스가 나타나서 쓰러질 때까지 한 대도 안 맞기', reward: { coins: 50 } },
+  { id: 'gold5', name: '금 나와라', cond: '금빛 도깨비 누적 5마리', reward: { coins: 50 } },
+  { id: 'card10', name: '부적 수집가', cond: '금 부적 누적 10장', reward: { shop: 'card' } },
+  { id: 'rich', name: '엽전 오천 냥', cond: '엽전 누적 5,000냥', reward: { char: '두억' } },
+];
+const achReward = A => [A.reward.char ? `등불지기 ${A.reward.char} 해금` : '', A.reward.coins ? `엽전 +${A.reward.coins}` : '', A.reward.shop ? `주막 새 강화 「${SHOP.find(s => s.id === A.reward.shop).name}」` : ''].filter(Boolean).join(' · ');
+function unlockAch(id) {
+  if (PG.on) return; meta.ach = meta.ach || {};
+  const A = ACH.find(a => a.id === id); if (!A || meta.ach[id]) return;
+  meta.ach[id] = true; if (A.reward.coins) meta.coins += A.reward.coins; saveMeta();
+  (G.achRun = G.achRun || []).push(A.name);
+  toast('업적', A.name, achReward(A)); sfx('stamp');
+}
+function toast(tag, title, sub) {   // a hanji slip that slides in at the top right and leaves after 3s
+  const box = $('#toasts'); if (!box) return;
+  const t = document.createElement('div'); t.className = 'toast';
+  const s = document.createElement('i'); s.className = 'seal'; s.textContent = tag;
+  const tx = document.createElement('div'), b = document.createElement('b'), sp = document.createElement('span'); b.textContent = title; sp.textContent = sub; tx.append(b, sp);
+  t.append(s, tx); box.appendChild(t); while (box.children.length > 3) box.firstChild.remove();
+  setTimeout(() => t.classList.add('out'), 3200); setTimeout(() => t.remove(), 3650);
+}
+// 요괴 도감: kills per kind fill three stars; three stars open a short tale
+const DEX = [
+  ['japgwi', '이름도 사연도 남지 않은 떠돌이 귀신들. 장터의 불빛과 사람 냄새를 따라 무리 지어 몰려든다. 하나하나는 약하지만, 밤이 깊을수록 수가 불어난다.'],
+  ['egg', '눈도 코도 입도 없는 매끈한 얼굴의 귀신. 말없이 서 있다가 갑자기 달려든다. 얼굴이 없으니 누구의 원한인지도 알 길이 없다.'],
+  ['water', '물에 빠져 죽은 이의 넋. 혼자 가기 외로워 산 사람의 발목을 잡고 물속으로 끌어들인다.'],
+  ['dokkaebi', '방망이를 든 장난꾸러기. 씨름과 메밀묵을 좋아한다. 사람을 골탕 먹이기도 하지만, 마음에 들면 금은보화를 내주기도 한다.'],
+  ['saja', '검은 갓을 눌러쓰고 장터를 떠도는 귀신. 부적을 던져 발을 묶는다. 저승의 명부를 품고 다닌다는 소문이 있다.'],
+  ['wisp', '비 오는 밤 들판에 떠도는 푸르스름한 불. 다가가면 멀어지고 돌아서면 따라온다. 오래 들여다보면 길을 잃는다.'],
+  ['sonkaksi', '혼례를 치르지 못하고 죽은 처녀의 원혼. 풀지 못한 한이 깊어 산길의 나그네 곁을 맴돈다.'],
+  ['grim', '빛이 닿지 않는 곳에서만 움직이는 그림자. 등불이 흔들릴 때마다 한 걸음씩 다가온다.'],
+  ['yagwang', '설날 밤 내려와 신발을 훔쳐 간다는 귀신. 문간에 체를 걸어 두면 구멍을 세다가 날이 샌다.'],
+  ['crow', '저승길을 안내한다는 검은 새. 지붕 위에서 울면 그 집에 초상이 난다고들 했다.'],
+  ['mangtae', '말 안 듣는 아이를 망태기에 담아 간다는 노인. 어른들이 아이를 겁줄 때 부르던 이름이 밤길로 걸어 나왔다.'],
+  ['totem', '마을 어귀를 지키던 장승에 깃든 넋. 지킬 마을이 사라지자 길손을 막아서기 시작했다.'],
+  ['gseun', '밤길에 나타나 올려다볼수록 커진다는 그림자 요괴. 빛 아래로 끌어내면 금세 움츠러든다.'],
+  ['gumiho', '천 년을 산 아홉 꼬리 여우. 사람으로 둔갑해 홀리고, 여우불로 길을 잃게 만든다.'],
+  ['imugi', '용이 되지 못한 큰 뱀. 천 년을 물속에서 기다렸으나 여의주를 얻지 못해 원한이 깊다.'],
+  ['jangsan', '흰 털의 범을 닮은 요괴. 사람의 목소리를 흉내 내 깊은 산으로 꾀어낸다.'],
+  ['dueok', '머리를 짓눌러 해친다는 사나운 귀신. 걸음마다 땅이 울리고 꺼진다.'],
+  ['bulga', '쇠를 먹을수록 커진다는 괴물. 죽일 수 없다 하여 불가살이라 불렸지만, 불로는 죽일 수 있다는 이야기도 전한다.'],
+  ['goldgob', '금 나와라 뚝딱! 방망이 한 번에 금이 쏟아진다는 도깨비. 잡히기 싫어 엽전을 흘리며 달아난다.'],
+];
+const DEX_IDS = new Set(DEX.map(d => d[0]));
+const dexSteps = id => id === 'goldgob' ? [1, 3, 5] : ED[id].boss || ED[id].elite ? [1, 3, 10] : [50, 500, 3000];
+function dexKill(e) {
+  if (PG.on || !DEX_IDS.has(e.type)) return;
+  const K = meta.kills || (meta.kills = {}), first = !K[e.type]; K[e.type] = (K[e.type] || 0) + 1;
+  if (first) { toast('도감', `새 항목 · ${ED[e.type].name}`, '첫 처치 · 요괴 도감에 적었습니다'); saveMeta(); }
+}
+function cutIn(title, col, dur = 1.1) { G.cut = { title, col, t: 0, dur }; }
+function coinRain(n, r = 80) { for (let i = 0; i < n; i++) drops.push({ k: 'coin', x: P.x + rnd(-r, r), y: P.y + rnd(-r * 0.75, r * 0.75), v: 1 }); }
+// 연참: the chain, its step rewards, the kill sound that climbs with it, 한꺼번에 bursts, and the 천 마리 stamps
+function onKill(e) {
+  const C = G.kc || (G.kc = { n: 0, last: -9, best: 0, next: 0, bn: 0, bt: -9 });
+  if (G.t - C.last > kcWin(C.n)) { C.n = 0; C.next = 0; }
+  C.n++; C.last = G.t; if (C.n > C.best) C.best = C.n;
+  while (C.next < KC_STEPS.length && C.n >= KC_STEPS[C.next][0]) kcReward(C.next++);
+  if (G.t - C.bt > 0.25) { C.bt = G.t; C.bn = 0; } C.bn++;
+  sfx('kill', C.n); dexKill(e);
+  if (P.kills === 3000) unlockAch('kills3000');
+  P.burst = Math.min(1, (P.burst || 0) + BURST.perKill * burstRate());   // kills fan the lantern
+  if (e.ai === 'parade') G.paradeK = (G.paradeK || 0) + 1;
+  if (e.ringId && G.rings) { const r = G.rings.find(q => q.id === e.ringId); if (r) r.k++; }
+  if (P.kills % 1000 === 0) { G.stamp = { n: P.kills, t: 0 }; P.coins += 10; sfx('stamp'); }
+}
+function kcReward(i) {
+  const [n, label] = KC_STEPS[i];
+  if (i === 0) P.light = Math.min(100, P.light + 5);
+  else if (i === 1) coinRain(6, 70);
+  else if (i === 2) { G.shinT = G.t + 10; cutIn('신명!', '#ffd27a', 0.9); screenFlash('255,214,120', 0.18, 0.3); }
+  else if (i === 3) { dropItem('magnet', P.x + rnd(-40, 40), P.y + 36); unlockAch('chain500'); }
+  else drops.push({ k: 'chest', x: P.x + 44, y: P.y + 12, tier: 'elite', src: '연참 1,000' });
+  G.kc.step = { i, t: 0 };
+  sfx(i >= 2 ? 'kkwaeng' : 'card'); if (i !== 2) addText(P.x, P.y - 60, `연참 ${fmtN(n)} · ${label}`, '#ffd27a', { life: 1.1 });   // 신명 has its own cut-in
+}
+// 금빛 도깨비: one at 1:00 for sure, then a 40% chance every 2 minutes. 15s to catch it.
+function goldgobTick() {
+  if (G.gobNext === undefined) G.gobNext = 60;
+  if (G.t < G.gobNext) return;
+  G.gobNext += 120; const first = !P.gobFirst;
+  if (first || Math.random() < 0.4) spawnGoldgob(first);
+}
+function spawnGoldgob(first) {
+  P.gobFirst = true;
+  const a = rnd(0, TAU), d = rnd(260, 340);
+  const e = makeEnemy('goldgob', P.x + Math.cos(a) * d, P.y + Math.sin(a) * d * 0.8, { normal: false, life: 15, spill: 8, first: !!first, oil: 0, spd: ED.goldgob.spd * rnd(0.95, 1.05) });
+  banner('금빛 도깨비가 나타났다', `15초 안에 잡으면 엽전이 쏟아집니다${first ? ' · 첫 마리는 보물상자' : ''}`); sfx('kkwaeng');
+  fx({ k: 'fb', a: 'hit_gold', x: e.x, y: e.y - 16, s: 110, dur: 0.3, rot: rnd(0, TAU) }); sparks(e.x, e.y - 14, '#ffe2a0', 14, 80, 240, -60);
+  return e;
+}
+function goldgobVanish(e) {
+  e.dead = true; e.silent = true; burst(e.x, e.y, '#ffd36a', 18);
+  fx({ k: 'fb', a: 'hit_gold', x: e.x, y: e.y - 16, s: 120, dur: 0.3, rot: rnd(0, TAU) });
+  addText(e.x, e.y - 40, '뚝딱! 달아났다', '#ffd36a', { crit: true, sz: 0.75, life: 1.1 }); sfx('card');
+}
+function ringBreak(byKill) {   // 포위 돌파: the wall was broken or slipped
+  banner('포위 돌파!', byKill ? '포위진을 무너뜨렸습니다 · 엽전 12냥' : '포위를 뚫고 나왔습니다 · 엽전 12냥');
+  coinRain(12); sfx('kkwaeng'); screenFlash('255,214,120', 0.18, 0.3); shock(P.x, P.y - 10, 160, '#ffd27a', 0.45, 6);
+}
+// per-frame upkeep for the reward layer: chain end, 한꺼번에, boss bar ghost, 포위 돌파, cut-ins and stamps
+function updateRewards(dt) {
+  const C = G.kc;
+  if (C) {
+    if (C.n > 0 && G.t - C.last > kcWin(C.n)) { if (C.n >= 30) C.end = { n: C.n, best: C.n >= C.best && C.n >= 50, t: 0 }; C.n = 0; C.next = 0; }
+    if (C.end && (C.end.t += dt) > 1.3) C.end = null;
+    if (C.step && (C.step.t += dt) > 1.2) C.step = null;
+    if (C.bn >= 15 && G.t - C.bt >= 0.25 && C.bShown !== C.bt) {   // one call-out per burst, at most every 2s
+      C.bShown = C.bt;
+      if (G.t - (C.multiT ?? -9) > 2) { C.multiT = G.t; addText(P.x + 40, P.y - 70, `한꺼번에 ${C.bn}마리!`, '#ffb86a', { crit: true, sz: 0.8, rot: -0.04, life: 1.15 }); sfx('kkwaeng'); }
+    }
+  }
+  if (G.stamp && (G.stamp.t += dt) > 1.6) G.stamp = null;
+  if (G.cut && (G.cut.t += dt) > G.cut.dur) G.cut = null;
+  for (const b of G.bosses) {
+    if (b.hits0 === undefined) b.hits0 = P.hits || 0;   // 무사통과: hits taken when it arrived
+    if (b.ghost === undefined || b.ghost < b.hp) b.ghost = b.hp;
+    if (G.t - (b.ghostHit ?? -9) > 0.4) b.ghost += (b.hp - b.ghost) * (1 - Math.exp(-dt * 6));
+  }
+  if (G.rings) for (const r of G.rings) {
+    if (r.done) continue;
+    let alive = 0, closing = 0, sum = 0;
+    for (const e of enemies) if (e.ringId === r.id && !e.dead) { alive++; if (e.ai === 'ring') { closing++; sum += Math.hypot(e.x - r.cx, e.y - r.cy); } }
+    const broke = r.k >= r.n * 0.7;
+    const out = !broke && closing >= r.n * 0.3 && G.t - r.t0 > 2 && Math.hypot(P.x - r.cx, P.y - r.cy) > sum / closing + 50;
+    if (broke || out) { r.done = true; ringBreak(broke); }
+    else if (r.k + alive < r.n * 0.7) r.done = true;   // timed out or collapsed: no 돌파
+  }
+}
+
+/* ---------- 보물상자 공개 (복주머니 뽑기) ---------- */
+// The items are rolled and applied the moment the chest is opened; the reveal only shows them (so a skip or the bot changes nothing).
+let chestTimers = [];
+const SPRURL = {};
+function sprURL(k) {
+  if (SPRURL[k]) return SPRURL[k]; const s = SPR[k]; if (!s) return '';
+  try { const c = document.createElement('canvas'); c.width = s.width; c.height = s.height; rawDraw(c.getContext('2d'), s, s.width, s.height); return (SPRURL[k] = c.toDataURL()); } catch (e) { return ''; }
+}
+function openChest(o = {}) {
+  const tier = CHEST_ODDS[o.tier] ? o.tier : 'elite';
+  let [p1, p3, p5] = CHEST_ODDS[tier];
+  const lk = luckLv();   // 복주머니 (+ 두억의 행운): each level moves 6% from one item to three, and 2% from three to five
+  if (lk) { const m1 = Math.min(p1, 0.06 * lk); p1 -= m1; p3 += m1; const m3 = Math.min(p3, 0.02 * lk); p3 -= m3; p5 += m3; }
+  const r = Math.random(), n = r < p1 ? 1 : r < p1 + p3 ? 3 : 5, items = [];
+  for (const w of P.weapons) if (items.length < n && !w.evo && w.lv >= 8 && WEAPONS[w.id].evo && pLv(WEAPONS[w.id].evo.passive) > 0) { w.evo = true; items.push({ kind: 'evo', id: w.id }); }   // a ready evolution always takes the first slot
+  while (items.length < n) {
+    const up = [...P.weapons.filter(w => w.lv < 8 && !w.evo).map(w => ({ w })), ...P.passives.filter(q => q.lv < 5).map(q => ({ q }))];
+    if (!up.length) { P.coins += 15; items.push({ kind: 'coin', v: 15 }); continue; }
+    const u = pick(up);
+    if (u.w) { u.w.lv++; items.push({ kind: 'w', id: u.w.id, lv: u.w.lv }); } else { u.q.lv++; items.push({ kind: 'p', id: u.q.id, lv: u.q.lv }); }
+  }
+  recalc();
+  const coins = CHEST_COINS[n]; P.coins += coins;
+  G.chest = { n, items, coins, tier, src: o.src || '보물상자', evo: items.some(i => i.kind === 'evo') };
+  G.state = 'chest'; joy = null;
+  showChest();
+}
+function chestSlotHTML(it) {
+  const ic = id => ICONURL[id] ? `<img src="${ICONURL[id]}" alt="">` : '';
+  if (it.kind === 'evo') { const D = WEAPONS[it.id]; return `<i class="tag">진화</i>${ic(it.id)}<b>${D.evo.name}</b><span>${D.name} 진화!</span>`; }
+  if (it.kind === 'coin') return `<img src="${sprURL('coin')}" alt=""><b>엽전</b><span>+${it.v}냥</span>`;
+  const D = it.kind === 'w' ? WEAPONS[it.id] : PASSIVES[it.id];
+  return `${ic(it.id)}<b>${D.name}</b><span>Lv ${it.lv - 1} → ${it.lv}</span>`;
+}
+function showChest() {
+  const C = G.chest, ov = $('#chest'); chestTimers.forEach(clearTimeout); chestTimers = [];
+  C.stops = C.items.map((_, i) => 1.0 + i * Math.min(0.36, 1.4 / C.n)); C.end = C.stops[C.stops.length - 1];
+  C.done = false; C.shown = 0;
+  ov.dataset.glow = 'w'; ov.classList.remove('opened', 'ready');
+  $('#chest-src').textContent = C.src;
+  $('#chest-title').textContent = ''; $('#chest-gain').textContent = ''; $('#chest-coins').textContent = '';
+  $('#chest-img').src = sprURL('chest');
+  $('#chest-hint').textContent = '누르면 바로 결과를 봅니다';
+  const icons = Object.values(ICONURL), box = $('#chest-slots'); box.textContent = '';
+  for (let i = 0; i < C.n; i++) {
+    const s = document.createElement('div'); s.className = 'cslot spin';
+    const strip = document.createElement('div'); strip.className = 'strip';
+    for (let k = 0; k < 4; k++) { const im = document.createElement('img'); im.src = icons[(i * 3 + k * 5) % Math.max(1, icons.length)] || ''; im.alt = ''; strip.appendChild(im); }
+    s.appendChild(strip); box.appendChild(s);
+  }
+  showOnly('chest'); sfx('drumroll');
+  const at = (sec, f) => chestTimers.push(setTimeout(f, sec * 1000));
+  const glow = C.n === 5 || C.evo ? 'g' : C.n === 3 ? 'b' : 'w';
+  if (glow !== 'w') at(0.35, () => { ov.dataset.glow = 'b'; });
+  if (glow === 'g') at(0.65, () => { ov.dataset.glow = 'g'; });
+  at(0.8, chestTitle);
+  C.stops.forEach((s, i) => at(s, () => chestStop(i, true)));
+  at(C.end + 0.2, () => chestCoins(true));
+  at(C.end + 0.75, chestReady);
+}
+function chestTitle() {
+  const C = G.chest; if (!C || C.titled) return; C.titled = true;
+  const glow = C.n === 5 || C.evo ? 'g' : C.n === 3 ? 'b' : 'w', count = C.n === 5 ? '다섯 개!' : C.n === 3 ? '세 개!' : C.evo ? '진화!' : '하나';
+  $('#chest').classList.add('opened'); $('#chest').dataset.glow = glow;
+  $('#chest-title').textContent = glow === 'g' ? `금빛 · ${count}` : glow === 'b' ? `푸른빛 · ${count}` : `보물 ${count}`;   // the name of the light matches its colour (an evolution turns it gold)
+  if (C.n === 5 || C.evo) sfx('gong'); else if (C.n === 3) sfx('kkwaeng');
+}
+function chestStop(i, snd) {
+  const C = G.chest; if (!C) return; const s = $('#chest-slots').children[i]; if (!s || s.classList.contains('stop')) return;
+  const it = C.items[i]; s.className = 'cslot stop' + (it.kind === 'evo' ? ' evo' : ''); s.innerHTML = chestSlotHTML(it);
+  if (snd) { sfx('tick', i); if (it.kind === 'evo') sfx('evolve'); }
+}
+function chestCoins(anim) {
+  const C = G.chest; if (!C || C.coined) return; C.coined = true;
+  const gain = $('#chest-gain');
+  if (!anim || REDUCED) { gain.textContent = `+${C.coins}냥`; return; }
+  const box = $('#chest-coins'), url = sprURL('coin');
+  for (let i = 0; i < 6 + C.n * 2; i++) {
+    const c = document.createElement('i'), a = -Math.PI / 2 + rnd(-1.25, 1.25), d = rnd(70, 150);
+    c.style.backgroundImage = `url(${url})`; c.style.setProperty('--dx', `${Math.cos(a) * d}px`); c.style.setProperty('--dy', `${Math.sin(a) * d}px`); c.style.animationDelay = `${rnd(0, 0.18)}s`;
+    box.appendChild(c);
+  }
+  sfx('chest'); const t0 = performance.now();
+  const step = () => { const C2 = G.chest; if (C2 !== C) return; const k = Math.min(1, (performance.now() - t0) / 500); gain.textContent = `+${Math.round(C.coins * k)}냥`; if (k < 1) requestAnimationFrame(step); };
+  step();
+}
+function chestReady() {
+  const C = G.chest; if (!C || C.done) return;
+  chestTitle(); C.items.forEach((_, i) => chestStop(i, false)); chestCoins(false);
+  C.done = true; C.readyAt = performance.now();
+  $('#chest').classList.add('ready'); $('#chest-hint').textContent = '누르면 계속합니다';
+  chestTimers.push(setTimeout(closeChest, 3000));
+}
+function chestAdvance() {   // first press: jump to the result; second press: back to the night
+  const C = G.chest; if (!C || G.state !== 'chest') return;
+  if (!C.done) { chestTimers.forEach(clearTimeout); chestTimers = []; chestReady(); }
+  else if (performance.now() - C.readyAt > 250) closeChest();
+}
+function closeChest() {
+  if (!G || G.state !== 'chest') return;
+  chestTimers.forEach(clearTimeout); chestTimers = [];
+  const C = G.chest; G.chest = null; showOnly(null); G.state = 'play';
+  if (!C) return;
+  const ev = C.items.find(i => i.kind === 'evo');
+  if (ev) {
+    unlockAch('evolve');
+    banner(`진화 · ${WEAPONS[ev.id].evo.name}`, `${WEAPONS[ev.id].name}이(가) 깨어났습니다`);
+    effects.push({ k: 'ohaeng', t: 0, dur: 1.1 }); G.hitstop = 0.12; G.shake = Math.max(G.shake, 7);
+    screenFlash('255,250,235', 0.42, 0.35); fx({ k: 'rays', x: P.x, y: P.y - 14, r: 340, n: 16, col: '255,240,200', dur: 1.4, rot: 0 }); shock(P.x, P.y - 10, 260, '#fff0c0', 0.7, 8);
+    fx({ k: 'fb', a: 'pillar', follow: true, oy: 14, anchor: 'b', s: 340, dur: 1.2 }); fx({ k: 'sigil', follow: true, r: 150, r0: 40, dur: 1.7, spin: 2.4, al: 0.95 });
+    fx({ k: 'fb', a: 'hit', x: P.x, y: P.y - 16, s: 240, dur: 0.3, rot: rnd(0, TAU) }); sparks(P.x, P.y - 14, '#fff0c0', 30, 160, 420, -60);
+  } else {
+    chestFx();
+    const nm = it => it.kind === 'coin' ? '엽전' : it.kind === 'w' ? WEAPONS[it.id].name : PASSIVES[it.id].name;
+    banner(`보물상자 · ${C.n === 1 ? '하나' : C.n === 3 ? '세 개' : '다섯 개'}`, [...new Set(C.items.map(nm))].join(' · ') + ` · 엽전 +${C.coins}`);
+  }
+  effects.push({ k: 'lightburst', t: 0, dur: 0.45 });
+}
 function burst(x, y, col, n, up = 0) {
   if (REDUCED) n = Math.ceil(n / 3);
   for (let i = 0; i < n; i++) { const a = rnd(0, TAU), s = rnd(30, 120); parts.push(new Part({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s + up, life: rnd(0.3, 0.6), max: 0.6, col, size: rnd(2, 3.5) })); }
@@ -1616,6 +2112,8 @@ addEventListener('keydown', e => {
   if (PG.on && G && G.state === 'play') { if (k === '.') { PG.scale = 0; PG.step++; pgSync(); } if (k === '0') { PG.scale = PG.scale ? 0 : 1; pgSync(); } }
   if (G && G.state === 'levelup') { if (/^[1-4]$/.test(k)) choose(Number(k) - 1); if (k === 'r') reroll(); }
   if (G && G.state === 'guide' && (k === 'escape' || k === 'enter' || k === ' ')) closeOhaeng();
+  if (G && G.state === 'chest' && (k === 'escape' || k === 'enter' || k === ' ')) { e.preventDefault(); chestAdvance(); }
+  else if (k === ' ' && G && G.state === 'play' && !PG.on && !e.repeat) tryBurst();
   if (G && G.state === 'peddler') { if (/^[1-4]$/.test(k)) buyPeddler(Number(k) - 1); if (k === 'escape' || k === ' ' || k === 'enter') closePeddler(); }
 });
 addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
@@ -1624,6 +2122,7 @@ cvs.addEventListener('pointerdown', e => {
   audioOn();
   if (!G || G.state !== 'play') return;
   if (G.pentaHit && Math.hypot(e.clientX - G.pentaHit[0], e.clientY - G.pentaHit[1]) < 40) { openOhaeng('play'); return; }
+  if (G.burstHit && Math.hypot(e.clientX - G.burstHit[0], e.clientY - G.burstHit[1]) < G.burstHit[2]) { tryBurst(); return; }
   joy = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY };
   try { cvs.setPointerCapture(e.pointerId); } catch (err) {}
 });
@@ -2271,6 +2770,9 @@ function updatePlayer(dt) {
   G.hurtT = Math.max(0, (G.hurtT || 0) - dt);
   P.light = PG.on ? (PG.light ?? 100) : P.inFire ? P.light : clamp(P.light - P.lightDecay * (1 + dT() / 600) * dt, 0, 100);
   if (P.light <= GREED && !P.greedSeen) { P.greedSeen = true; banner('탐욕 구간', '빛 30 이하: 경험치·엽전 ×2, 대신 회복 없음'); }
+  if (P.light <= 0) P.wentDark = true;
+  if (P.light <= GREED && !PG.on) { P.greedT = (P.greedT || 0) + dt; if (P.greedT >= 180) unlockAch('greed'); }
+  if (!P.wentDark && stg() === 1 && G.t >= 300) unlockAch('steady');
   if (P.light <= 0 && (!G.dark || G.dark.dead)) {
     const a = rnd(0, TAU); G.dark = makeEnemy('dark', P.x + Math.cos(a) * 340, P.y + Math.sin(a) * 340, { grow: 0, fade: 0 });
     banner('어둑시니가 깨어났다', '기름 항아리 하나(빛 40)면 쫓아낼 수 있습니다'); sfx('dark');
@@ -2281,7 +2783,12 @@ function updateSpawns(dt) {
   let normals = 0; for (const e of enemies) if (e.normal && !e.dead) normals++;
   const target = targetCount(G.t);
   if (!PG.on && normals < target) { G.spawnAcc += dt * Math.min(45, 6 + (target - normals) * 0.9); while (G.spawnAcc >= 1 && normals < target) { spawnNormal(); normals++; G.spawnAcc -= 1; } }
-  if (G.paradeT > 0) { G.paradeT -= dt; G.paradeSpawn -= dt; if (G.paradeSpawn <= 0) { G.paradeSpawn = 5; spawnParade(); } }
+  if (!PG.on) goldgobTick();
+  if (G.paradeT > 0) {
+    if (!G.paradeOn) { G.paradeOn = true; G.paradeK = 0; G.paradeOil = 0; }
+    G.paradeT -= dt; G.paradeSpawn -= dt; if (G.paradeSpawn <= 0) { G.paradeSpawn = 5; spawnParade(); }
+    if (G.paradeT <= 0) { G.paradeOn = false; if (!PG.on) banner('백귀야행이 지나갔다', `행렬에서 ${G.paradeK}마리 · 기름 ${G.paradeOil}방울`); }   // the tally
+  }
   G.nextJar -= dt; if (!PG.on && G.nextJar <= 0) { G.nextJar = 25; if (jars.length < 3) { const a = rnd(0, TAU), d = rnd(380, 650); jars.push({ x: P.x + Math.cos(a) * d, y: P.y + Math.sin(a) * d }); } }
 }
 // Move an enemy toward where the player is going (per-enemy lead: some follow, some cut you off). One shared
@@ -2345,6 +2852,14 @@ function updateEnemy(e, dt, LR, far) {
       else if (e.st === 'dash') { e.x += e.vx * mult * dt; e.y += e.vy * mult * dt; if (e.stT <= 0) { e.st = 'rest'; e.stT = 0.5; } }
       else if (e.stT <= 0) { e.st = 'walk'; e.stT = rnd(2.5, 3.5); }
       break;
+    case 'goldgob': {   // runs from you with small jinks, dawdles when far ahead so it stays catchable, and drops 엽전 as it goes
+      e.life -= dt; if (e.life <= 0) { goldgobVanish(e); break; }
+      e.jkT = (e.jkT || 0) - dt; if (e.jkT <= 0) { e.jkT = rnd(0.8, 1.6); e.jk = rnd(-0.9, 0.9); }
+      const ux = -dx / d, uy = -dy / d, jc = Math.cos(e.jk || 0), js = Math.sin(e.jk || 0), vx = ux * jc - uy * js, vy = ux * js + uy * jc;
+      const sp = e.spd * mult * (d > 520 ? 0.35 : d < 150 ? 1.12 : 1);
+      e.x += vx * sp * dt; e.y += vy * sp * dt; e.wk = (e.wk || 0) + sp * dt; e.fx = vx < 0 ? -1 : 1;
+      e.dropT = (e.dropT ?? 0.6) - dt; if (e.dropT <= 0 && e.spill > 0 && d < 700) { e.dropT = 0.8; e.spill--; drops.push({ k: 'coin', x: e.x + rnd(-6, 6), y: e.y + rnd(-4, 4), v: 1 }); }
+      break; }
     case 'parade': e.x += e.vx * dt; e.y += e.vy * dt; e.fx = e.vx < 0 ? -1 : 1; e.life -= dt; if (e.life <= 0) { e.dead = true; e.silent = true; } break;
     case 'gseun': gseunAI(e, dt, d, mult); break;
     case 'gumiho': gumihoAI(e, dt, d, mult); if ((e.type === 'gumiho' || e.type === 'jangsan') && !e.cloned && e.hp < e.maxHp * 0.5) gumihoSplit(e); break;
@@ -2473,7 +2988,7 @@ function updateDrops(dt) {
       if (dist < 40) { d.x += dx / dist * 140 * dt; d.y += dy / dist * 140 * dt; }
     }
     const reach = d.k === 'chest' ? P.r + 16 : d.k === 'magnet' || d.k === 'ginseng' ? P.r + 14 : P.r + 10;
-    if (!d.dead && dist < reach && (d.born === undefined || G.t - d.born > 0.45)) collect(d);
+    if (!d.dead && dist < reach && (d.born === undefined || G.t - d.born > 0.45) && (d.k !== 'chest' || G.state === 'play')) collect(d);   // one chest at a time
   }
   drops = drops.filter(d => !d.dead);
   if (G.vac) {   // vacuum done: one tally and a gold pop instead of a hundred little numbers
@@ -2497,7 +3012,7 @@ function updateOhaeng(dt) {
   if (P.ohaeng) {
     G.ohaengT -= dt;
     if (G.ohaengT <= 0) {
-      G.ohaengT = 20; effects.push({ k: 'ohaeng', t: 0, dur: 1.1 }); G.shake = Math.max(G.shake, 6); sfx('chest');
+      G.ohaengT = 20; effects.push({ k: 'ohaeng', t: 0, dur: 1.1 }); G.shake = Math.max(G.shake, 6); sfx('gong'); cutIn('오행 원환!', '#ffe9a8');
       for (const e of enemies) if (!e.dead && !e.invuln && !e.parent && Math.abs(e.x - P.x) < VW + 40 && Math.abs(e.y - P.y) < VH + 40) hurtEnemy(e, P.maxHp * 3, null);
     }
   }
@@ -2507,7 +3022,7 @@ function updateCleanup(dt) {
   enemies = enemies.filter(e => !e.dead);
   G.bosses = G.bosses.filter(b => !b.dead);
   for (const t of texts) { t.t += dt; t.y -= 70 * Math.exp(-t.t * 7) * dt + 8 * dt; }
-  texts = texts.filter(t => t.t < 0.7);
+  texts = texts.filter(t => t.t < (t.life || 0.7));
   for (const p of parts) {
     p.life -= dt; const f = Math.exp(-(p.drag ?? 6.3) * dt); p.vx *= f; p.vy *= f;
     if (p.g) { p.vy += p.g * dt; if (p.y > p.floor) { p.y = p.floor; p.vy *= -0.3; p.vx *= 0.5; } p.rot += p.vx * dt * 0.05; }
@@ -2517,6 +3032,7 @@ function updateCleanup(dt) {
   G.shake = Math.max(0, G.shake - dt * 20);
   if (G.flash) { G.flash.t += dt; if (G.flash.t > G.flash.dur) G.flash = null; }
   G.warnT = Math.max(0, G.warnT - dt);
+  updateRewards(dt); burstTick(dt);
   if (P.light > 0 && Math.random() < dt * 6) { const [lx, ly] = lanternOff(); addPart({ k: 'ember', x: P.x + lx + rnd(-3, 3), y: P.y + ly + 2, vx: rnd(-8, 8), vy: rnd(-40, -22), life: 0.6, max: 0.6, gl: 'fire', size: rnd(5, 8), drag: 1.5 }); }
 }
 function update(dt) {
@@ -2544,10 +3060,10 @@ function update(dt) {
     } else { endRun(false); return; }
   }
   if (G.clearAt && G.t >= G.clearAt) { G.clearAt = 0; if (stg() === 1) stageClear(); else winRun(); return; }   // the stage's last boss is down
-  if (P.pending > 0) { if (PG.on) P.pending = 0; else openLevelUp(); }
+  if (P.pending > 0 && G.state === 'play') { if (PG.on) P.pending = 0; else openLevelUp(); }   // a chest opened this frame shows first
 }
 function touch(e) {
-  if (P.iframe > 0) return;
+  if (P.iframe > 0 || e.type === 'goldgob') return;   // the gold goblin only runs
   if (e.act && (e.act.k === 'pounce' || e.act.k === 'lunge')) return;   // a dash hits once, with its finishing strike, not again on the way through
   if (e.sk && e.sk.ghost) return;   // fading in or out of a blink
   const out = !e.inLight && e.type !== 'dark';
@@ -2562,7 +3078,11 @@ function damagePlayer(raw, label) {
     G.gatT = G.t + 1; const R = 70 + 10 * pLv('gat'); shock(P.x, P.y - 6, R, '#d9cfb8', 0.3, 4);
     forTargets(P.x, P.y, R, e => { if (e.big) return; const dx = e.x - P.x, dy = e.y - P.y, l = Math.hypot(dx, dy) || 1; e.kx += dx / l * 260; e.ky += dy / l * 260; });
   }
-  const d = Math.max(1, Math.round(raw - P.armor));
+  if (P.char.mods.shove && (G.shoveT || 0) <= G.t) {   // 막쇠: a constable's shove when struck
+    G.shoveT = G.t + 1.2; shock(P.x, P.y - 6, 95, '#c9b98a', 0.3, 5);
+    forTargets(P.x, P.y, 95, e => { if (e.big) return; const dx = e.x - P.x, dy = e.y - P.y, l = Math.hypot(dx, dy) || 1; e.kx += dx / l * 240; e.ky += dy / l * 240; });
+  }
+  const d = Math.max(1, Math.round(raw - P.armor)); P.hits = (P.hits || 0) + 1;
   if (!(PG.on && PG.god)) P.hp -= d; P.iframe = 0.5; G.shake = Math.max(G.shake, 4); G.hurtT = 0.35; sfx('hurt');   // no hitstop here: late game you are hit every second or two and a world freeze each time reads as stutter
   sparks(P.x, P.y - 14, '#ff6b5a', 8, 120, 260); fx({ k: 'fb', a: 'hit_red', x: P.x, y: P.y - 16, s: 56, dur: 0.2, rot: rnd(0, TAU) });
   addText(P.x, P.y - 30, label ? `${label} ${d}` : `−${d}`, '#ff6b5a');
@@ -2573,50 +3093,100 @@ function collect(d) {
     G.vac.n++; if (d.k === 'coin') G.vac.coins += d.v * (P.light <= GREED ? 2 : 1);
     sfx('pick', Math.min(24, G.vac.n * 0.4)); if (G.vac.n % 4 === 0 && effects.length < 160) fx({ k: 'flash', x: P.x + rnd(-8, 8), y: P.y - 12 + rnd(-8, 8), r: 18, gl: d.k === 'gem' ? 'jade' : 'sun', dur: 0.08 });
   }
-  if (d.k === 'gem') { G.combo = G.t - (G.lastPick || -9) < 0.35 ? (G.combo || 0) + 1 : 0; G.lastPick = G.t; gainXp(d.v); if (!G.vac) sfx('pick', G.combo); if (G.combo % 3 === 0 && effects.length < 140) fx({ k: 'flash', x: P.x, y: P.y - 8, r: 22, gl: 'jade', dur: 0.08 }); }
+  if (d.k === 'gem') { G.combo = G.t - (G.lastPick || -9) < 0.35 ? (G.combo || 0) + 1 : 0; G.lastPick = G.t; gainXp(d.v); if (!G.vac) sfx('pick', G.combo); if (G.combo % 3 === 0 && effects.length < 140) fx({ k: 'flash', x: P.x, y: P.y - 8, r: 22, gl: 'jade', dur: 0.08 });
+    if (d.v >= 10 && !G.vac) { sfx('gembig'); fx({ k: 'flash', x: P.x, y: P.y - 10, r: 48, gl: 'jade', dur: 0.16 }); sparks(P.x, P.y - 14, '#9ff2dc', 8, 80, 200, -60); } }   // a big soul gem rings higher
   else if (d.k === 'coin') { P.coins += d.v * (P.light <= GREED ? 2 : 1); if (!G.vac) sfx('pick', 12); }
   else if (d.k === 'rice') { P.hp = Math.min(P.maxHp, P.hp + 20); healFx(false, 20); }
   else if (d.k === 'ginseng') { const h = Math.round(P.maxHp * 0.4); P.hp = Math.min(P.maxHp, P.hp + h); healFx(true, h); }
   else if (d.k === 'magnet') vacuum();
   else if (d.k === 'oil') { P.light = Math.min(100, P.light + 6); if (pLv('oiljar')) P.hp = Math.min(P.maxHp, P.hp + pLv('oiljar')); sfx('oil'); fx({ k: 'flash', x: P.x, y: P.y - 14, r: 50, gl: 'amber', dur: 0.12 }); }
-  else if (d.k === 'chest') openChest();
+  else if (d.k === 'chest') openChest(d);
 }
 function stageClear() {   // 1탄 끝: the night market is safe; the same run goes on up the mountain path
   G.state = 'clear'; G.endT = 0; sfx('win'); music(false);
+  meta.clear1 = (meta.clear1 || 0) + 1; meta.best1 = Math.max(meta.best1 || 0, Math.floor(G.t)); saveMeta();   // 결산 goals: 1탄 cleared
+  unlockAch('dawn1');
   let chests = 0;
-  for (const d of drops) { if (d.k === 'gem') gainXp(d.v); else if (d.k === 'coin') P.coins += d.v; else if (d.k === 'chest') chests++; }   // the spoils come along
+  let best = null; const rank = { elite: 1, mid: 2, final: 3 };
+  for (const d of drops) { if (d.k === 'gem') gainXp(d.v); else if (d.k === 'coin') P.coins += d.v; else if (d.k === 'chest') { chests++; if (!best || rank[d.tier] > rank[best.tier]) best = d; } }   // the spoils come along
   for (const e of enemies) { burst(e.x, e.y, '#efe6d2', 2); e.dead = true; }
   enemies = []; drops = []; G.bosses = []; G.beam = null; eprojs = []; zones = []; G.ghosts = []; hazards = [];
-  G.chestsDue = chests; G.prevT = (G.prevT || 0) + G.t;
+  G.chestsDue = chests; G.chestDue = best; G.prevT = (G.prevT || 0) + G.t;
 }
 function startStage2() {
-  const keep = { chestsDue: G.chestsDue || 0, prevT: G.prevT || 0 };
+  const keep = { chestsDue: G.chestsDue || 0, chestDue: G.chestDue, prevT: G.prevT || 0 };
   G = { cox: 0, coy: 0, flash: null, warnT: 0, ringFx: null, t: 0, state: 'play', spawnAcc: 0, nextJar: 6, ev: 0, banner: null, ohaengT: 20, paradeT: 0, paradeSpawn: 0, dark: null, beam: null, shake: 0, endT: 0, win: false, bosses: [], stage: 2, fadeIn: 1, prevT: keep.prevT };
   enemies = []; drops = []; projs = []; eprojs = []; effects = []; puddles = []; texts = []; parts = []; jars = []; zones = []; hazards = [];
   P.x = 0; P.y = 0; P.vx = P.vy = 0; P.hp = P.maxHp; P.light = 100; P.iframe = 2; P.slowT = 0; P.charmT = 0; P.pullT = 0; P.bless = {};
   propCache.clear(); obsKey = ''; refreshObstacles(true);
   jars.push({ x: 260, y: -120 });
   music(true); musicVolume(0.3);
-  if (keep.chestsDue > 0) openChest();   // 이무기's chest, opened at the foot of the mountain
+  if (keep.chestsDue > 0) openChest(keep.chestDue || { tier: 'final' });   // 이무기's chest, opened at the foot of the mountain
 }
 function winRun() {
-  G.state = 'ending'; G.win = true; G.endT = 0; sfx('win'); music(false);
+  G.state = 'ending'; G.win = true; G.endT = 0; sfx('win'); music(false); unlockAch('dawn2');
   banner('첫닭이 울었다', '요괴들이 새벽빛에 흩어집니다');
   for (const e of enemies) { burst(e.x, e.y, '#efe6d2', 2); e.dead = true; }
   enemies = []; G.bosses = []; G.beam = null; eprojs = []; zones = []; G.ghosts = []; hazards = [];
 }
 function endRun(win) {
   G.state = 'over'; joy = null; music(false);
-  const bonus = win ? 50 : 0, earned = P.coins + bonus;
-  meta.coins += earned; meta.best = Math.max(meta.best || 0, Math.floor((G.prevT || 0) + G.t)); if (win) meta.wins = (meta.wins || 0) + 1; saveMeta();
+  const bonus = win ? 50 : 0, earned = Math.round(P.coins * (1 + 0.1 * (meta.up.purse || 0)) * (P.char.mods.coin || 1)) + bonus, T = Math.floor((G.prevT || 0) + G.t), chain = (G.kc && G.kc.best) || 0, sg = stg();
+  meta.coinsTotal = (meta.coinsTotal || 0) + earned; if (meta.coinsTotal >= 5000) unlockAch('rich');   // 두억 해금
+  const prev = { t: meta.best || 0, lv: meta.bestLv || 0, kills: meta.bestKills || 0, chain: meta.bestChain || 0, b1: meta.best1 || 0, b2: meta.best2 || 0 };
+  meta.coins += earned; meta.best = Math.max(prev.t, T); meta.bestLv = Math.max(prev.lv, P.level); meta.bestKills = Math.max(prev.kills, P.kills); meta.bestChain = Math.max(prev.chain, chain);
+  if (sg === 1) meta.best1 = Math.max(prev.b1, Math.floor(G.t)); else meta.best2 = Math.max(prev.b2, Math.floor(G.t));
+  if (win) meta.wins = (meta.wins || 0) + 1; saveMeta();
   if (!win) sfx('lose');
-  $('#over-label').textContent = `${win ? '승리' : '패배'} · ${stg()}탄 ${STAGES[stg()].name}`;
+  $('#over-label').textContent = `${win ? '승리' : '패배'} · ${sg}탄 ${STAGES[sg].name}`;
   $('#over-title').textContent = win ? '첫닭이 울었다' : '호롱불이 꺼졌다';
-  $('#over-lede').textContent = win ? '이무기와 불가살이를 쓰러뜨리고 새벽을 맞았습니다. 정식판에서는 대숲, 삼도천, 도깨비 불가마가 이어집니다.' : `${P.lastHit || '요괴'}에게 쓰러졌습니다. 엽전은 남았으니 주막에서 강화하고 다시 나서 보세요.`;
-  const stats = [['버틴 시간', mmss((G.prevT || 0) + G.t)], ['레벨', P.level], ['처치', P.kills.toLocaleString('ko-KR')], ['엽전', `+${earned}냥`]];
+  $('#over-lede').textContent = win ? '이무기와 불가살이를 쓰러뜨리고 새벽을 맞았습니다. 정식판에서는 대숲, 삼도천, 도깨비 불가마가 이어집니다.' : `${P.lastHit || '요괴'}에게 쓰러졌습니다. ${nearMiss()}`;
+  const stats = [['버틴 시간', T, mmss, prev.t], ['레벨', P.level, String, prev.lv], ['처치', P.kills, fmtN, prev.kills], ['최고 연참', chain, fmtN, prev.chain], ['엽전', earned, v => `+${fmtN(v)}냥`, -1]];
   const box = $('#over-stats'); box.textContent = '';
-  for (const [k, v] of stats) { const s = document.createElement('div'); s.className = 'stat'; const b = document.createElement('b'); b.textContent = v; s.append(b, k); box.appendChild(s); }
-  showOnly('over'); $('#btn-pause').hidden = true;
+  const cells = stats.map(([k, v, f, pv]) => { const s = document.createElement('div'); s.className = 'stat'; const b = document.createElement('b'); b.textContent = f(0); s.append(b, k); box.appendChild(s); return { s, b, v, f, rec: pv > 0 && v > pv }; });
+  $('#over-detail').innerHTML = overDetail(prev, earned, chain);
+  showOnly('over'); $('#btn-pause').hidden = true; $('#btn-again').focus({ preventScroll: true });
+  countUp(cells);
+}
+// 결산 count-up: each number rolls up in turn with a tick; a beaten record lands a 新 seal. A click on the panel skips to the end.
+const OVER = { cells: null, skip: false };
+function countUp(cells) {
+  OVER.cells = cells; OVER.skip = !!REDUCED; const t0 = performance.now(), dur = 0.42;
+  const finish = (c, j, snd) => { if (c.fin) return; c.fin = true; c.b.textContent = c.f(c.v);
+    if (c.rec) { const sl = document.createElement('i'); sl.className = 'seal'; sl.textContent = '新'; c.b.appendChild(sl); }   // right beside its number
+    if (snd) sfx(c.rec ? 'stamp' : j === cells.length - 1 ? 'pick' : 'tick', c.rec ? 0 : j * 2); };
+  const loop = now => {
+    if (OVER.cells !== cells) return;
+    if (OVER.skip) { cells.forEach((c, j) => finish(c, j, false)); return; }
+    const el = (now - t0) / 1000;
+    cells.forEach((c, j) => { const k = clamp((el - 0.25 - j * dur) / dur, 0, 1); if (k >= 1) finish(c, j, true); else if (k > 0) c.b.textContent = c.f(Math.round(c.v * (1 - Math.pow(1 - k, 3)))); });
+    if (cells.some(c => !c.fin)) requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+function nearMiss() {   // how close it was: the time left to the stage boss, or the boss's health left
+  const SG = STAGES[stg()], bn = ED[SG.boss].name, b = G.bosses.find(q => q.type === SG.boss && !q.dead);
+  if (b) return `${bn}의 체력이 ${Math.max(1, Math.round(b.hp / b.maxHp * 100))}% 남아 있었습니다.`;
+  if (G.t < SG.at) { const s = Math.ceil(SG.at - G.t); return `${bn}까지 ${s < 60 ? s + '초' : Math.floor(s / 60) + '분 ' + (s % 60) + '초'} 남았습니다.`; }
+  return '엽전은 남았으니 주막에서 강화하고 다시 나서 보세요.';
+}
+function overDetail(prev, earned, chain) {
+  const by = P.dmgBy || {}, tot = Object.values(by).reduce((a, b) => a + b, 0);
+  const rows = Object.entries(by).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6), top = rows.length ? rows[0][1] : 1;
+  const wHTML = rows.map(([id, v], i) => {
+    const D = WEAPONS[id], w = P.weapons.find(x => x.id === id), name = D ? (w && w.evo ? D.evo.name : D.name) : id === 'burst' ? '호롱 터뜨리기' : '기타 · 오행·화상 등', ic = ICONURL[id === 'burst' ? 'hollong' : id];
+    return `<div class="wrow${i === 0 ? ' top' : ''}">${ic ? `<img src="${ic}" alt="">` : '<span class="noicon"></span>'}<span class="wn">${name}${i === 0 && D ? '<em>이번 판의 주인</em>' : ''}</span><span class="wb"><i style="--w:${(v / top * 100).toFixed(1)}%;--d:${(0.3 + i * 0.08).toFixed(2)}s"></i></span><span class="wv">${fmtN(v)} · ${Math.round(v / (tot || 1) * 100)}%</span></div>`;
+  }).join('');
+  const goals = [], g = (name, cond, now, o, n, note) => goals.push(`<div class="goal"><div class="gh"><span><b>${name}</b> · ${cond}</span><span class="gv">${now}</span></div><div class="gb"><i class="old" style="width:${(clamp(o, 0, 1) * 100).toFixed(1)}%"></i><i class="new" style="left:${(clamp(o, 0, 1) * 100).toFixed(1)}%;width:${(Math.max(0, clamp(n, 0, 1) - clamp(o, 0, 1)) * 100).toFixed(1)}%"></i></div><div class="gn">${note}</div></div>`);
+  if (!(meta.clear1 > 0)) { const b1 = meta.best1 || 0; g('1탄 클리어', '9:00에 깨어나는 이무기 퇴치', `${mmss(b1)} / 09:00`, prev.b1 / 540, b1 / 540, b1 > prev.b1 && prev.b1 > 0 ? `최고 기록 ${mmss(prev.b1)}에서 늘었습니다` : `${mmss(Math.max(0, 540 - b1))} 더 버티면 이무기가 깨어납니다`); }
+  else if (!(meta.wins > 0)) { const b2 = meta.best2 || 0; g('첫 승리', '2탄 9:00 불가살이 퇴치', `${mmss(b2)} / 09:00`, prev.b2 / 540, b2 / 540, b2 > prev.b2 && prev.b2 > 0 ? `최고 기록 ${mmss(prev.b2)}에서 늘었습니다` : '안개 산길 끝에서 불가살이가 기다립니다'); }
+  if (meta.clear1 > 0 && (meta.coinsTotal || 0) < 5000) { const n = meta.coinsTotal || 0; g('두억 해금', '엽전 누적 5,000냥', `${fmtN(n)} / 5,000`, (n - earned) / 5000, n / 5000, `${fmtN(5000 - n)}냥 남음 · 이번 판 +${fmtN(earned)}`); }
+  let buy = null; for (const s of SHOP) { const lv = meta.up[s.id] || 0; if (lv >= s.max) continue; const c = shopCost(s, lv); if (!buy || c < buy.c) buy = { s, lv, c }; }
+  if (buy) { const have = meta.coins; g(`주막 · ${buy.s.name} Lv ${buy.lv + 1}`, buy.s.desc, `${fmtN(Math.min(have, buy.c))} / ${fmtN(buy.c)}냥`, (have - earned) / buy.c, have / buy.c, have >= buy.c ? '지금 살 수 있습니다 · 주막으로' : `${fmtN(buy.c - have)}냥 남음`); }
+  if (goals.length >= 3) { /* 세 줄까지 */ } else if (P.kills < prev.kills) g('처치 기록', `판 최고 ${fmtN(prev.kills)}`, `${fmtN(P.kills)} / ${fmtN(prev.kills)}`, 0, P.kills / prev.kills, `${fmtN(prev.kills - P.kills)}마리 모자랐습니다`);
+  else if (chain < prev.chain) g('연참 기록', `판 최고 ${fmtN(prev.chain)}`, `${fmtN(chain)} / ${fmtN(prev.chain)}`, 0, chain / prev.chain, `${fmtN(prev.chain - chain)} 모자랐습니다`);
+  return (rows.length ? `<div class="ocol"><div class="oh"><span>이번 판의 무기 · 준 피해</span><span>합계 ${fmtN(tot)}</span></div>${wHTML}</div>` : '')
+    + (goals.length || (G.achRun && G.achRun.length) ? `<div class="ocol">${G.achRun && G.achRun.length ? `<div class="oh"><span>이번 판에 이룬 업적 · ${G.achRun.join(' · ')}</span></div>` : ''}<div class="oh"><span>다음 목표 · 이번 판에 찬 만큼 밝게</span></div>${goals.join('')}</div>` : '');
 }
 
 /* ---------- render ---------- */
@@ -2781,7 +3351,7 @@ function drawBoss(e) {
 // 16 views, 22.5° apart: E, ESE, SE, SSE, S, SSW … (west side mirrors the east drawings; S and N keep the last side)
 const OCT = [['', 1], ['_ese', 1], ['_se', 1], ['_sse', 1], ['_s', 0], ['_sse', -1], ['_se', -1], ['_ese', -1], ['', -1], ['_ene', -1], ['_ne', -1], ['_nne', -1], ['_n', 0], ['_nne', 1], ['_ne', 1], ['_ene', 1]];
 function playerView() {
-  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' ? 'danbi' : 'yeoni', name = who + o[0], fr = SPR[name];
+  const o = OCT[(P.d16 ?? (P.d || 0) * 2) & 15], who = P.spr === 'danbi' || P.spr === 'makswe' || P.spr === 'kkoma' ? P.spr : 'yeoni', name = who + o[0], fr = SPR[name];
   return { name, frames: fr && fr[0] ? fr : SPR[P.spr], flip: o[1] || P.side || 1, ax: fr && ART.meta.ax ? ART.meta.ax[name] || 0 : 0 };
 }
 // Cut-out walk rig: each view keeps ONE drawing (META.rig picks it and finds the skirt hem and the gap between
@@ -2797,7 +3367,7 @@ function footPhase(u) {   // unit stride profile: stance slides front→back lin
 }
 function walkPose() {
   const v = playerView(), sp = Math.min(1, P.spd01 || 0), th = (P.walk || 0) * STEP_K, u1 = ((th / TAU) % 1 + 1) % 1;
-  const R = ART.ok && ART.meta.rig ? ART.meta.rig[v.name] : null, mode = RIGMODE[v.name.replace(/^(yeoni|danbi)/, '')] || 'side';
+  const R = ART.ok && ART.meta.rig ? ART.meta.rig[v.name] : null, mode = RIGMODE[v.name.replace(/^(yeoni|danbi|makswe|kkoma)/, '')] || 'side';
   const bob = (1 - Math.cos(4 * Math.PI * u1)) * 0.5 * 1.3 * sp;                       // up while the feet pass, down on contact
   const sway = (mode === 'front' || mode === 'back' ? 0.9 : mode === 'side' ? 0 : 0.5) * Math.sin(TAU * u1) * sp;   // weight over the stance foot
   const base = R ? R.base : 0;
@@ -3253,6 +3823,23 @@ function render() {
       else if (p.k === 'club' && ICON.club) { any2 = true; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); dI(ICON.club, -15, -15, 30, 30); ctx.restore(); }
     }
     if (any2) screenT(); }
+  { let any3 = false;   // 노름판: four 윷 sticks tumble up and land; the flat (light) side counts
+    for (const q of poiList) {
+      if (q.t !== 'mat' || !q.spin) continue; const k = G.t - q.spin; if (k > 2.6 || !inView(q.x, q.y, 80)) continue;
+      if (!any3) { worldT(); any3 = true; }
+      const fl = Math.min(1, k / 0.8), a = k > 2.1 ? 1 - (k - 2.1) / 0.5 : 1; ctx.globalAlpha = clamp(a, 0, 1);
+      for (let i = 0; i < 4; i++) {
+        const land = fl >= 1 && q.yut, x = q.x + (i - 1.5) * (land ? 13 : 9 + fl * 6), y = q.y - 22 - Math.sin(fl * Math.PI) * 74 - (land ? 0 : 8);
+        const flat = land ? q.yut[i] : Math.floor(k * 14 + i) % 2;
+        ctx.save(); ctx.translate(x, y); ctx.rotate(land ? (i - 1.5) * 0.12 : k * 13 + i * 1.4);
+        ctx.fillStyle = flat ? '#ead6a4' : '#6b3a1a'; ctx.strokeStyle = '#1a0e06'; ctx.lineWidth = 1.5;
+        ctx.fillRect(-3.5, -14, 7, 28); ctx.strokeRect(-3.5, -14, 7, 28);
+        if (!flat) { ctx.strokeStyle = '#c9925a'; ctx.beginPath(); ctx.moveTo(-1.5, -8); ctx.lineTo(1.5, -4); ctx.moveTo(-1.5, 2); ctx.lineTo(1.5, 6); ctx.stroke(); }
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (any3) screenT(); }
   if (G.sky && G.sky.length && SPR.skylantern) {   // 풍등 float above the dark: they are lights
     worldT(); const sp = (stg() === 2 && SPR.lotus) || SPR.skylantern, w = SW(sp), h = SH(sp);
     for (const l of G.sky) { if (!inView(l.x, l.y, 60)) continue; const a = Math.min(1, l.t / 1.5, (l.life - l.t) / 2); ctx.globalAlpha = 0.95 * a; dI(sp, l.x - w / 2 + Math.sin(G.t * 0.9 + l.ph) * 3, l.y - 40 - h / 2 + Math.sin(G.t * 1.5 + l.ph) * 4, w, h); }
@@ -3276,7 +3863,21 @@ function render() {
   PF('overlays');
   // damage text
   for (const t of texts) {
-    const [sx, sy] = toScreen(t.x, t.y); ctx.globalAlpha = 1 - Math.max(0, t.t - 0.35) / 0.35;
+    const [sx, sy] = toScreen(t.x, t.y); ctx.globalAlpha = clamp(1 - Math.max(0, t.t - ((t.life || 0.7) - 0.35)) / 0.35, 0, 1);
+    if (t.crit) {   // crits, 일격 and call-outs: display face, bigger pop, a slight tilt
+      const pop = t.t < 0.12 ? 2.1 - t.t / 0.12 * 1.1 : 1, size = Math.round(13 * 1.6 * (t.sz || 1) * (t.big ? 1.25 : 1) * Math.max(0.85, ZOOM) * pop);
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(t.rot || 0);
+      ctx.font = `700 ${size}px ${FD}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(26,11,5,0.92)'; ctx.strokeText(t.v, 0, 0);
+      if (t.big) { ctx.shadowColor = 'rgba(255,200,90,0.8)'; ctx.shadowBlur = 12; }
+      ctx.fillStyle = t.col; ctx.fillText(t.v, 0, 0); ctx.shadowBlur = 0;
+      if (t.big) {   // 일격: a red seal beside the number
+        const w = ctx.measureText(t.v).width, s = Math.round(size * 0.82), x0 = -w / 2 - s - 5;
+        ctx.save(); ctx.translate(x0 + s / 2, 0); ctx.rotate(-0.12); ctx.fillStyle = '#b8452f'; ctx.fillRect(-s / 2, -s / 2, s, s);
+        ctx.strokeStyle = '#2a0d07'; ctx.lineWidth = 2; ctx.strokeRect(-s / 2, -s / 2, s, s);
+        ctx.font = `700 ${Math.round(s * 0.42)}px ${FD}`; ctx.fillStyle = '#ffe9d0'; ctx.fillText('일격', 0, 1); ctx.restore();
+      }
+      ctx.restore(); continue;
+    }
     const big = t.v.length > 2 || t.col !== '#efe6d2', pop = t.t < 0.09 ? 1.5 - t.t / 0.09 * 0.5 : 1;   // pop in, then settle
     const size = Math.round((big ? 13 : 11.5) * Math.max(0.85, ZOOM));
     drawText(t.v, sx, sy, `700 ${size}px ${FB}`, t.col, 'center', 'middle', DMG_STROKE, pop);
@@ -3402,6 +4003,8 @@ function drawGlows() {
     }
   }
   worldT();
+  // 금빛 도깨비: a gold aura that shows even in the dark, so it can be chased
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead && inView(e.x, e.y, 60)) { ctx.globalAlpha = (e.inLight ? 0.22 : 0.55) + 0.15 * Math.sin(G.t * 7); dI(GL.sun, e.x - 42, e.y - 62, 84, 84); ctx.globalAlpha = 1; }   // fainter in the light, where its body shows
   // 달걀귀신 돌진 예고
   for (const e of enemies) if (e.type === 'egg' && e.st === 'wind' && !e.dead) { ctx.globalAlpha = 0.75; dI(GL.gold, e.x - 22, e.y - 34, 44, 44); }
   ctx.globalAlpha = 1;
@@ -3735,6 +4338,9 @@ function drawHUD() {
   const xw = W - sl - sr - 24, x0 = sl + 12;
   ctx.fillStyle = 'rgba(6,7,12,0.6)'; ctx.fillRect(x0 - 1, st + 5, xw + 2, 7);
   bar(x0, st + 6, xw, 5, P.xp / P.xpNext, '#58b39c');
+  if (P.xp / P.xpNext >= 0.9 && !REDUCED) {   // a level-up is near: the bar breathes
+    ctx.globalAlpha = 0.35 + 0.3 * Math.sin(G.t * 8); ctx.fillStyle = '#b6ffe9'; ctx.shadowColor = '#7fe0c4'; ctx.shadowBlur = 10;
+    ctx.fillRect(x0, st + 5, xw * clamp(P.xp / P.xpNext, 0, 1), 7); ctx.shadowBlur = 0; ctx.globalAlpha = 1; }
   // timer
   if (PG.on) { txt('놀이터', W / 2, st + 40, 22, '#f2a93b', 'center', FD, 700); txt(PG.scale === 1 ? 'WASD · 방향키로 걷기 · 0 정지 · . 한 프레임' : PG.scale ? `시간 ${PG.scale}×` : '시간 정지', W / 2, st + 57, 11.5, '#a39a86', 'center'); }
   else { const SG = STAGES[stg()], bn = ED[SG.boss].name;
@@ -3746,7 +4352,8 @@ function drawHUD() {
     const bw = Math.min(380, W - sl - sr - 40), bx = W / 2 - bw / 2;
     txt(ED[b.type].name, bx, by - 3, 12, '#efe6d2', 'left', FD, 700);
     txt(`${ED[b.type].el} 원소${b.leaveT > 0 ? ` · ${Math.ceil(b.leaveT)}초 뒤 물러감` : ''}`, bx + bw, by - 3, 11, b.leaveT > 0 && b.leaveT < 20 ? '#ff6b5a' : EL_COLOR[ED[b.type].el], 'right');
-    bar(bx, by + 2, bw, 6, b.hp / b.maxHp, '#c8463a'); by += 22;
+    bar(bx, by + 2, bw, 6, (b.ghost ?? b.hp) / b.maxHp, 'rgba(255,236,214,0.85)');   // the chunk just lost stays pale, then drains
+    ctx.fillStyle = '#c8463a'; ctx.fillRect(bx, by + 2, bw * clamp(b.hp / b.maxHp, 0, 1), 6); by += 22;
   }
   // left block: lantern icon + bars
   const lx0 = sl + 12; let ly = narrow ? Math.max(st + 86, by + 8) : st + 26;
@@ -3778,10 +4385,12 @@ function drawHUD() {
   const sy = H - sb - 14 - 30 - 6 - 40;
   P.weapons.forEach((w, i) => { const D = WEAPONS[w.id]; slot(lx0 + i * 44, sy, 40, ICON[w.id], D.glyph, w.evo ? '#f2a93b' : EL_COLOR[D.el], w.evo ? '진' : `${w.lv}`, w.evo); });
   P.passives.forEach((p, i) => slot(lx0 + i * 34, sy + 46, 30, ICON[p.id], PASSIVES[p.id].glyph, 'rgba(239,230,210,0.3)', `${p.lv}`, false));
+  drawBurst();
   // indicators
   let nj = null, nd = 1e9; for (const j of jars) { const d = Math.hypot(j.x - P.x, j.y - P.y); if (d < nd) { nd = d; nj = j; } }
   if (nj) edgeArrow(nj.x, nj.y, '#f2a93b', `기름 ${Math.round(nd / M)}m`);
   for (const d of drops) if (d.k === 'chest') { edgeArrow(d.x, d.y, '#e0607e', '보물상자'); break; }
+  for (const e of enemies) if (e.type === 'goldgob' && !e.dead) { edgeArrow(e.x, e.y, '#ffd36a', '금 도깨비'); gobRing(e); }
   for (const d of drops) if (d.k === 'magnet' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#9fd0ff', '지남철'); break; }
   for (const d of drops) if (d.k === 'ginseng' && Math.hypot(d.x - P.x, d.y - P.y) < 1400) { edgeArrow(d.x, d.y, '#7fe0a0', '산삼'); break; }
   for (const b of G.bosses) edgeArrow(b.x, b.y, '#c8463a', ED[b.type].name);
@@ -3793,6 +4402,8 @@ function drawHUD() {
     ctx.strokeStyle = 'rgba(239,230,210,0.25)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(joy.ox, joy.oy, 46, 0, TAU); ctx.stroke();
     ctx.fillStyle = 'rgba(242,169,59,0.45)'; ctx.beginPath(); ctx.arc(joy.ox + dx * m, joy.oy + dy * m, 18, 0, TAU); ctx.fill();
   }
+  if (G.state === 'chest') return;   // the chest reveal owns the middle of the screen
+  drawChain(); drawStamp();
   // banner
   if (G.banner) {
     const b = G.banner, a = Math.min(1, b.t / 0.3, (b.dur - b.t) / 0.5);
@@ -3805,6 +4416,56 @@ function drawHUD() {
     if (b.sub) txt(b.sub, W / 2, yb + 21, 12.5, '#f2a93b', 'center');
     ctx.globalAlpha = 1;
   }
+  drawCut();
+}
+// 연참 counter (right, middle): the number grows and warms with the chain; the bar under it is the time left to keep it going
+function drawChain() {
+  const C = G.kc, rx = W - SAFE.r - 18, narrow = W < 900; let cy = Math.round(H * 0.36);
+  if (C && C.n >= 10) {
+    const n = C.n, lvl = n >= 500 ? 3 : n >= 250 ? 2 : n >= 100 ? 1 : 0, col = ['#efe6d2', '#f2c27a', '#ffc65a', '#ffe08a'][lvl];
+    const size = Math.round((narrow ? 30 : 40) + Math.min(28, Math.log2(n / 10 + 1) * 6)), k = clamp((G.t - C.last) / 0.12, 0, 1), s = 1 + (1 - k) * 0.08;
+    txt('연참', rx, cy - size * 0.8 - 8, 12.5, '#f2c27a', 'right', FB, 700);
+    ctx.save(); ctx.translate(rx, cy); ctx.scale(s, s); ctx.font = `700 ${size}px ${FD}`; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(26,11,5,0.9)'; ctx.strokeText(fmtN(n), 0, 0);
+    if (lvl >= 2 || (C.step && C.step.t < 0.5)) { ctx.shadowColor = 'rgba(242,169,59,0.8)'; ctx.shadowBlur = C.step && C.step.t < 0.5 ? 26 : 14; }
+    ctx.fillStyle = col; ctx.fillText(fmtN(n), 0, 0); ctx.restore();
+    const left = clamp(1 - (G.t - C.last) / kcWin(n), 0, 1), bw = narrow ? 96 : 130;
+    ctx.fillStyle = 'rgba(239,230,210,0.14)'; ctx.fillRect(rx - bw, cy + 8, bw, 3); ctx.fillStyle = left < 0.3 ? '#ff8a5a' : '#f2a93b'; ctx.fillRect(rx - bw * left, cy + 8, bw * left, 3);
+    const nx = KC_STEPS.find(q => q[0] > n);
+    txt(nx ? `다음 ${fmtN(nx[0])} · ${nx[1]}` : `판 최고 ${fmtN(C.best)}`, rx, cy + 26, 11, '#a39a86', 'right');
+    cy += 46;
+  } else if (C && C.end) {   // the chain broke: say how far it went
+    const a = clamp(Math.min(C.end.t / 0.1, (1.3 - C.end.t) / 0.4), 0, 1); ctx.globalAlpha = a;
+    txt(`연참 ${fmtN(C.end.n)} · 끝`, rx, cy, narrow ? 18 : 22, '#efe6d2', 'right', FD, 700);
+    if (C.end.best) txt('판 최고', rx, cy + 20, 12, '#ffd27a', 'right', FB, 700);
+    ctx.globalAlpha = 1; cy += 46;
+  }
+  if (G.shinT > G.t) {   // 신명 (연참 250): a gold tag while it lasts
+    const label = `신명 · 공격력 +20% · ${Math.ceil(G.shinT - G.t)}초`; ctx.font = `700 12.5px ${FB}`; const w = ctx.measureText(label).width + 18;
+    ctx.fillStyle = 'rgba(42,22,6,0.8)'; ctx.fillRect(rx - w, cy - 14, w, 22); ctx.strokeStyle = '#f2a93b'; ctx.lineWidth = 1; ctx.strokeRect(rx - w + 0.5, cy - 13.5, w - 1, 21);
+    txt(label, rx - 9, cy + 1.5, 12.5, '#ffd27a', 'right', FB, 700);
+  }
+}
+// 천 마리 퇴치: a red seal stamped high on the screen every 1,000 kills
+function drawStamp() {
+  const S = G.stamp; if (!S) return;
+  const k = S.n / 1000, word = (k < 10 ? ['', '', '이', '삼', '사', '오', '육', '칠', '팔', '구'].at(k) : String(k)) + '천';
+  const sc = S.t < 0.14 ? 1.8 - S.t / 0.14 * 0.8 : 1, a = S.t > 1.2 ? 1 - (S.t - 1.2) / 0.4 : 1, x = W / 2, y = Math.max(SAFE.t + 108, H * 0.15), s = 64;   // above the banner band
+  ctx.save(); ctx.globalAlpha = clamp(a, 0, 1); ctx.translate(x, y); ctx.scale(sc, sc); ctx.rotate(-0.08);
+  ctx.fillStyle = '#b8452f'; ctx.fillRect(-s / 2, -s / 2, s, s); ctx.strokeStyle = '#ffe2c8'; ctx.lineWidth = 2; ctx.strokeRect(-s / 2 + 5, -s / 2 + 5, s - 10, s - 10);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `700 ${word.length > 1 ? 22 : 30}px ${FD}`; ctx.fillStyle = '#ffe9d0'; ctx.fillText(word, 0, 1); ctx.restore();
+  ctx.globalAlpha = clamp(a, 0, 1); txt(`${fmtN(S.n)} 마리 퇴치 · 엽전 +10`, x, y + s / 2 + 24, 13, '#ffd27a', 'center', FD, 700); ctx.globalAlpha = 1;
+}
+// a short centre call-out for the big moments (오행 원환, 신명)
+function drawCut() {
+  const c = G.cut; if (!c) return;
+  const sc = c.t < 0.12 ? 1.5 - c.t / 0.12 * 0.5 : 1, a = Math.min(1, c.t / 0.06, (c.dur - c.t) / 0.3), y = H * 0.3 + (G.banner ? 74 : 0), size = W < 900 ? 30 : 42;   // under a banner if one is up
+  ctx.save(); ctx.globalAlpha = clamp(a, 0, 1);
+  const bg = ctx.createLinearGradient(0, 0, W, 0); bg.addColorStop(0, 'rgba(6,7,12,0)'); bg.addColorStop(0.5, 'rgba(6,7,12,0.55)'); bg.addColorStop(1, 'rgba(6,7,12,0)');
+  ctx.fillStyle = bg; ctx.fillRect(0, y - size, W, size * 1.4);
+  ctx.translate(W / 2, y); ctx.scale(sc, sc); ctx.font = `700 ${size}px ${FD}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(26,11,5,0.9)'; ctx.strokeText(c.title, 0, 0); ctx.shadowColor = 'rgba(255,214,120,0.8)'; ctx.shadowBlur = 18; ctx.fillStyle = c.col; ctx.fillText(c.title, 0, 0);
+  ctx.restore();
 }
 function slot(x, y, s, icon, glyph, col, lv, evo) {
   ctx.fillStyle = 'rgba(11,13,22,0.82)'; ctx.fillRect(x, y, s, s);
@@ -3828,10 +4489,40 @@ function drawPentagon(cx, cy) {
     ctx.strokeStyle = on ? 'rgba(6,7,12,0.6)' : 'rgba(239,230,210,0.25)'; ctx.lineWidth = 1; ctx.stroke();
     txt(e, x, y + 3.5, 9.5, on ? '#140c08' : '#a39a86', 'center', FB, 700);
   });
-  if (P.ohaeng) txt(`쓸어 버리기 ${Math.ceil(G.ohaengT)}초`, cx + 32, cy + 4, 11, '#efe6d2');
+  if (P.ohaeng) {
+    const k = clamp(1 - G.ohaengT / 20, 0, 1), soon = G.ohaengT < 3, pulse = soon && !REDUCED ? 0.5 + 0.5 * Math.sin(G.t * 14) : 0;
+    ctx.strokeStyle = 'rgba(239,230,210,0.12)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, 31, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = soon ? '#ffe9a8' : '#f2a93b'; ctx.lineWidth = 3 + pulse * 2; if (soon) { ctx.shadowColor = '#ffd27a'; ctx.shadowBlur = 8 + pulse * 10; }
+    ctx.beginPath(); ctx.arc(cx, cy, 31, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke(); ctx.shadowBlur = 0;
+    txt(`쓸어 버리기 ${Math.ceil(G.ohaengT)}초`, cx + 38, cy + 4, 11, soon ? '#ffe9a8' : '#efe6d2', 'left', FB, soon ? 700 : 400);
+  }
   else txt(P.links.length ? `기운 ${P.links.length}줄 이어짐` : '무기의 기운', cx + 32, cy - 2, 11, P.links.length ? '#f2a93b' : '#a39a86');
   if (!P.ohaeng) txt('눌러서 설명', cx + 32, cy + 12, 10.5, '#7d7564');
   G.pentaHit = [cx, cy];   // tap target for the 오행 guide
+}
+// 호롱 터뜨리기 button (bottom right): the ring fills as it charges; full with light to spare, it pulses. Tap or Space.
+function drawBurst() {
+  const r = W < 900 ? 28 : 34, cx = W - SAFE.r - r - 22, cy = H - SAFE.b - r - 34, k = clamp(P.burst || 0, 0, 1), full = k >= 1, lit = P.light >= BURST.cost, ready = full && lit, warn = G.burstWarn > 0;
+  G.burstHit = [cx, cy, r + 10];
+  const pulse = ready && !REDUCED ? 0.5 + 0.5 * Math.sin(G.t * 6) : 0;
+  if (ready && GL.sun) { ctx.globalAlpha = 0.3 + 0.35 * pulse + (warn ? 0.3 : 0); dI(GL.sun, cx - r * 2, cy - r * 2, r * 4, r * 4); ctx.globalAlpha = 1; }
+  ctx.fillStyle = 'rgba(20,12,4,0.86)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(239,230,210,0.14)'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = warn ? (Math.sin(G.t * 30) > 0 ? '#fff0c0' : '#ff9a4a') : ready ? '#ffe9a8' : full ? '#a3786a' : '#f2a93b';
+  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke();
+  if (ICON.hollong) { ctx.globalAlpha = ready ? 1 : 0.5; const s = r * 1.25; dI(ICON.hollong, cx - s / 2, cy - s / 2 - 1, s, s); ctx.globalAlpha = 1; }
+  const label = warn ? '터진다!' : ready ? (meta.burstAuto !== false ? '자동 · Space' : 'Space') : full ? '빛 25 필요' : `${Math.floor(k * 100)}%`;
+  txt(label, cx, cy + r + 15, 11.5, warn || ready ? '#ffd27a' : full ? '#ff9a7a' : '#a39a86', 'center', FB, 700);
+  if (ready) txt('호롱 터뜨리기', cx, cy - r - 8, 11, '#ffd27a', 'center', FB, 700);
+}
+// the time left to catch a gold goblin, as a ring over its head
+function gobRing(e) {
+  const [sx, sy] = toScreen(e.x, e.y - 58); if (sx < 0 || sx > W || sy < 0 || sy > H) return;
+  const k = clamp(e.life / 15, 0, 1), r = 15, warn = e.life < 4;
+  ctx.fillStyle = 'rgba(26,18,6,0.85)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(239,230,210,0.18)'; ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = warn ? '#ff8a5a' : '#ffd27a'; ctx.beginPath(); ctx.arc(sx, sy, r, -Math.PI / 2, -Math.PI / 2 + k * TAU); ctx.stroke();
+  txt(String(Math.ceil(e.life)), sx, sy + 5, 13, warn ? '#ffb38a' : '#ffe2a0', 'center', FD, 700);
 }
 function edgeArrow(wx, wy, col, label) {
   const [sx, sy] = toScreen(wx, wy);
@@ -3845,43 +4536,64 @@ function edgeArrow(wx, wy, col, label) {
 }
 
 /* ---------- menus ---------- */
-const OVERLAYS = ['title', 'levelup', 'pause', 'over', 'shop', 'peddler', 'ohaeng'];
+const OVERLAYS = ['title', 'levelup', 'pause', 'over', 'shop', 'peddler', 'ohaeng', 'chest', 'book'];
 function showOnly(id) { for (const o of OVERLAYS) $('#' + o).hidden = o !== id; }
 let selChar = 'yeoni';
 function renderChars() {
   const box = $('#chars'); box.textContent = '';
   for (const c of CHARS) {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'char' + (c.locked ? ' locked' : '');
+    const locked = isLocked(c), b = document.createElement('button'); b.type = 'button'; b.className = 'char' + (locked ? ' locked' : '');
     b.setAttribute('aria-pressed', String(c.id === selChar));
     const cv = document.createElement('canvas'); cv.width = 80; cv.height = 108;
-    const src = c.id === 'danbi' ? SPR.danbi[0] : c.id === 'dueok' && SPR.dokkaebi ? SPR.dokkaebi : SPR.player[0]; const g = cv.getContext('2d');
+    const src = c.id === 'danbi' ? SPR.danbi[0] : c.id === 'makswe' && SPR.makswe ? SPR.makswe[0] : c.id === 'dueok' && SPR.kkoma ? SPR.kkoma[0] : SPR.player[0]; const g = cv.getContext('2d');
     const fit = Math.min(80 / src.width, 108 / src.height);
-    g.imageSmoothingEnabled = ART.ok; if (c.locked) { g.globalAlpha = 0.45; g.filter = 'grayscale(1) brightness(0.6)'; }
+    g.imageSmoothingEnabled = ART.ok; if (locked) { g.globalAlpha = 0.45; g.filter = 'grayscale(1) brightness(0.6)'; }
     g.drawImage(src.src || src, (80 - src.width * fit) / 2, 108 - src.height * fit, src.width * fit, src.height * fit);
     const nm = document.createElement('b'); nm.textContent = c.name;
     const rl = document.createElement('span'); rl.textContent = c.role;
-    const pk = document.createElement('em'); pk.textContent = c.locked ? c.locked : `${WEAPONS[c.weapon].name} · ${c.perk}`;
+    const pk = document.createElement('em'); pk.textContent = locked ? lockText(c) : `${WEAPONS[c.weapon].name} · ${c.perk}`;
     b.append(cv, nm, rl, pk);
-    if (c.locked) b.disabled = true;
+    if (locked) b.disabled = true;
     else b.addEventListener('click', () => { selChar = c.id; renderChars(); });
     box.appendChild(b);
   }
   $('#coin-title').textContent = meta.coins;
 }
+const isLocked = c => !!c.locked || (c.unlock ? !c.unlock() : false);
+function lockText(c) {   // locked characters: show how close this player is to their unlock
+  if (c.id === 'makswe') return `1탄 클리어로 해금 (최고 ${mmss(meta.best1 || 0)} / 09:00)`;
+  if (c.id === 'dueok') return `엽전 누적 5,000냥으로 해금 (${fmtN(meta.coinsTotal || 0)} / 5,000)`;
+  return c.locked;
+}
+let bookTab = 'ach';
+function openBook() { renderBook(); showOnly('book'); }
+function renderBook() {
+  $('#tab-ach').setAttribute('aria-pressed', String(bookTab === 'ach')); $('#tab-dex').setAttribute('aria-pressed', String(bookTab === 'dex'));
+  const body = $('#book-body'), A = meta.ach || {}, K = meta.kills || {};
+  if (bookTab === 'ach') {
+    $('#book-lede').textContent = `${ACH.filter(a => A[a.id]).length} / ${ACH.length} · 업적을 이루면 엽전을 받거나 주막에 새 강화가 열립니다.`;
+    body.innerHTML = `<div class="ach-list">${ACH.map(a => `<div class="ach${A[a.id] ? ' done' : ''}"><i class="seal">${A[a.id] ? '達' : '·'}</i><b>${a.name}</b><span>${a.cond}</span><em>${achReward(a)}</em></div>`).join('')}</div>`;
+  } else {
+    const seen = DEX.filter(([id]) => K[id] > 0).length;
+    $('#book-lede').textContent = `${seen} / ${DEX.length} · 요괴를 쓰러뜨린 수만큼 별이 찹니다. 별 셋이면 설화가 열립니다.`;
+    body.innerHTML = `<div class="dex">${DEX.map(([id, tale]) => { const n = K[id] || 0, st = dexSteps(id), s = st.filter(t => n >= t).length, nx = st.find(t => n < t);
+      return `<div class="mon${n ? '' : ' unseen'}"><img src="${sprURL(ED[id].spr || id)}" alt=""><b>${n ? ED[id].name : '???'}</b><span class="stars">${'★'.repeat(s)}${'☆'.repeat(3 - s)}</span><span>처치 ${fmtN(n)}${nx ? ` · 다음 별 ${fmtN(nx)}` : ''}</span>${s >= 3 ? `<p>${tale}</p>` : `<span class="tease">${n ? '별 셋이면 설화가 열립니다' : '아직 만나지 못했습니다'}</span>`}</div>`; }).join('')}</div>`;
+  }
+}
 function renderShop() {
   $('#shop-coins').textContent = meta.coins;
   const box = $('#shop-list'); box.textContent = '';
   for (const s of SHOP) {
-    const lv = meta.up[s.id] || 0, max = lv >= s.max, cost = shopCost(s, lv);
-    const row = document.createElement('div'); row.className = 'shop-item';
+    const lv = meta.up[s.id] || 0, max = lv >= s.max, cost = shopCost(s, lv), lockA = s.ach && !(meta.ach || {})[s.ach] ? ACH.find(a => a.id === s.ach) : null;
+    const row = document.createElement('div'); row.className = 'shop-item' + (lockA ? ' locked' : '');
     const nm = document.createElement('b'); nm.textContent = s.name;
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn' + (max ? ' ghost' : '');
-    btn.textContent = max ? '최대' : `${cost}냥`; btn.disabled = max || meta.coins < cost;
-    btn.addEventListener('click', () => { if (meta.coins >= cost && !max) { meta.coins -= cost; meta.up[s.id] = lv + 1; saveMeta(); renderShop(); } });
-    const ds = document.createElement('span'); ds.textContent = s.desc;
+    btn.textContent = lockA ? '잠김' : max ? '최대' : `${cost}냥`; btn.disabled = !!lockA || max || meta.coins < cost;
+    btn.addEventListener('click', () => { if (meta.coins >= cost && !max && !lockA) { meta.coins -= cost; meta.up[s.id] = lv + 1; saveMeta(); renderShop(); } });
+    const ds = document.createElement('span'); ds.textContent = lockA ? `업적 「${lockA.name}」(${lockA.cond})을 이루면 열립니다` : s.desc;
     const pips = document.createElement('div'); pips.className = 'pips';
     for (let i = 0; i < s.max; i++) { const p = document.createElement('i'); p.className = 'pip' + (i < lv ? ' on' : ''); pips.appendChild(p); }
-    const iconId = { hp: 'rice', atk: 'talisman', light: 'oiljar', spd: 'shoes', xp: 'ink', revive: 'mirror' }[s.id];
+    const iconId = { hp: 'rice', atk: 'talisman', light: 'oiljar', spd: 'shoes', xp: 'ink', revive: 'mirror', gat2: 'gat', lamp: 'oiljar', seal: 'redink', purse: 'rice', card: 'talisman', wick: 'hollong' }[s.id];
     let im; if (ICONURL[iconId]) { im = document.createElement('img'); im.src = ICONURL[iconId]; im.alt = ''; } else im = document.createElement('span');
     im.className = 'shop-icon';
     row.append(im, nm, btn, ds, pips); box.appendChild(row);
@@ -3901,10 +4613,13 @@ function pauseGame() {
   line('빛 안의 요괴는 받는 피해 +20%·느려짐, 빛 밖의 요괴는 주는 피해 +25%. 무기 칸 5, 패시브 칸 4.', 'muted');
   line('이기는 기운: 나무는 흙을, 흙은 물을, 물은 불을, 불은 쇠를, 쇠는 나무를 이깁니다 (피해 +50%, 지면 −20%). 장터 요괴는 대부분 흙, 구미호는 불, 이무기는 물.', 'muted');
   const hb = document.createElement('button'); hb.type = 'button'; hb.className = 'btn ghost'; hb.textContent = '오행(다섯 기운) 안내 보기'; hb.addEventListener('click', () => openOhaeng('paused')); box.appendChild(hb);
+  const ab = document.createElement('button'); ab.type = 'button'; ab.className = 'btn ghost';   // 호롱 터뜨리기: auto (default) or by hand
+  const lab = () => { ab.textContent = `호롱 터뜨리기 · ${meta.burstAuto !== false ? '자동 (가득 차고 요괴가 몰리면 1초 뒤 터짐)' : '직접 (Space · 오른쪽 아래 버튼)'}`; };
+  lab(); ab.addEventListener('click', () => { meta.burstAuto = meta.burstAuto === false; saveMeta(); lab(); }); box.appendChild(ab);
   showOnly('pause');
 }
 function resumeGame() { if (G && G.state === 'paused') { showOnly(null); G.state = 'play'; music(true); musicVolume(0.3); } }
-function toHome() { music(false); titleScene(); renderChars(); showOnly('title'); $('#btn-pause').hidden = true; $('#btn-mute').hidden = true; }
+function toHome() { music(false); saveMeta(); titleScene(); renderChars(); showOnly('title'); $('#btn-pause').hidden = true; $('#btn-mute').hidden = true; }
 function toggleMute() { muted = !muted; if (bgm) bgm.muted = muted; $('#btn-mute').textContent = muted ? '소리 끔' : '소리 켬'; }
 
 $('#btn-start').addEventListener('click', () => { audioOn(); newRun(selChar); });
@@ -3913,8 +4628,15 @@ $('#btn-pg').addEventListener('click', () => enterPlayground(selChar));
 $('#btn-ped-close').addEventListener('click', closePeddler);
 $('#btn-oh-close').addEventListener('click', closeOhaeng);
 $('#btn-oh-title').addEventListener('click', () => openOhaeng('title'));
+$('#btn-book').addEventListener('click', openBook);
+$('#btn-book-close').addEventListener('click', () => showOnly('title'));
+$('#tab-ach').addEventListener('click', () => { bookTab = 'ach'; renderBook(); });
+$('#tab-dex').addEventListener('click', () => { bookTab = 'dex'; renderBook(); });
+addEventListener('pagehide', () => saveMeta());   // 도감 counts live in memory between saves
 $('#btn-reroll').addEventListener('click', reroll);
 $('#btn-skip').addEventListener('click', () => { if (G.state === 'levelup') afterPick(); });
+$('#chest').addEventListener('click', () => chestAdvance());
+$('#over').addEventListener('click', e => { if (!e.target.closest('button')) OVER.skip = true; });   // skip the count-up
 $('#btn-resume').addEventListener('click', resumeGame);
 $('#btn-quit').addEventListener('click', toHome);
 $('#btn-again').addEventListener('click', () => { audioOn(); newRun(lastChar); });
@@ -4017,6 +4739,7 @@ function pgClear() {
   enemies = []; G.bosses = []; zones = []; eprojs = []; hazards = []; G.beam = null; G.ghosts = []; G.paradeT = 0;
   drops = drops.filter(d => d.k === 'chest' ? false : true);
 }
+function pgChest(tier) { drops.push({ k: 'chest', x: P.x + 70, y: P.y + 10, tier, src: '놀이터' }); }
 function pgItem(k) {
   if (k === 'coins') { for (let i = 0; i < 90; i++) drops.push({ k: i % 3 ? 'gem' : 'coin', x: P.x + rnd(-700, 700), y: P.y + rnd(-480, 480), v: 1, spr: 'gem1' }); return; }
   const a = rnd(0, TAU); dropItem(k, P.x + Math.cos(a) * 90, P.y + Math.sin(a) * 60);
@@ -4026,7 +4749,7 @@ function pgWeapon(id) {
   if (i >= 0) P.weapons.splice(i, 1); else { addWeapon(id); const w = P.weapons[P.weapons.length - 1]; w.lv = PG.lv || 1; w.evo = !!PG.evo && !!WEAPONS[id].evo; }
   recalc(); pgSync();
 }
-function pgChar(id) { P.char = CHARS.find(c => c.id === id); P.spr = id === 'danbi' ? 'danbi' : 'player'; selChar = id; recalc(); P.hp = P.maxHp; pgSync(); }
+function pgChar(id) { P.char = CHARS.find(c => c.id === id); P.spr = id === 'danbi' ? 'danbi' : id === 'makswe' ? 'makswe' : id === 'dueok' ? 'kkoma' : 'player'; selChar = id; recalc(); P.hp = P.maxHp; pgSync(); }
 function pgTick(dt, force) {
   PG.fpsA = (PG.fpsA || 0) + dt; PG.fpsN = (PG.fpsN || 0) + 1; PG.ui = (PG.ui || 0) - dt;
   if (PG.ui > 0 && !force) return; PG.ui = 0.12;
@@ -4159,7 +4882,7 @@ function pgBuild() {
   { const l = el('label', 'pg-chk'), c = el('input'); c.type = 'checkbox'; c.dataset.flag = 'keep'; c.addEventListener('change', () => { PG.keep = c.checked; if (PG.keep) for (const t of PG_MOBS) PG.target[t] = pgCount(t)[1]; c.blur(); }); l.append(c, ' 수량 유지 (쓰러지면 다시 채움)'); s.appendChild(l); }
   s2 = sec('몹 기술 · 하나씩 시키기');
   for (const t of PG_MOBS) { r = row(s2, ED[t].name); r.classList.add('wrap'); for (const [k] of MOBSK[t]) r.appendChild(btn(SKN[k], () => pgMobSkill(t, k))); }
-  r = row(s, '무리'); r.classList.add('wrap'); r.append(btn('포위진', () => { spawnRing(); G.warnT = 1.6; }), btn('백귀야행', () => { G.paradeT = 16; G.paradeSpawn = 0; }), btn('모두 쓰러뜨리기', () => pgKill(null)), btn('모두 지우기', pgClear));
+  r = row(s, '무리'); r.classList.add('wrap'); r.append(btn('포위진', () => { spawnRing(); G.warnT = 1.6; }), btn('금빛 도깨비', () => spawnGoldgob(false)), btn('백귀야행', () => { G.paradeT = 16; G.paradeSpawn = 0; }), btn('모두 쓰러뜨리기', () => pgKill(null)), btn('모두 지우기', pgClear));
   // bosses
   s = sec('보스 · 기술 하나씩');
   for (const t in PG_BOSS) {
@@ -4176,7 +4899,7 @@ function pgBuild() {
   r = row(s); r.appendChild(btn('엽전 100냥 받기', () => { P.coins += 100; }));
   // items
   s = sec('떨어뜨리기', false);
-  r = row(s); r.classList.add('wrap'); r.append(btn('지남철', () => pgItem('magnet')), btn('산삼', () => pgItem('ginseng')), btn('주먹밥', () => pgItem('rice')), btn('엽전·구슬 뿌리기', () => pgItem('coins')));
+  r = row(s); r.classList.add('wrap'); r.append(btn('지남철', () => pgItem('magnet')), btn('산삼', () => pgItem('ginseng')), btn('주먹밥', () => pgItem('rice')), btn('엽전·구슬 뿌리기', () => pgItem('coins')), btn('상자(정예)', () => pgChest('elite')), btn('상자(보스)', () => pgChest('mid')), btn('상자(최종)', () => pgChest('final')));
   // switches
   s = sec('설정');
   const flags = [['god', '무적 (체력이 줄지 않음)'], ['immortal', '요괴 안 죽음 (맞기만 함)'], ['weapons', '무기 발동'], ['auto', '보스 자동 공격'], ['mobAtk', '몹 공격 (부적·화염구·돌진)'], ['freeze', '요괴 멈춤'], ['lead', '예측 위치 보기 (몹이 노리는 곳)'], ['hit', '충돌 범위 보기'], ['bright', '환하게 (빛 범위 ×2.4)']];
@@ -4207,7 +4930,7 @@ function tick(now) {
   if (G) {
     if (G.state === 'play') {
       if (PG.on) { pgTick(dt); if (G.hitstop > 0) G.hitstop -= dt * PG.scale; else if (PG.scale > 0) update(dt * PG.scale); else if (PG.step > 0) { PG.step--; update(1 / 60); } }
-      else if (G.hitstop > 0) G.hitstop -= dt; else update(dt);
+      else if (G.hitstop > 0) G.hitstop -= dt; else if (G.slowT > 0) { G.slowT -= dt; update(dt * 0.35); } else update(dt);   // 호롱 터뜨리기: a beat of slow motion
     }
     else if (G.state === 'title') { G.t += dt; }
     else if (G.state === 'clear') {   // 1탄 끝: a breath of dawn light, the screen dims, then the mountain path
@@ -4258,7 +4981,7 @@ function start(data) {
   try { window.claude?.hot?.snapshot?.(() => ({ meta })); } catch (e) {}
   requestAnimationFrame(t => { last = t; frame(t); });
 }
-window.HORONG = { persp: on => { PERSP.on = !!on; }, pf: PFT, set dpr(v) { DPR_CAP = v; resize(); }, set rs(v) { RES.lv = v; resize(); }, get rs() { return RS; }, res: RES, get G() { return G; }, get P() { return P; }, get enemies() { return enemies; }, get jars() { return jars; }, get drops() { return drops; }, get effects() { return effects; }, get eprojs() { return eprojs; }, get obs() { return obsList; }, get zones() { return zones; }, solve: (o, r) => solve(o, r), spawn: (t, x, y, o) => makeEnemy(t, x, y, o || {}), fx: o => fx(o), spawnRing: () => spawnRing(), MOVE, gainXp: v => gainXp(v), addWeapon: id => addWeapon(id), addPassive: id => addPassive(id), spawnBoss: t => spawnBoss(t), kill: e => killEnemy(e, null), tick: ms => { tick(last + ms); last = Math.min(last, performance.now()); }, recalc: () => recalc(), openChest: () => openChest(), step: dt => { if (G && G.state === 'play') update(dt); render(); }, setZoom: z => { ZOOM = z; VW = W / 2 / ZOOM; VH = H / 2 / ZOOM; applyArtScale(); }, upd: dt => update(dt), draw: () => render(), parts: () => ({ fx: effects.length, parts: parts.length, texts: texts.length, drops: drops.length, projs: projs.length, puddles: puddles.length }) };
+window.HORONG = { persp: on => { PERSP.on = !!on; }, pf: PFT, set dpr(v) { DPR_CAP = v; resize(); }, set rs(v) { RES.lv = v; resize(); }, get rs() { return RS; }, res: RES, get G() { return G; }, get pois() { return poiList; }, get P() { return P; }, get enemies() { return enemies; }, get jars() { return jars; }, get drops() { return drops; }, get effects() { return effects; }, get eprojs() { return eprojs; }, get obs() { return obsList; }, get zones() { return zones; }, solve: (o, r) => solve(o, r), spawn: (t, x, y, o) => makeEnemy(t, x, y, o || {}), fx: o => fx(o), spawnRing: () => spawnRing(), MOVE, gainXp: v => gainXp(v), addWeapon: id => addWeapon(id), addPassive: id => addPassive(id), spawnBoss: t => spawnBoss(t), kill: e => killEnemy(e, null), tick: ms => { tick(last + ms); last = Math.min(last, performance.now()); }, recalc: () => recalc(), openChest: o => openChest(o), burst: () => fireBurst(), get meta() { return meta; }, spawnGold: f => spawnGoldgob(f), endRun: w => endRun(!!w), chestClose: () => closeChest(), chestAdvance: () => chestAdvance(), step: dt => { if (G && G.state === 'play') update(dt); render(); }, setZoom: z => { ZOOM = z; VW = W / 2 / ZOOM; VH = H / 2 / ZOOM; applyArtScale(); }, upd: dt => update(dt), draw: () => render(), parts: () => ({ fx: effects.length, parts: parts.length, texts: texts.length, drops: drops.length, projs: projs.length, puddles: puddles.length }) };
 if (window.claude?.hot?.ready) window.claude.hot.ready(start); else start(window.claude?.hot?.data ?? {});
 })();
 </script>
